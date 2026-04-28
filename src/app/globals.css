@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --cloud-blue: #0064e0;
+  --cloud-navy: #000a16;
+  --cloud-ash: #334155;
+  --cloud-border: #dde6f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(0, 100, 224, 0.16);
+  color: var(--cloud-navy);
+}
+
+.octalve-cloud-container {
+  width: min(100% - 2rem, 1180px);
+  margin-inline: auto;
+}
+
+.octalve-cloud-focus {
+  outline: none;
+}
+
+.octalve-cloud-focus:focus-visible {
+  box-shadow: 0 0 0 4px rgba(0, 100, 224, 0.18);
+}
