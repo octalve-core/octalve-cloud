@@ -1,12 +1,9 @@
 {
-  "homepage": "https://octalve-core.github.io/octalve-cloud/",
-  "name": "octalve-cloud",
+  "name": "octalve-cloud-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "predeploy": "next run build",
-    "deploy": "gh-pages -d build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
