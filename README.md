@@ -1,4 +1,4 @@
-# Octalve Cloud Frontend — Phase 1
+# Octalve Cloud
 
 This is the first deployable phase of the Octalve Cloud public website.
 
