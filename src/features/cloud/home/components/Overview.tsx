@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Gauge,
   Mail,
@@ -5,6 +7,7 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import { useState } from "react";
 
 type OverviewItem = {
   title: string;
@@ -36,7 +39,7 @@ const overviewItems: OverviewItem[] = [
     accent: "purple",
   },
   {
-    title: "Business Email & Support",
+    title: "Email & Support",
     description:
       "Professional email, migration help, and guided support as your business grows.",
     icon: Mail,
@@ -45,40 +48,89 @@ const overviewItems: OverviewItem[] = [
 ];
 
 /**
- * To add more cards later:
- * 1. Duplicate one item in overviewItems
- * 2. Change the title, description, icon, and accent
- * 3. The mobile slider will automatically include it
- * 4. On desktop, cards will continue to align neatly
+ * HOW TO ADD MORE CARDS:
+ *
+ * 1. Duplicate one object inside overviewItems.
+ * 2. Change title, description, icon, and accent.
+ * 3. Desktop will automatically fit the cards in rows.
+ * 4. Mobile will automatically add a new dot for the new card.
  */
 
 const accentMap = {
   purple: {
-    border: "border-t-[#8B5CF6]",
-    iconWrap: "bg-[#8B5CF6]/12 text-[#8B5CF6]",
-    glow: "shadow-[0_0_0_1px_rgba(139,92,246,0.14)]",
+    topBorder: "border-t-[#8B5CF6]",
+    iconWrap: "bg-[#8B5CF6]/15 text-[#A78BFA]",
+    glow: "shadow-[0_0_0_1px_rgba(139,92,246,0.15),0_24px_60px_rgba(0,0,0,0.22)]",
   },
   blue: {
-    border: "border-t-[#3B82F6]",
-    iconWrap: "bg-[#3B82F6]/12 text-[#3B82F6]",
-    glow: "shadow-[0_0_0_1px_rgba(59,130,246,0.14)]",
+    topBorder: "border-t-[#0064E0]",
+    iconWrap: "bg-[#0064E0]/16 text-[#60A5FA]",
+    glow: "shadow-[0_0_0_1px_rgba(0,100,224,0.18),0_24px_60px_rgba(0,0,0,0.22)]",
   },
   green: {
-    border: "border-t-[#10B981]",
-    iconWrap: "bg-[#10B981]/12 text-[#10B981]",
-    glow: "shadow-[0_0_0_1px_rgba(16,185,129,0.14)]",
+    topBorder: "border-t-[#29BE3E]",
+    iconWrap: "bg-[#29BE3E]/15 text-[#4ADE80]",
+    glow: "shadow-[0_0_0_1px_rgba(41,190,62,0.15),0_24px_60px_rgba(0,0,0,0.22)]",
   },
   orange: {
-    border: "border-t-[#F59E0B]",
-    iconWrap: "bg-[#F59E0B]/12 text-[#F59E0B]",
-    glow: "shadow-[0_0_0_1px_rgba(245,158,11,0.14)]",
+    topBorder: "border-t-[#FC7E24]",
+    iconWrap: "bg-[#FC7E24]/15 text-[#FDBA74]",
+    glow: "shadow-[0_0_0_1px_rgba(252,126,36,0.15),0_24px_60px_rgba(0,0,0,0.22)]",
   },
 };
 
-export function Overview() {
+function OverviewCard({ item }: { item: OverviewItem }) {
+  const Icon = item.icon;
+  const style = accentMap[item.accent];
+
   return (
-    <section className="bg-[#000000] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <article
+      className={[
+        "relative overflow-hidden rounded-[24px] border border-white/10 border-t-2 bg-white/[0.045] p-6 backdrop-blur-sm transition duration-300",
+        "hover:-translate-y-1 hover:border-white/15 hover:bg-white/[0.06]",
+        style.topBorder,
+        style.glow,
+      ].join(" ")}
+    >
+      <div
+        className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-white/[0.035] blur-2xl"
+        aria-hidden="true"
+      />
+
+      <div className="relative">
+        <div
+          className={[
+            "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
+            style.iconWrap,
+          ].join(" ")}
+        >
+          <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+        </div>
+
+        <h3 className="mt-5 text-[1.55rem] font-semibold leading-tight tracking-[-0.03em] text-white">
+          {item.title}
+        </h3>
+
+        <p className="mt-4 text-sm leading-7 text-slate-400">
+          {item.description}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+export function Overview() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeItem = overviewItems[activeIndex];
+
+  return (
+    <section className="relative overflow-hidden bg-black px-4 py-16 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-cloud-blue/10 blur-3xl" />
+        <div className="absolute bottom-[-180px] right-[-120px] h-[340px] w-[340px] rounded-full bg-[#29BE3E]/5 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
             Overview
@@ -94,44 +146,38 @@ export function Overview() {
           </p>
         </div>
 
-        {/* Mobile: horizontal slider | Desktop: 4 cards in a row */}
-        <div className="mt-10 md:mt-12">
-          <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
-            {overviewItems.map((item) => {
-              const Icon = item.icon;
-              const style = accentMap[item.accent];
+        {/* Mobile: premium dot switcher */}
+        <div className="mx-auto mt-10 max-w-sm md:hidden">
+          <OverviewCard item={activeItem} />
+
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {overviewItems.map((item, index) => {
+              const isActive = index === activeIndex;
 
               return (
-                <article
+                <button
                   key={item.title}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  aria-label={`Show ${item.title}`}
+                  aria-current={isActive ? "true" : undefined}
                   className={[
-                    "snap-start min-w-[280px] rounded-[24px] border border-white/10 border-t-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.03)_100%)] p-6",
-                    "transition duration-300 hover:-translate-y-1 hover:border-white/15",
-                    "md:min-w-0",
-                    style.border,
-                    style.glow,
+                    "h-2.5 rounded-full transition-all duration-300",
+                    isActive
+                      ? "w-8 bg-cloud-blue shadow-[0_0_18px_rgba(0,100,224,0.55)]"
+                      : "w-2.5 bg-white/25 hover:bg-white/45",
                   ].join(" ")}
-                >
-                  <div
-                    className={[
-                      "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
-                      style.iconWrap,
-                    ].join(" ")}
-                  >
-                    <Icon className="h-5 w-5" strokeWidth={2} />
-                  </div>
-
-                  <h3 className="mt-5 text-[1.9rem] font-semibold leading-[1.25] tracking-[-0.03em] text-white">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-4 text-base leading-8 text-slate-400">
-                    {item.description}
-                  </p>
-                </article>
+                />
               );
             })}
           </div>
+        </div>
+
+        {/* Desktop: all cards in row */}
+        <div className="mt-12 hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
+          {overviewItems.map((item) => (
+            <OverviewCard key={item.title} item={item} />
+          ))}
         </div>
       </div>
     </section>
