@@ -1,17 +1,5 @@
-import type { Metadata } from "next";
-import { CloudComingSoonPage } from "@/features/cloud/pages/CloudComingSoonPage";
+import { CloudSupportPage } from "@/features/cloud/support/page";
 
-export const metadata: Metadata = {
-  title: "Support",
-  description: "Get help with domains, hosting, email, SSL and cloud infrastructure."
-};
-
-export default function SupportPage() {
-  return (
-    <CloudComingSoonPage
-      eyebrow="Support"
-      title="Get guided support for your cloud services."
-      description="This page is prepared for support cards, ticket links, WhatsApp support and client console guidance in the next phase."
-    />
-  );
+export default function Page() {
+  return <CloudSupportPage />;
 }

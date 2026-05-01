@@ -1,5 +1,5 @@
-import { CloudHomePage } from "@/features/cloud/pages/CloudHomePage";
+import { CloudHomePage } from "@/features/cloud/home/page";
 
-export default function Home() {
+export default function Page() {
   return <CloudHomePage />;
 }

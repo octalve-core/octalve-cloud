@@ -7,7 +7,7 @@ export function CloudLogo() {
     <Link
       href="/"
       aria-label="Octalve Cloud Home"
-      className="octalve-cloud-focus inline-flex items-center"
+      className="inline-flex items-center rounded-full outline-none transition focus-visible:ring-2 focus-visible:ring-cloud-blue/40"
     >
       <Image
         src={octalveCloudLogo}
