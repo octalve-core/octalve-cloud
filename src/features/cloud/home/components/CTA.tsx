@@ -5,9 +5,11 @@ export function CTA() {
     <GetStarted
       eyebrow="Start with Octalve Cloud"
       title="Let’s start building your online presence today."
-      description="Use this Octalve Cloud page to guide visitors toward the right action, then send them to the client console or sales contact."
+      description="From domain registration to hosting, SSL, business email, and migration support, Octalve Cloud gives your business the foundation to launch online and grow without technical confusion."
       primaryLabel="Get started"
+      primaryHref="https://console.octalve.cloud"
       secondaryLabel="Contact sales"
+      secondaryHref="/contact"
     />
   );
 }
