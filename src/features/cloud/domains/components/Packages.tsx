@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildDomainAvailabilityHref,
   DEFAULT_DOMAIN_PRICE_CATEGORY,
@@ -14,6 +14,8 @@ import {
   type DomainPriceCategoryKey,
 } from "@/features/cloud/data/domain-price";
 import { getLiveDomainPackages } from "@/lib/domain-pricing-adapter";
+
+const AUTO_SLIDE_INTERVAL = 4500;
 
 function getAccentClasses(accent: DomainAccent) {
   switch (accent) {
@@ -50,7 +52,7 @@ function DomainPriceCard({ item }: { item: DomainPackage }) {
   const isExternal = ctaHref.startsWith("http");
 
   return (
-    <article className="group flex h-full min-h-[360px] flex-col rounded-[1.85rem] border border-slate-200 bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-cloud-blue/25 hover:shadow-[0_28px_75px_rgba(15,23,42,0.10)] sm:p-7">
+    <article className="group flex h-full min-h-[385px] flex-col rounded-[1.85rem] border border-slate-200 bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.075)] transition duration-300 hover:-translate-y-1 hover:border-cloud-blue/25 hover:shadow-[0_28px_75px_rgba(15,23,42,0.11)] sm:p-7">
       <div className="flex items-center justify-between gap-4">
         <div
           className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${accent.chip}`}
@@ -65,16 +67,16 @@ function DomainPriceCard({ item }: { item: DomainPackage }) {
         {item.tld}
       </h3>
 
-      <p className="mt-3 text-[1.25rem] font-medium leading-8 text-slate-950">
+      <p className="mt-3 text-[1.22rem] font-medium leading-8 text-slate-950">
         {item.title}
       </p>
 
-      <p className="mt-4 flex-1 text-sm leading-7 text-slate-500 sm:text-base sm:leading-8">
+      <p className="mt-4 flex-1 text-sm leading-7 text-slate-500 sm:text-[15px]">
         {item.description}
       </p>
 
       <div className="mt-7">
-        <div className="flex items-center gap-3">
+        <div className="flex min-h-7 items-center gap-3">
           {item.oldPrice ? (
             <p className="text-base text-slate-400 line-through">
               {formatNaira(item.oldPrice)}
@@ -89,7 +91,7 @@ function DomainPriceCard({ item }: { item: DomainPackage }) {
         </div>
 
         <div className="mt-1 flex items-end gap-1.5">
-          <span className="text-[2.45rem] font-medium tracking-[-0.06em] text-slate-950">
+          <span className="text-[2.35rem] font-medium tracking-[-0.06em] text-slate-950">
             {formatNaira(item.currentPrice)}
           </span>
 
@@ -119,6 +121,8 @@ function DomainPriceCard({ item }: { item: DomainPackage }) {
 }
 
 export function Packages() {
+  const sliderRef = useRef<HTMLDivElement | null>(null);
+
   const [activeCategory, setActiveCategory] = useState<DomainPriceCategoryKey>(
     DEFAULT_DOMAIN_PRICE_CATEGORY,
   );
@@ -128,6 +132,7 @@ export function Packages() {
   );
 
   const [isLoadingLivePrices, setIsLoadingLivePrices] = useState(true);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -165,8 +170,72 @@ export function Packages() {
     return domainPackages.filter((item) => item.category === activeCategory);
   }, [activeCategory, domainPackages]);
 
+  const maxSlideIndex = Math.max(visiblePackages.length - 1, 0);
+
+  function scrollToSlide(index: number) {
+    const slider = sliderRef.current;
+
+    if (!slider) return;
+
+    const safeIndex =
+      index < 0 ? maxSlideIndex : index > maxSlideIndex ? 0 : index;
+
+    const slide = slider.children.item(safeIndex) as HTMLElement | null;
+
+    if (!slide) return;
+
+    slider.scrollTo({
+      left: slide.offsetLeft,
+      behavior: "smooth",
+    });
+
+    setActiveSlide(safeIndex);
+  }
+
+  function nextSlide() {
+    scrollToSlide(activeSlide + 1);
+  }
+
+  function previousSlide() {
+    scrollToSlide(activeSlide - 1);
+  }
+
+  useEffect(() => {
+    setActiveSlide(0);
+
+    const slider = sliderRef.current;
+
+    if (slider) {
+      slider.scrollTo({ left: 0, behavior: "instant" });
+    }
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (visiblePackages.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setActiveSlide((current) => {
+        const next = current + 1 > maxSlideIndex ? 0 : current + 1;
+
+        const slider = sliderRef.current;
+        const slide = slider?.children.item(next) as HTMLElement | null;
+
+        if (slider && slide) {
+          slider.scrollTo({
+            left: slide.offsetLeft,
+            behavior: "smooth",
+          });
+        }
+
+        return next;
+      });
+    }, AUTO_SLIDE_INTERVAL);
+
+    return () => window.clearInterval(interval);
+  }, [maxSlideIndex, visiblePackages.length]);
+
   return (
-    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section className="overflow-hidden bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
           <div className="flex flex-wrap items-center gap-3">
@@ -199,52 +268,76 @@ export function Packages() {
           </p>
         </div>
 
-        <div className="mt-9">
-          <label className="mb-2 block text-sm font-medium text-slate-700 lg:hidden">
-            Choose domain category
-          </label>
+        <div className="mt-9 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700 lg:hidden">
+              Choose domain category
+            </label>
 
-          <div className="relative lg:hidden">
-            <select
-              value={activeCategory}
-              onChange={(event) =>
-                setActiveCategory(event.target.value as DomainPriceCategoryKey)
-              }
-              className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none shadow-[0_12px_34px_rgba(15,23,42,0.04)] transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
-            >
-              {domainPriceCategories.map((category) => (
-                <option key={category.key} value={category.key}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative lg:hidden">
+              <select
+                value={activeCategory}
+                onChange={(event) =>
+                  setActiveCategory(
+                    event.target.value as DomainPriceCategoryKey,
+                  )
+                }
+                className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none shadow-[0_12px_34px_rgba(15,23,42,0.04)] transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
+              >
+                {domainPriceCategories.map((category) => (
+                  <option key={category.key} value={category.key}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
 
-            <ChevronDown
-              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
-              aria-hidden="true"
-            />
+              <ChevronDown
+                className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="hidden w-fit rounded-2xl border border-slate-200 bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.04)] lg:flex">
+              {domainPriceCategories.map((category) => {
+                const isActive = activeCategory === category.key;
+
+                return (
+                  <button
+                    key={category.key}
+                    type="button"
+                    onClick={() => setActiveCategory(category.key)}
+                    className={[
+                      "min-h-11 rounded-xl px-5 text-sm font-semibold transition",
+                      isActive
+                        ? "bg-cloud-blue text-white shadow-[0_10px_26px_rgba(0,100,224,0.18)]"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-cloud-blue",
+                    ].join(" ")}
+                  >
+                    {category.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="hidden w-fit rounded-2xl border border-slate-200 bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.04)] lg:flex">
-            {domainPriceCategories.map((category) => {
-              const isActive = activeCategory === category.key;
+          <div className="hidden items-center gap-3 lg:flex">
+            <button
+              type="button"
+              onClick={previousSlide}
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-cloud-blue/30 hover:text-cloud-blue"
+              aria-label="Previous domain package"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
 
-              return (
-                <button
-                  key={category.key}
-                  type="button"
-                  onClick={() => setActiveCategory(category.key)}
-                  className={[
-                    "min-h-11 rounded-xl px-5 text-sm font-semibold transition",
-                    isActive
-                      ? "bg-cloud-blue text-white shadow-[0_10px_26px_rgba(0,100,224,0.18)]"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-cloud-blue",
-                  ].join(" ")}
-                >
-                  {category.label}
-                </button>
-              );
-            })}
+            <button
+              type="button"
+              onClick={nextSlide}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-cloud-blue text-white shadow-[0_14px_34px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
+              aria-label="Next domain package"
+            >
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
 
@@ -258,23 +351,74 @@ export function Packages() {
           </p>
         </div>
 
-        <div className="mt-10 lg:hidden">
-          <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative mt-10">
+          <div
+            ref={sliderRef}
+            className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-hidden scroll-smooth px-4 pb-5 sm:gap-6 lg:mx-0 lg:px-0"
+          >
             {visiblePackages.map((item) => (
               <div
                 key={item.id}
-                className="min-w-[295px] max-w-[295px] snap-start"
+                className="min-w-[295px] max-w-[295px] snap-start sm:min-w-[330px] sm:max-w-[330px] lg:min-w-[350px] lg:max-w-[350px] xl:min-w-[360px] xl:max-w-[360px]"
               >
                 <DomainPriceCard item={item} />
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="mt-10 hidden gap-6 lg:grid lg:grid-cols-3 xl:grid-cols-4">
-          {visiblePackages.map((item) => (
-            <DomainPriceCard key={item.id} item={item} />
-          ))}
+          <div className="mt-4 flex items-center justify-between gap-4 lg:hidden">
+            <button
+              type="button"
+              onClick={previousSlide}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition active:scale-95"
+              aria-label="Previous domain package"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
+
+            <div className="flex items-center justify-center gap-2">
+              {visiblePackages.map((item, index) => (
+                <button
+                  key={`${item.id}-dot`}
+                  type="button"
+                  onClick={() => scrollToSlide(index)}
+                  aria-label={`Go to ${item.tld}`}
+                  className={[
+                    "h-2.5 rounded-full transition-all",
+                    activeSlide === index
+                      ? "w-8 bg-cloud-blue shadow-[0_0_18px_rgba(0,100,224,0.45)]"
+                      : "w-2.5 bg-slate-300 hover:bg-slate-400",
+                  ].join(" ")}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={nextSlide}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-cloud-blue text-white shadow-[0_14px_34px_rgba(0,100,224,0.22)] transition active:scale-95"
+              aria-label="Next domain package"
+            >
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="mt-5 hidden items-center justify-center gap-2 lg:flex">
+            {visiblePackages.map((item, index) => (
+              <button
+                key={`${item.id}-desktop-dot`}
+                type="button"
+                onClick={() => scrollToSlide(index)}
+                aria-label={`Go to ${item.tld}`}
+                className={[
+                  "h-2.5 rounded-full transition-all",
+                  activeSlide === index
+                    ? "w-8 bg-cloud-blue shadow-[0_0_18px_rgba(0,100,224,0.45)]"
+                    : "w-2.5 bg-slate-300 hover:bg-slate-400",
+                ].join(" ")}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
