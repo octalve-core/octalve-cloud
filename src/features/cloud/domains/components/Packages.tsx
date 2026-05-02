@@ -5,6 +5,7 @@ import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   buildDomainAvailabilityHref,
+  DEFAULT_DOMAIN_PRICE_CATEGORY,
   domainPriceCategories,
   fallbackDomainPackages,
   formatNaira,
@@ -118,8 +119,9 @@ function DomainPriceCard({ item }: { item: DomainPackage }) {
 }
 
 export function Packages() {
-  const [activeCategory, setActiveCategory] =
-    useState<DomainPriceCategoryKey>("popular");
+  const [activeCategory, setActiveCategory] = useState<DomainPriceCategoryKey>(
+    DEFAULT_DOMAIN_PRICE_CATEGORY,
+  );
 
   const [domainPackages, setDomainPackages] = useState<DomainPackage[]>(
     fallbackDomainPackages,
@@ -156,6 +158,10 @@ export function Packages() {
     domainPriceCategories[0];
 
   const visiblePackages = useMemo(() => {
+    if (activeCategory === "all") {
+      return domainPackages;
+    }
+
     return domainPackages.filter((item) => item.category === activeCategory);
   }, [activeCategory, domainPackages]);
 

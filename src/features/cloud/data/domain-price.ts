@@ -1,6 +1,13 @@
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
 
-export type DomainPriceCategoryKey = "popular" | "nigeria" | "business" | "new";
+export type DomainPriceCategoryKey =
+  | "all"
+  | "popular"
+  | "business"
+  | "nigeria"
+  | "new";
+
+export type DomainListingCategoryKey = Exclude<DomainPriceCategoryKey, "all">;
 
 export type DomainAccent = "blue" | "green" | "orange" | "purple";
 
@@ -16,7 +23,7 @@ export type DomainPackage = {
   tld: string;
   title: string;
   description: string;
-  category: DomainPriceCategoryKey;
+  category: DomainListingCategoryKey;
   oldPrice?: number;
   currentPrice: number;
   renewalPrice?: number;
@@ -27,20 +34,22 @@ export type DomainPackage = {
   accent: DomainAccent;
 };
 
+export const DEFAULT_DOMAIN_PRICE_CATEGORY: DomainPriceCategoryKey = "all";
+
 export const domainPriceCategories: DomainPriceCategory[] = [
+  {
+    key: "all",
+    label: "All",
+    title: "Explore all domain options for your business",
+    description:
+      "Compare popular, Nigerian, business, and modern domain extensions in one place before choosing the right name for your brand.",
+  },
   {
     key: "popular",
     label: "Popular",
     title: "Popular domain choices for growing brands",
     description:
       "Start with trusted extensions that customers already recognize and remember.",
-  },
-  {
-    key: "nigeria",
-    label: "Nigeria",
-    title: "Local domain options for Nigerian businesses",
-    description:
-      "Build trust with domain extensions that speak directly to the Nigerian market.",
   },
   {
     key: "business",
@@ -50,8 +59,15 @@ export const domainPriceCategories: DomainPriceCategory[] = [
       "Choose extensions that fit online stores, company websites, communities, and professional brands.",
   },
   {
+    key: "nigeria",
+    label: "Nigeria",
+    title: "Local domain options for Nigerian businesses",
+    description:
+      "Build trust with domain extensions that speak directly to the Nigerian market.",
+  },
+  {
     key: "new",
-    label: "New TLDs",
+    label: "New",
     title: "Modern extensions for digital-first brands",
     description:
       "Use newer extensions when you want a sharper, more flexible online identity.",
@@ -61,10 +77,10 @@ export const domainPriceCategories: DomainPriceCategory[] = [
 /**
  * Fallback domain prices.
  *
- * These are shown immediately while the live backend adapter is not connected.
- * Later, the UI will receive updated prices from:
+ * These show immediately while live backend pricing is not connected.
+ * Later, live prices will merge through:
  *
- * src/lib/domain-price-adapter.ts
+ * src/lib/domain-pricing-adapter.ts
  */
 export const fallbackDomainPackages: DomainPackage[] = [
   {
@@ -81,6 +97,63 @@ export const fallbackDomainPackages: DomainPackage[] = [
     badge: "Popular",
     ctaLabel: "Check availability",
     accent: "blue",
+  },
+  {
+    id: "net-domain",
+    tld: ".net",
+    title: "Reliable Alternative for Growth",
+    description:
+      "A professional option when your preferred .com is unavailable but you still want credibility.",
+    category: "popular",
+    oldPrice: 36900,
+    currentPrice: 30986,
+    renewalPrice: 34000,
+    billingLabel: "/1st yr",
+    ctaLabel: "Check availability",
+    accent: "purple",
+  },
+  {
+    id: "org-domain",
+    tld: ".org",
+    title: "Trust for Missions & Communities",
+    description:
+      "Ideal for NGOs, churches, foundations, communities, and purpose-driven organisations.",
+    category: "business",
+    oldPrice: 34900,
+    currentPrice: 28900,
+    renewalPrice: 31000,
+    billingLabel: "/1st yr",
+    ctaLabel: "Check availability",
+    accent: "orange",
+  },
+  {
+    id: "shop-domain",
+    tld: ".shop",
+    title: "Built for Selling Online",
+    description:
+      "Perfect for ecommerce stores, catalogs, product brands, and online retail businesses.",
+    category: "business",
+    oldPrice: 53000,
+    currentPrice: 1900,
+    renewalPrice: 19800,
+    billingLabel: "/1st yr",
+    badge: "Deal",
+    ctaLabel: "Check availability",
+    accent: "orange",
+  },
+  {
+    id: "co-domain",
+    tld: ".co",
+    title: "Short Business Identity",
+    description:
+      "A clean and modern option for startups, agencies, founders, and brands that want a short domain.",
+    category: "business",
+    oldPrice: 42000,
+    currentPrice: 34500,
+    renewalPrice: 39000,
+    billingLabel: "/1st yr",
+    ctaLabel: "Check availability",
+    accent: "green",
   },
   {
     id: "com-ng-domain",
@@ -113,47 +186,18 @@ export const fallbackDomainPackages: DomainPackage[] = [
     accent: "blue",
   },
   {
-    id: "org-domain",
-    tld: ".org",
-    title: "Trust for Missions & Communities",
+    id: "africa-domain",
+    tld: ".africa",
+    title: "Africa-Focused Reach",
     description:
-      "Ideal for NGOs, churches, foundations, communities, and purpose-driven organisations.",
-    category: "business",
-    oldPrice: 34900,
-    currentPrice: 28900,
-    renewalPrice: 31000,
+      "For businesses, communities, and organisations that want a wider African digital identity.",
+    category: "new",
+    oldPrice: 72000,
+    currentPrice: 60170,
+    renewalPrice: 68000,
     billingLabel: "/1st yr",
     ctaLabel: "Check availability",
-    accent: "orange",
-  },
-  {
-    id: "net-domain",
-    tld: ".net",
-    title: "Reliable Alternative for Growth",
-    description:
-      "A professional option when your preferred .com is unavailable but you still want credibility.",
-    category: "popular",
-    oldPrice: 36900,
-    currentPrice: 30986,
-    renewalPrice: 34000,
-    billingLabel: "/1st yr",
-    ctaLabel: "Check availability",
-    accent: "purple",
-  },
-  {
-    id: "shop-domain",
-    tld: ".shop",
-    title: "Built for Selling Online",
-    description:
-      "Perfect for ecommerce stores, catalogs, product brands, and online retail businesses.",
-    category: "business",
-    oldPrice: 53000,
-    currentPrice: 1900,
-    renewalPrice: 19800,
-    billingLabel: "/1st yr",
-    badge: "Deal",
-    ctaLabel: "Check availability",
-    accent: "orange",
+    accent: "green",
   },
   {
     id: "cloud-domain",
@@ -183,20 +227,6 @@ export const fallbackDomainPackages: DomainPackage[] = [
     badge: "Premium",
     ctaLabel: "Check availability",
     accent: "purple",
-  },
-  {
-    id: "africa-domain",
-    tld: ".africa",
-    title: "Africa-Focused Reach",
-    description:
-      "For businesses, communities, and organisations that want a wider African digital identity.",
-    category: "new",
-    oldPrice: 72000,
-    currentPrice: 60170,
-    renewalPrice: 68000,
-    billingLabel: "/1st yr",
-    ctaLabel: "Check availability",
-    accent: "green",
   },
 ];
 
