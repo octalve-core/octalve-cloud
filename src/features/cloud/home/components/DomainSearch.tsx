@@ -1,97 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import {
   ArrowRight,
-  CheckCircle2,
   ChevronDown,
   Loader2,
   Search,
   Sparkles,
-  XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { cloudLinks } from "@/features/cloud/data/cloud-links";
 import {
   getDomainSuggestions,
   type DomainSuggestion,
 } from "@/lib/domain-pricing-adapter";
-import { cloudLinks } from "@/features/cloud/data/cloud-links";
 
-type TldGroup = "popular" | "business" | "new";
-
-type TldOption = {
-  label: string;
-  value: string;
-  price: string;
-  accent: string;
+const BRAND = {
+  bg: "#000000",
 };
 
-const TLD_GROUPS: Record<TldGroup, TldOption[]> = {
-  popular: [
-    { label: ".com", value: ".com", price: "₦15,000/Year", accent: "#38BDF8" },
-    { label: ".net", value: ".net", price: "₦30,986/Year", accent: "#E61525" },
-    { label: ".org", value: ".org", price: "₦28,934/Year", accent: "#FC7E24" },
-    {
-      label: ".com.ng",
-      value: ".com.ng",
-      price: "₦Free/1 Year",
-      accent: "#29BE3E",
-    },
-    { label: ".ng", value: ".ng", price: "₦16,500/Year", accent: "#0064E0" },
-  ],
-  business: [
-    { label: ".co", value: ".co", price: "₦34,500/Year", accent: "#29BE3E" },
-    {
-      label: ".shop",
-      value: ".shop",
-      price: "₦19,800/Year",
-      accent: "#FC7E24",
-    },
-    {
-      label: ".cloud",
-      value: ".cloud",
-      price: "₦22,500/Year",
-      accent: "#0064E0",
-    },
-    {
-      label: ".africa",
-      value: ".africa",
-      price: "₦60,170/Year",
-      accent: "#A855F7",
-    },
-    { label: ".ai", value: ".ai", price: "₦95,000/Year", accent: "#7C3AED" },
-  ],
-  new: [
-    {
-      label: ".cloud",
-      value: ".cloud",
-      price: "₦22,500/Year",
-      accent: "#0064E0",
-    },
-    { label: ".ai", value: ".ai", price: "₦95,000/Year", accent: "#7C3AED" },
-    {
-      label: ".shop",
-      value: ".shop",
-      price: "₦19,800/Year",
-      accent: "#FC7E24",
-    },
-    {
-      label: ".africa",
-      value: ".africa",
-      price: "₦60,170/Year",
-      accent: "#A855F7",
-    },
-    { label: ".co", value: ".co", price: "₦34,500/Year", accent: "#29BE3E" },
-  ],
-};
-
-const GROUP_LABELS: Record<TldGroup, string> = {
-  popular: "Popular",
-  business: "Business",
-  new: "New TLDs",
-};
-
-const MARQUEE_TLDS = [
+const TLD_MARQUEE = [
   ".com",
   ".net",
   ".cloud",
@@ -102,11 +29,73 @@ const MARQUEE_TLDS = [
   ".africa",
   ".com.ng",
   ".ng",
-  ".online",
-  ".store",
+  ".com",
+  ".net",
+  ".cloud",
+  ".ai",
+  ".shop",
+  ".org",
+  ".co",
+  ".africa",
+  ".com.ng",
+  ".ng",
 ];
 
-function normalizeDomainInput(value: string) {
+type PricingTab = "popular" | "business" | "new";
+
+type TldCard = {
+  tld: string;
+  price: string;
+  note: string;
+};
+
+const DOMAIN_PRICE_GROUPS: Record<PricingTab, TldCard[]> = {
+  popular: [
+    { tld: ".com", price: "₦15,000", note: "/year" },
+    { tld: ".net", price: "₦30,986", note: "/year" },
+    { tld: ".org", price: "₦28,934", note: "/year" },
+    { tld: ".com.ng", price: "₦Free", note: "/1 year" },
+    { tld: ".ng", price: "₦16,500", note: "/year" },
+  ],
+  business: [
+    { tld: ".com", price: "₦15,000", note: "/year" },
+    { tld: ".org", price: "₦28,934", note: "/year" },
+    { tld: ".co", price: "₦34,500", note: "/year" },
+    { tld: ".shop", price: "₦19,800", note: "/year" },
+    { tld: ".com.ng", price: "₦Free", note: "/1 year" },
+  ],
+  new: [
+    { tld: ".cloud", price: "₦22,500", note: "/year" },
+    { tld: ".ai", price: "₦95,000", note: "/year" },
+    { tld: ".shop", price: "₦19,800", note: "/year" },
+    { tld: ".africa", price: "₦60,170", note: "/year" },
+    { tld: ".ng", price: "₦16,500", note: "/year" },
+  ],
+};
+
+/**
+ * LIVE BACKEND / ADAPTER INSTRUCTION
+ * ----------------------------------
+ * For now, DOMAIN_PRICE_GROUPS is local fallback pricing.
+ *
+ * When the Octalve Cloud backend adapter is ready, keep this UI and connect
+ * pricing/suggestions through:
+ *
+ * src/lib/domain-pricing-adapter.ts
+ *
+ * Expected bridge flow:
+ *
+ * Frontend DomainSearch.tsx
+ * → src/lib/domain-pricing-adapter.ts
+ * → console.octalve.cloud/api/domains/search
+ * → Registrar / WHOIS / pricing adapter
+ * → Return live domain suggestions, availability, and prices.
+ *
+ * This keeps the public website static-export safe and lets the backend carry
+ * live domain pricing, availability checks, and order routing.
+ */
+
+function normalizeDomain(value: string) {
   return value
     .trim()
     .toLowerCase()
@@ -117,330 +106,299 @@ function normalizeDomainInput(value: string) {
     .replace(/[^a-z0-9.-]/g, "");
 }
 
-function hasKnownTld(value: string) {
-  const allTlds = Object.values(TLD_GROUPS)
-    .flat()
-    .map((item) => item.value)
-    .sort((a, b) => b.length - a.length);
+function buildConsoleDomainUrl(domain: string) {
+  const separator = cloudLinks.console.includes("?") ? "&" : "?";
 
-  return allTlds.some((tld) => value.endsWith(tld));
+  return `${cloudLinks.console}${separator}domain=${encodeURIComponent(
+    domain,
+  )}`;
+}
+
+function buildOrderDomainUrl(domain: string) {
+  return `${cloudLinks.console}/order/domain?domain=${encodeURIComponent(
+    domain,
+  )}`;
 }
 
 export function DomainSearch() {
   const [domain, setDomain] = useState("");
-  const [activeGroup, setActiveGroup] = useState<TldGroup>("popular");
-  const [selectedTld, setSelectedTld] = useState(".com");
+  const [activeTab, setActiveTab] = useState<PricingTab>("popular");
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<DomainSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const activeTlds = useMemo(() => TLD_GROUPS[activeGroup], [activeGroup]);
+  const activePrices = useMemo(
+    () => DOMAIN_PRICE_GROUPS[activeTab],
+    [activeTab],
+  );
 
-  useEffect(() => {
-    if (!activeTlds.some((item) => item.value === selectedTld)) {
-      setSelectedTld(activeTlds[0].value);
-    }
-  }, [activeGroup, activeTlds, selectedTld]);
-
-  useEffect(() => {
-    const tlds = activeTlds.map((item) => item.value);
-    const clean = normalizeDomainInput(domain || "yourbrand");
-
-    const timeout = window.setTimeout(async () => {
-      setIsLoading(true);
-
-      try {
-        const result = await getDomainSuggestions({
-          query: clean,
-          tlds,
-        });
-
-        setSuggestions(result);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300);
-
-    return () => window.clearTimeout(timeout);
-  }, [domain, activeTlds]);
-
-  function submit() {
-    const clean = normalizeDomainInput(domain);
+  async function handleSearch() {
+    const clean = normalizeDomain(domain);
 
     if (!clean) {
       window.location.assign(cloudLinks.console);
       return;
     }
 
-    const finalDomain = hasKnownTld(clean) ? clean : `${clean}${selectedTld}`;
-    const target = `${cloudLinks.console}/order/domain?domain=${encodeURIComponent(finalDomain)}`;
+    setIsSearching(true);
+    setHasSearched(true);
+    setSuggestionsOpen(true);
 
-    window.location.assign(target);
+    try {
+      const results = await getDomainSuggestions({
+        query: clean,
+        tlds: activePrices.map((item) => item.tld),
+      });
+
+      setSuggestions(results ?? []);
+    } catch (error) {
+      console.error("Domain suggestions error:", error);
+      setSuggestions([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  function openConsoleWithDomain(value: string) {
+    window.location.assign(buildConsoleDomainUrl(value));
   }
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[-140px] top-[-140px] h-[360px] w-[360px] rounded-full bg-cloud-blue/20 blur-3xl" />
-        <div className="absolute right-[-120px] top-[18%] h-[320px] w-[320px] rounded-full bg-[#29BE3E]/10 blur-3xl" />
-        <div className="absolute bottom-[-140px] left-[35%] h-[300px] w-[300px] rounded-full bg-[#FC7E24]/10 blur-3xl" />
-      </div>
-
-      <div
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-        aria-hidden="true"
-      >
-        <div className="domain-marquee absolute left-0 top-10 flex whitespace-nowrap text-[44px] font-semibold tracking-[-0.05em] text-white/[0.045]">
-          {[...MARQUEE_TLDS, ...MARQUEE_TLDS].map((tld, index) => (
-            <span key={`${tld}-${index}`} className="mx-8">
-              {tld}
-            </span>
-          ))}
-        </div>
-
-        <div className="domain-marquee-reverse absolute bottom-12 left-0 flex whitespace-nowrap text-[40px] font-semibold tracking-[-0.05em] text-white/[0.04]">
-          {[...MARQUEE_TLDS, ...MARQUEE_TLDS].map((tld, index) => (
-            <span key={`${tld}-reverse-${index}`} className="mx-8">
-              {tld}
-            </span>
+    <section
+      className="relative overflow-hidden px-4 py-16 sm:px-6 lg:px-8 lg:py-20"
+      style={{ backgroundColor: BRAND.bg }}
+    >
+      {/* Larger, clearer marquee strip */}
+      <div className="pointer-events-none absolute inset-x-0 top-8 overflow-hidden">
+        <div className="domain-marquee flex w-max items-center gap-10 whitespace-nowrap text-[1.35rem] font-semibold uppercase tracking-[0.32em] text-white/14 sm:text-[1.75rem] lg:text-[2rem]">
+          {TLD_MARQUEE.map((item, index) => (
+            <span key={`${item}-${index}`}>{item}</span>
           ))}
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-7xl">
-        <div className="animated-domain-shell rounded-[2.25rem] p-[1px]">
-          <div className="rounded-[2.2rem] border border-white/10 bg-white/[0.045] px-5 py-8 shadow-[0_30px_110px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
-                <Sparkles
-                  className="h-4 w-4 text-cloud-blue"
-                  aria-hidden="true"
+      <div className="pointer-events-none absolute inset-x-0 bottom-10 overflow-hidden">
+        <div className="domain-marquee-reverse flex w-max items-center gap-10 whitespace-nowrap text-[1.35rem] font-semibold uppercase tracking-[0.32em] text-white/12 sm:text-[1.75rem] lg:text-[2rem]">
+          {TLD_MARQUEE.map((item, index) => (
+            <span key={`${item}-bottom-${index}`}>{item}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative mx-auto max-w-6xl">
+        <div className="text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-white/70">
+            Domain Search
+          </p>
+
+          <h2 className="mx-auto mt-4 max-w-4xl text-3xl font-medium tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
+            Find the right domain name before someone else takes it.
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
+            Search fast, preview useful domain ideas, and explore pricing across
+            popular, business, and new TLDs.
+          </p>
+        </div>
+
+        <div className="mt-10 rounded-[2rem] bg-white p-4 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-white/10 sm:p-5 lg:p-6">
+          {/* Search box */}
+          <div className="rounded-[1.6rem] border border-slate-200 bg-white p-3 shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-white px-4">
+                <Search className="h-5 w-5 flex-shrink-0 text-slate-400" />
+
+                <input
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleSearch();
+                    }
+                  }}
+                  placeholder="Enter your domain idea e.g. octalvecloud"
+                  className="h-14 w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base"
                 />
-                Domain Search
               </div>
 
-              <h2 className="mt-5 text-3xl font-medium tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
-                Your online presence starts with the right name.
-              </h2>
-
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                Search domains, compare useful extensions, and move straight
-                into your Octalve Cloud order flow when the perfect name is
-                available.
-              </p>
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={isSearching}
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-cloud-blue px-6 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Searching
+                  </>
+                ) : (
+                  <>
+                    Search Domain
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
             </div>
-
-            <div className="mx-auto mt-8 max-w-4xl">
-              <div className="rounded-[1.75rem] border border-white/10 bg-black/35 p-3 shadow-[0_16px_70px_rgba(0,0,0,0.35)]">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                  <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white px-4 text-slate-900">
-                    <Search className="h-5 w-5 flex-shrink-0 text-slate-400" />
-
-                    <input
-                      value={domain}
-                      onChange={(event) => setDomain(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          submit();
-                        }
-                      }}
-                      placeholder="yourbusiness"
-                      className="h-14 w-full bg-transparent text-sm font-medium outline-none placeholder:text-slate-400 sm:text-base"
-                    />
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-[140px_1fr] lg:flex">
-                    <div className="relative">
-                      <select
-                        value={selectedTld}
-                        onChange={(event) => setSelectedTld(event.target.value)}
-                        className="h-14 w-full appearance-none rounded-[1.15rem] border border-white/10 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none"
-                      >
-                        {activeTlds.map((item) => (
-                          <option key={item.value} value={item.value}>
-                            {item.label}
-                          </option>
-                        ))}
-                      </select>
-
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={submit}
-                      className="inline-flex h-14 items-center justify-center rounded-[1.15rem] bg-cloud-blue px-8 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(0,100,224,0.30)] transition hover:-translate-y-0.5 hover:bg-blue-600"
-                    >
-                      Search
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {(Object.keys(GROUP_LABELS) as TldGroup[]).map((group) => {
-                  const isActive = group === activeGroup;
-
-                  return (
-                    <button
-                      key={group}
-                      type="button"
-                      onClick={() => setActiveGroup(group)}
-                      className={[
-                        "rounded-full border px-4 py-2 text-sm font-semibold transition",
-                        isActive
-                          ? "border-cloud-blue bg-cloud-blue text-white shadow-[0_12px_30px_rgba(0,100,224,0.26)]"
-                          : "border-white/10 bg-white/[0.06] text-slate-300 hover:border-cloud-blue/40 hover:text-white",
-                      ].join(" ")}
-                    >
-                      {GROUP_LABELS[group]}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                {activeTlds.map((item) => {
-                  const isSelected = item.value === selectedTld;
-
-                  return (
-                    <button
-                      key={item.value}
-                      type="button"
-                      onClick={() => setSelectedTld(item.value)}
-                      className={[
-                        "rounded-[1.1rem] border p-4 text-center transition hover:-translate-y-0.5",
-                        isSelected
-                          ? "border-white/20 bg-white text-slate-950 shadow-[0_14px_35px_rgba(255,255,255,0.12)]"
-                          : "border-white/10 bg-white/[0.07] text-white shadow-[0_12px_35px_rgba(0,0,0,0.22)] hover:bg-white/[0.1]",
-                      ].join(" ")}
-                    >
-                      <p
-                        className="text-2xl font-semibold tracking-[-0.04em]"
-                        style={{ color: item.accent }}
-                      >
-                        {item.label}
-                      </p>
-                      <p
-                        className={[
-                          "mt-2 text-xs sm:text-sm",
-                          isSelected ? "text-slate-500" : "text-slate-300",
-                        ].join(" ")}
-                      >
-                        {item.price}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mx-auto mt-10 max-w-4xl">
-              <div className="rounded-[1.75rem] border border-white/10 bg-black/30 p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Suggested domains
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Live pricing will connect through the Octalve Cloud domain
-                      adapter.
-                    </p>
-                  </div>
-
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-cloud-blue" />
-                  ) : null}
-                </div>
-
-                <div className="mt-4 grid gap-3">
-                  {suggestions.slice(0, 5).map((item) => (
-                    <div
-                      key={item.domain}
-                      className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          {item.available ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-400" />
-                          )}
-
-                          <p className="truncate text-sm font-semibold text-white sm:text-base">
-                            {item.domain}
-                          </p>
-                        </div>
-
-                        <p className="mt-1 text-xs text-slate-400">
-                          {item.available
-                            ? "Available now"
-                            : "Currently unavailable"}{" "}
-                          · {item.renewalLabel ?? "Registration pricing"}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3 sm:justify-end">
-                        <p className="text-sm font-semibold text-white">
-                          {item.priceLabel}
-                        </p>
-
-                        {item.available ? (
-                          <Link
-                            href={item.orderUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-cloud-blue px-4 text-xs font-semibold text-white transition hover:bg-blue-600"
-                          >
-                            Order
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        ) : (
-                          <span className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-slate-400">
-                            Taken
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-6 text-slate-500 sm:text-sm">
-              Prices shown can be replaced automatically by the live registrar
-              adapter once the Octalve Cloud backend is connected.
-            </p>
           </div>
+
+          {/* Pricing tabs */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {(["popular", "business", "new"] as PricingTab[]).map((tab) => {
+              const active = activeTab === tab;
+
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={[
+                    "inline-flex min-h-10 items-center justify-center rounded-full px-4 text-sm font-medium transition",
+                    active
+                      ? "bg-cloud-blue text-white shadow-[0_10px_24px_rgba(0,100,224,0.18)]"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+                  ].join(" ")}
+                >
+                  {tab === "popular"
+                    ? "Popular"
+                    : tab === "business"
+                      ? "Business"
+                      : "New TLDs"}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Compact pricing cards */}
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {activePrices.map((item) => (
+              <button
+                key={`${activeTab}-${item.tld}`}
+                type="button"
+                onClick={() => {
+                  const clean = normalizeDomain(domain);
+                  setDomain(
+                    clean ? `${clean}${item.tld}` : `yourbrand${item.tld}`,
+                  );
+                }}
+                className="rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3 text-left shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-cloud-blue/30"
+              >
+                <div className="text-[1.1rem] font-semibold tracking-[-0.03em] text-cloud-blue">
+                  {item.tld}
+                </div>
+
+                <div className="mt-1 text-sm font-semibold text-slate-900">
+                  {item.price}
+                  <span className="ml-1 font-normal text-slate-500">
+                    {item.note}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* AI suggestions - hidden until search */}
+          {hasSearched ? (
+            <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+              <button
+                type="button"
+                onClick={() => setSuggestionsOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-cloud-blue/10 text-cloud-blue">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">
+                      AI Suggestions
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Smart alternatives based on your search
+                    </p>
+                  </div>
+                </div>
+
+                <ChevronDown
+                  className={[
+                    "h-5 w-5 text-slate-400 transition",
+                    suggestionsOpen ? "rotate-180" : "",
+                  ].join(" ")}
+                />
+              </button>
+
+              {suggestionsOpen ? (
+                <div className="border-t border-slate-200 px-5 py-4">
+                  {isSearching ? (
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating suggestions...
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    <div className="space-y-3">
+                      {suggestions.slice(0, 6).map((item, index) => {
+                        const suggestedDomain =
+                          item.domain ||
+                          `${normalizeDomain(domain)}-${index + 1}.com`;
+
+                        return (
+                          <button
+                            key={`${suggestedDomain}-${index}`}
+                            type="button"
+                            onClick={() =>
+                              item.available
+                                ? window.location.assign(
+                                    item.orderUrl ||
+                                      buildOrderDomainUrl(suggestedDomain),
+                                  )
+                                : openConsoleWithDomain(suggestedDomain)
+                            }
+                            className="flex w-full flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:border-cloud-blue/30 hover:bg-white sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-slate-950 sm:text-base">
+                                {suggestedDomain}
+                              </p>
+
+                              <p className="mt-1 text-xs text-slate-500">
+                                {item.priceLabel}
+                                {item.renewalLabel
+                                  ? ` · ${item.renewalLabel}`
+                                  : ""}
+                              </p>
+                            </div>
+
+                            <span
+                              className={[
+                                "inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold",
+                                item.available === false
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-emerald-50 text-emerald-600",
+                              ].join(" ")}
+                            >
+                              {item.available === false ? "Taken" : "Available"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                      No AI suggestions returned yet for this search.
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
       <style jsx global>{`
-        @property --domain-angle {
-          syntax: "<angle>";
-          initial-value: 0deg;
-          inherits: false;
-        }
-
-        @keyframes domain-spin {
-          to {
-            --domain-angle: 360deg;
-          }
-        }
-
-        .animated-domain-shell {
-          background: conic-gradient(
-            from var(--domain-angle),
-            rgba(0, 100, 224, 0.9),
-            rgba(41, 190, 62, 0.45),
-            rgba(252, 126, 36, 0.55),
-            rgba(230, 21, 37, 0.55),
-            rgba(0, 100, 224, 0.9)
-          );
-          animation: domain-spin 8s linear infinite;
-        }
-
-        @keyframes domain-marquee {
+        @keyframes domainMarqueeLeft {
           from {
             transform: translateX(0);
           }
@@ -449,7 +407,7 @@ export function DomainSearch() {
           }
         }
 
-        @keyframes domain-marquee-reverse {
+        @keyframes domainMarqueeRight {
           from {
             transform: translateX(-50%);
           }
@@ -459,11 +417,11 @@ export function DomainSearch() {
         }
 
         .domain-marquee {
-          animation: domain-marquee 28s linear infinite;
+          animation: domainMarqueeLeft 28s linear infinite;
         }
 
         .domain-marquee-reverse {
-          animation: domain-marquee-reverse 34s linear infinite;
+          animation: domainMarqueeRight 32s linear infinite;
         }
       `}</style>
     </section>
