@@ -12,11 +12,11 @@ import { CTA } from "./components/CTA";
 export function CloudDomainsPage() {
   return (
     <CloudShell>
+      <DomainSearch />
       <Hero />
       <Overview />
       <Services />
       <Packages />
-      <DomainSearch />
       <WhyOctalveCloud />
       <Migration />
       <FAQ />

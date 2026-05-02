@@ -65,6 +65,8 @@ export function Packages() {
     }));
   }
 
+  // old section bg #F8FAFC
+
   return (
     <section className="bg-[#ffffff] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">

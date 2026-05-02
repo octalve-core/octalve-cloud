@@ -5,7 +5,7 @@ export function CTA() {
     <GetStarted
       eyebrow="Start with Octalve Cloud"
       title="Let’s start building your online presence today."
-      description="Use this Domain Registration page to guide visitors toward the right action, then send them to the client console or sales contact."
+      description="Secure your business name and control your online identity. With Octalve Cloud, you can register your domain and get everything else you need to go online in one place."
       primaryLabel="Get started"
       secondaryLabel="Contact sales"
     />
