@@ -1,3 +1,5 @@
+import type { DomainPackage } from "@/features/cloud/data/domain-price";
+
 export type DomainPricingRequest = {
   query: string;
   tlds: string[];
@@ -12,7 +14,7 @@ export type DomainSuggestion = {
   orderUrl: string;
 };
 
-type DomainAdapterResponse = {
+type DomainSearchAdapterResponse = {
   suggestions?: {
     domain: string;
     tld: string;
@@ -31,39 +33,48 @@ type DomainAdapterResponse = {
   }[];
 };
 
+type LiveDomainPriceItem = {
+  id?: string;
+  tld: string;
+  title?: string;
+  description?: string;
+  category?: DomainPackage["category"];
+  oldPrice?: number;
+  currentPrice?: number;
+  registrationPrice?: number;
+  renewalPrice?: number;
+  billingLabel?: string;
+  badge?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  accent?: DomainPackage["accent"];
+};
+
+type LiveDomainPricesResponse = {
+  packages?: LiveDomainPriceItem[];
+};
+
 /**
  * OCTALVE CLOUD DOMAIN ADAPTER BRIDGE
+ * -----------------------------------
  *
- * This frontend is exported statically to DirectAdmin.
- * So do not create frontend /api routes here.
+ * This public frontend is exported statically to DirectAdmin.
+ * Do not create frontend /api routes here.
  *
- * When the Octalve Cloud backend is ready, expose:
+ * This single adapter file serves:
  *
- * POST https://console.octalve.cloud/api/domains/search
+ * 1. Domain search suggestions:
+ *    POST https://console.octalve.cloud/api/domains/search
  *
- * Request:
- * {
- *   "query": "mybusiness",
- *   "tlds": [".com", ".com.ng", ".cloud"]
- * }
+ * 2. Domain package pricing:
+ *    GET https://console.octalve.cloud/api/domains/prices
  *
- * Response:
- * {
- *   "suggestions": [
- *     {
- *       "domain": "mybusiness.com",
- *       "tld": ".com",
- *       "available": true,
- *       "price": { "amount": 15000, "currency": "NGN", "period": "year" },
- *       "renewalPrice": { "amount": 18000, "currency": "NGN", "period": "year" },
- *       "orderUrl": "https://console.octalve.cloud/order/domain?domain=mybusiness.com"
- *     }
- *   ]
- * }
- *
- * Later, only update DOMAIN_ADAPTER_ENDPOINT below.
+ * Later, when the backend is ready, update only these two constants.
  */
-const DOMAIN_ADAPTER_ENDPOINT = "";
+
+const DOMAIN_SEARCH_ENDPOINT = "";
+
+const DOMAIN_PRICES_ENDPOINT = "";
 
 const FALLBACK_PRICES: Record<string, string> = {
   ".com": "₦15,000/Year",
@@ -114,7 +125,10 @@ function fallbackSuggestions(
   const query = normalizeQuery(request.query || "yourbrand");
 
   return request.tlds.map((tld, index) => {
-    const base = query.endsWith(tld) ? query.replace(tld, "") : query;
+    const base = query.endsWith(tld)
+      ? query.slice(0, query.length - tld.length)
+      : query;
+
     const domain = `${base}${tld}`;
 
     return {
@@ -137,12 +151,12 @@ export async function getDomainSuggestions(
     return fallbackSuggestions({ ...request, query: "yourbrand" });
   }
 
-  if (!DOMAIN_ADAPTER_ENDPOINT) {
+  if (!DOMAIN_SEARCH_ENDPOINT) {
     return fallbackSuggestions({ ...request, query: cleanQuery });
   }
 
   try {
-    const response = await fetch(DOMAIN_ADAPTER_ENDPOINT, {
+    const response = await fetch(DOMAIN_SEARCH_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -157,7 +171,7 @@ export async function getDomainSuggestions(
       return fallbackSuggestions({ ...request, query: cleanQuery });
     }
 
-    const data = (await response.json()) as DomainAdapterResponse;
+    const data = (await response.json()) as DomainSearchAdapterResponse;
 
     if (!data.suggestions?.length) {
       return fallbackSuggestions({ ...request, query: cleanQuery });
@@ -187,5 +201,69 @@ export async function getDomainSuggestions(
     });
   } catch {
     return fallbackSuggestions({ ...request, query: cleanQuery });
+  }
+}
+
+function mergeLiveDomainPrices(
+  fallbackPackages: DomainPackage[],
+  liveItems: LiveDomainPriceItem[],
+): DomainPackage[] {
+  const liveByTld = new Map(liveItems.map((item) => [item.tld, item]));
+
+  return fallbackPackages.map((fallback) => {
+    const live = liveByTld.get(fallback.tld);
+
+    if (!live) {
+      return fallback;
+    }
+
+    return {
+      ...fallback,
+      ...live,
+      id: live.id ?? fallback.id,
+      title: live.title ?? fallback.title,
+      description: live.description ?? fallback.description,
+      category: live.category ?? fallback.category,
+      currentPrice:
+        live.currentPrice ?? live.registrationPrice ?? fallback.currentPrice,
+      oldPrice: live.oldPrice ?? fallback.oldPrice,
+      renewalPrice: live.renewalPrice ?? fallback.renewalPrice,
+      billingLabel: live.billingLabel ?? fallback.billingLabel,
+      badge: live.badge ?? fallback.badge,
+      ctaLabel: live.ctaLabel ?? fallback.ctaLabel,
+      ctaHref: live.ctaHref ?? fallback.ctaHref,
+      accent: live.accent ?? fallback.accent,
+    };
+  });
+}
+
+export async function getLiveDomainPackages(
+  fallbackPackages: DomainPackage[],
+): Promise<DomainPackage[]> {
+  if (!DOMAIN_PRICES_ENDPOINT) {
+    return fallbackPackages;
+  }
+
+  try {
+    const response = await fetch(DOMAIN_PRICES_ENDPOINT, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return fallbackPackages;
+    }
+
+    const data = (await response.json()) as LiveDomainPricesResponse;
+
+    if (!data.packages?.length) {
+      return fallbackPackages;
+    }
+
+    return mergeLiveDomainPrices(fallbackPackages, data.packages);
+  } catch {
+    return fallbackPackages;
   }
 }

@@ -1,26 +1,273 @@
-const packages = [
-  { name: ".com Starter", price: "From ₦—", features: ["Clean setup", "Guided support", "Upgrade-ready"] },
-  { name: "Nigeria Business", price: "From ₦—", features: ["Clean setup", "Guided support", "Upgrade-ready"] },
-  { name: "Brand Protection", price: "From ₦—", features: ["Clean setup", "Guided support", "Upgrade-ready"] }
-];
+"use client";
+
+import Link from "next/link";
+import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  buildDomainAvailabilityHref,
+  domainPriceCategories,
+  fallbackDomainPackages,
+  formatNaira,
+  type DomainAccent,
+  type DomainPackage,
+  type DomainPriceCategoryKey,
+} from "@/features/cloud/data/domain-price";
+import { getLiveDomainPackages } from "@/lib/domain-pricing-adapter";
+
+function getAccentClasses(accent: DomainAccent) {
+  switch (accent) {
+    case "green":
+      return {
+        chip: "bg-emerald-50 text-emerald-700",
+        dot: "bg-emerald-500",
+      };
+
+    case "orange":
+      return {
+        chip: "bg-orange-50 text-orange-700",
+        dot: "bg-orange-500",
+      };
+
+    case "purple":
+      return {
+        chip: "bg-violet-50 text-violet-700",
+        dot: "bg-violet-500",
+      };
+
+    case "blue":
+    default:
+      return {
+        chip: "bg-blue-50 text-cloud-blue",
+        dot: "bg-cloud-blue",
+      };
+  }
+}
+
+function DomainPriceCard({ item }: { item: DomainPackage }) {
+  const accent = getAccentClasses(item.accent);
+  const ctaHref = buildDomainAvailabilityHref(item);
+  const isExternal = ctaHref.startsWith("http");
+
+  return (
+    <article className="group flex h-full min-h-[360px] flex-col rounded-[1.85rem] border border-slate-200 bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-cloud-blue/25 hover:shadow-[0_28px_75px_rgba(15,23,42,0.10)] sm:p-7">
+      <div className="flex items-center justify-between gap-4">
+        <div
+          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${accent.chip}`}
+        >
+          {item.tld}
+        </div>
+
+        <div className={`h-2.5 w-2.5 rounded-full ${accent.dot}`} />
+      </div>
+
+      <h3 className="mt-6 text-[2.15rem] font-medium tracking-[-0.055em] text-slate-950">
+        {item.tld}
+      </h3>
+
+      <p className="mt-3 text-[1.25rem] font-medium leading-8 text-slate-950">
+        {item.title}
+      </p>
+
+      <p className="mt-4 flex-1 text-sm leading-7 text-slate-500 sm:text-base sm:leading-8">
+        {item.description}
+      </p>
+
+      <div className="mt-7">
+        <div className="flex items-center gap-3">
+          {item.oldPrice ? (
+            <p className="text-base text-slate-400 line-through">
+              {formatNaira(item.oldPrice)}
+            </p>
+          ) : null}
+
+          {item.badge ? (
+            <span className="rounded-full bg-cloud-blue/10 px-3 py-1 text-xs font-semibold text-cloud-blue">
+              {item.badge}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-1 flex items-end gap-1.5">
+          <span className="text-[2.45rem] font-medium tracking-[-0.06em] text-slate-950">
+            {formatNaira(item.currentPrice)}
+          </span>
+
+          <span className="pb-1 text-base text-slate-500">
+            {item.billingLabel}
+          </span>
+        </div>
+
+        {item.renewalPrice ? (
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            Renews at {formatNaira(item.renewalPrice)}/yr.
+          </p>
+        ) : null}
+      </div>
+
+      <Link
+        href={ctaHref}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noreferrer" : undefined}
+        className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-cloud-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(0,100,224,0.20)] transition hover:-translate-y-0.5 hover:bg-blue-600"
+      >
+        {item.ctaLabel ?? "Check availability"}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </Link>
+    </article>
+  );
+}
 
 export function Packages() {
+  const [activeCategory, setActiveCategory] =
+    useState<DomainPriceCategoryKey>("popular");
+
+  const [domainPackages, setDomainPackages] = useState<DomainPackage[]>(
+    fallbackDomainPackages,
+  );
+
+  const [isLoadingLivePrices, setIsLoadingLivePrices] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDomainPrices() {
+      try {
+        const prices = await getLiveDomainPackages(fallbackDomainPackages);
+
+        if (isMounted) {
+          setDomainPackages(prices);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingLivePrices(false);
+        }
+      }
+    }
+
+    loadDomainPrices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeCategoryData =
+    domainPriceCategories.find((item) => item.key === activeCategory) ??
+    domainPriceCategories[0];
+
+  const visiblePackages = useMemo(() => {
+    return domainPackages.filter((item) => item.category === activeCategory);
+  }, [activeCategory, domainPackages]);
+
   return (
-    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8">
+    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">Packages</p>
-          <h2 className="mt-4 text-3xl font-medium tracking-[-0.04em] text-slate-950 sm:text-4xl">Demo packages ready for real pricing.</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
+              Domain Packages
+            </p>
+
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+              {isLoadingLivePrices ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Checking prices
+                </>
+              ) : (
+                "Live-ready pricing"
+              )}
+            </span>
+          </div>
+
+          <h2 className="mt-4 text-3xl font-medium tracking-[-0.045em] text-slate-950 sm:text-4xl lg:text-5xl">
+            Choose domain options built for{" "}
+            <span className="text-cloud-blue">
+              brands, businesses, and growth
+            </span>
+          </h2>
+
+          <p className="mt-5 max-w-2xl text-base leading-8 text-slate-500 sm:text-lg">
+            Explore domain extensions for global brands, Nigerian businesses,
+            ecommerce stores, organisations, and modern digital platforms.
+          </p>
         </div>
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
-          {packages.map((plan) => (
-            <div key={plan.name} className="rounded-[1.75rem] border border-slate-200 bg-[#F8FAFC] p-6">
-              <h3 className="text-xl font-semibold text-slate-950">{plan.name}</h3>
-              <p className="mt-3 text-3xl font-medium tracking-[-0.04em] text-cloud-blue">{plan.price}</p>
-              <ul className="mt-6 space-y-3 text-sm text-slate-600">
-                {plan.features.map((feature) => <li key={feature}>✓ {feature}</li>)}
-              </ul>
-            </div>
+
+        <div className="mt-9">
+          <label className="mb-2 block text-sm font-medium text-slate-700 lg:hidden">
+            Choose domain category
+          </label>
+
+          <div className="relative lg:hidden">
+            <select
+              value={activeCategory}
+              onChange={(event) =>
+                setActiveCategory(event.target.value as DomainPriceCategoryKey)
+              }
+              className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none shadow-[0_12px_34px_rgba(15,23,42,0.04)] transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
+            >
+              {domainPriceCategories.map((category) => (
+                <option key={category.key} value={category.key}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+
+            <ChevronDown
+              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+              aria-hidden="true"
+            />
+          </div>
+
+          <div className="hidden w-fit rounded-2xl border border-slate-200 bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.04)] lg:flex">
+            {domainPriceCategories.map((category) => {
+              const isActive = activeCategory === category.key;
+
+              return (
+                <button
+                  key={category.key}
+                  type="button"
+                  onClick={() => setActiveCategory(category.key)}
+                  className={[
+                    "min-h-11 rounded-xl px-5 text-sm font-semibold transition",
+                    isActive
+                      ? "bg-cloud-blue text-white shadow-[0_10px_26px_rgba(0,100,224,0.18)]"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-cloud-blue",
+                  ].join(" ")}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-7 rounded-[1.75rem] border border-slate-200 bg-[#F8FAFC] px-5 py-5 shadow-[0_16px_45px_rgba(15,23,42,0.04)] sm:px-7">
+          <p className="text-sm font-semibold text-cloud-blue">
+            {activeCategoryData.title}
+          </p>
+
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500">
+            {activeCategoryData.description}
+          </p>
+        </div>
+
+        <div className="mt-10 lg:hidden">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {visiblePackages.map((item) => (
+              <div
+                key={item.id}
+                className="min-w-[295px] max-w-[295px] snap-start"
+              >
+                <DomainPriceCard item={item} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10 hidden gap-6 lg:grid lg:grid-cols-3 xl:grid-cols-4">
+          {visiblePackages.map((item) => (
+            <DomainPriceCard key={item.id} item={item} />
           ))}
         </div>
       </div>
