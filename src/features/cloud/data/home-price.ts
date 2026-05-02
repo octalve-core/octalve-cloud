@@ -1,0 +1,827 @@
+import { cloudLinks } from "@/features/cloud/data/cloud-links";
+
+export type BillingCycleKey = "1mo" | "12mo" | "24mo" | "48mo";
+
+export type PackageCategoryKey =
+  | "promos"
+  | "domains"
+  | "email"
+  | "wordpress"
+  | "hosting"
+  | "security"
+  | "vps";
+
+export type HomePriceCategory = {
+  key: PackageCategoryKey;
+  label: string;
+  description: string;
+};
+
+export type BillingCycle = {
+  key: BillingCycleKey;
+  label: string;
+  months: number;
+  discountPercent: number;
+  badge?: string;
+};
+
+export type FixedPricing = {
+  kind: "fixed";
+  price: number;
+  suffix: string;
+  regularPrice?: number;
+};
+
+export type CyclePricing = {
+  kind: "cycle";
+  baseMonthlyPrice: number;
+  regularMonthlyPrice?: number;
+  billingAdjustments?: Partial<Record<BillingCycleKey, number>>;
+};
+
+export type HomePricePlan = {
+  id: string;
+  name: string;
+  category: PackageCategoryKey;
+  badge?: string;
+  popular?: boolean;
+  eyebrow?: string;
+  description: string;
+  pricing: FixedPricing | CyclePricing;
+  orderPath?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  finePrint?: string;
+  features: string[];
+};
+
+export type PlanPricingDisplay = {
+  priceLabel: string;
+  suffix: string;
+  regularPriceLabel?: string;
+  totalLabel?: string;
+  renewsLabel?: string;
+  discountPercent?: number;
+};
+
+export const DEFAULT_BILLING_CYCLE: BillingCycleKey = "12mo";
+
+export const billingCycles: BillingCycle[] = [
+  {
+    key: "1mo",
+    label: "1 month",
+    months: 1,
+    discountPercent: 0,
+  },
+  {
+    key: "12mo",
+    label: "12 months",
+    months: 12,
+    discountPercent: 10,
+    badge: "Popular",
+  },
+  {
+    key: "24mo",
+    label: "24 months",
+    months: 24,
+    discountPercent: 15,
+  },
+  {
+    key: "48mo",
+    label: "48 months",
+    months: 48,
+    discountPercent: 20,
+    badge: "Best value",
+  },
+];
+
+/**
+ * Edit these categories to change the top tabs.
+ * The desktop view uses tabs.
+ * The mobile view automatically becomes a dropdown.
+ */
+export const homePriceCategories: HomePriceCategory[] = [
+  {
+    key: "promos",
+    label: "Promos",
+    description: "Starter offers and entry products for new online businesses.",
+  },
+  {
+    key: "domains",
+    label: "Domains",
+    description: "Register domain names and secure your online identity.",
+  },
+  {
+    key: "email",
+    label: "Email",
+    description: "Professional business email for teams and brands.",
+  },
+  {
+    key: "wordpress",
+    label: "WordPress",
+    description: "WordPress-ready hosting for websites, blogs, and stores.",
+  },
+  {
+    key: "hosting",
+    label: "Hosting",
+    description: "Shared hosting packages for websites and business pages.",
+  },
+  {
+    key: "security",
+    label: "Security",
+    description: "SSL, backup, malware support, and website protection.",
+  },
+  {
+    key: "vps",
+    label: "VPS",
+    description: "Cloud server packages for more control and performance.",
+  },
+];
+
+/**
+ * Pricing note:
+ * - Cycle plans use baseMonthlyPrice.
+ * - Billing discounts are controlled from billingCycles above.
+ * - You can override the discount per plan using billingAdjustments.
+ * - Fixed plans are not affected by the billing duration selector.
+ */
+export const homePricePlans: HomePricePlan[] = [
+  {
+    id: "business-starter-kit",
+    name: "Business Starter Kit",
+    category: "promos",
+    badge: "Free",
+    eyebrow: "Launch bundle",
+    description:
+      "A starter path for new businesses that need domain guidance, hosting direction, email setup, and online launch support.",
+    pricing: {
+      kind: "fixed",
+      price: 0,
+      suffix: "starter review",
+    },
+    orderPath: "/order/promos/business-starter-kit",
+    ctaLabel: "Start free",
+    features: [
+      "Domain name guidance",
+      "Shared hosting recommendation",
+      "Business email setup direction",
+      "SSL setup guidance",
+      "Basic website launch checklist",
+      "Support before going live",
+    ],
+  },
+  {
+    id: "free-migration-review",
+    name: "Migration Review",
+    category: "promos",
+    badge: "Free",
+    eyebrow: "Website move",
+    description:
+      "Let us review your current hosting setup and guide your migration path before you move to Octalve Cloud.",
+    pricing: {
+      kind: "fixed",
+      price: 0,
+      suffix: "review",
+    },
+    orderPath: "/order/promos/migration-review",
+    ctaLabel: "Request review",
+    features: [
+      "Website hosting review",
+      "Domain and DNS check",
+      "Email migration direction",
+      "SSL and backup review",
+      "Recommended migration plan",
+      "Guided next step",
+    ],
+  },
+  {
+    id: "first-month-hosting-trial",
+    name: "Shared Hosting Trial",
+    category: "promos",
+    badge: "Trial",
+    eyebrow: "Try hosting",
+    description:
+      "A simple way to test shared hosting before moving fully into a longer billing duration.",
+    pricing: {
+      kind: "fixed",
+      price: 0,
+      suffix: "first month",
+      regularPrice: 4500,
+    },
+    orderPath: "/order/promos/shared-hosting-trial",
+    ctaLabel: "Start trial",
+    features: [
+      "1 website trial setup",
+      "Free SSL support",
+      "Basic email setup",
+      "DNS guidance",
+      "Upgrade-ready path",
+      "Support included",
+    ],
+  },
+
+  {
+    id: "domain-com",
+    name: ".com Domain",
+    category: "domains",
+    eyebrow: "Global domain",
+    description:
+      "Best for businesses, startups, personal brands, product websites, and international visibility.",
+    pricing: {
+      kind: "fixed",
+      price: 15000,
+      suffix: "/year",
+    },
+    orderPath: "/order/domain/com",
+    ctaLabel: "Register .com",
+    features: [
+      "Global brand-friendly domain",
+      "DNS management support",
+      "Works with hosting and email",
+      "Good for company websites",
+      "Easy upgrade into hosting",
+      "Guided setup available",
+    ],
+  },
+  {
+    id: "domain-com-ng",
+    name: ".com.ng Domain",
+    category: "domains",
+    badge: "Nigeria",
+    eyebrow: "Local business",
+    description:
+      "A strong option for Nigerian SMEs, local companies, service providers, and trusted local presence.",
+    pricing: {
+      kind: "fixed",
+      price: 0,
+      suffix: "/1 year",
+    },
+    orderPath: "/order/domain/com-ng",
+    ctaLabel: "Register .com.ng",
+    features: [
+      "Nigerian business identity",
+      "Great for local trust",
+      "DNS setup support",
+      "Works with business email",
+      "Connect to Octalve hosting",
+      "Good for SMEs and founders",
+    ],
+  },
+  {
+    id: "domain-ng",
+    name: ".ng Domain",
+    category: "domains",
+    eyebrow: "Premium local",
+    description:
+      "Shorter Nigerian domain extension for businesses that want a clean, local, and memorable name.",
+    pricing: {
+      kind: "fixed",
+      price: 16500,
+      suffix: "/year",
+    },
+    orderPath: "/order/domain/ng",
+    ctaLabel: "Register .ng",
+    features: [
+      "Short Nigerian extension",
+      "Good for brand recall",
+      "Local business positioning",
+      "DNS support",
+      "Hosting-ready setup",
+      "Email-ready setup",
+    ],
+  },
+
+  {
+    id: "private-email",
+    name: "Private Email",
+    category: "email",
+    eyebrow: "Professional email",
+    description:
+      "Create a professional inbox with your domain for better brand trust and communication.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 2500,
+      regularMonthlyPrice: 3500,
+    },
+    orderPath: "/order/email/private-email",
+    ctaLabel: "Choose email",
+    features: [
+      "Professional domain email",
+      "Mailbox setup support",
+      "Works with your domain",
+      "Better business trust",
+      "Spam protection guidance",
+      "Webmail access",
+      "Upgrade-ready for teams",
+    ],
+  },
+  {
+    id: "business-email",
+    name: "Business Email",
+    category: "email",
+    popular: true,
+    eyebrow: "For growing teams",
+    description:
+      "A better email setup for companies that need multiple professional addresses and stronger structure.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 6000,
+      regularMonthlyPrice: 8500,
+    },
+    orderPath: "/order/email/business-email",
+    ctaLabel: "Choose email",
+    features: [
+      "Multiple business mailboxes",
+      "Domain-based email",
+      "Support for teams",
+      "Email forwarding guidance",
+      "Autoresponder guidance",
+      "Spam protection",
+      "Professional communication setup",
+      "Support included",
+    ],
+  },
+  {
+    id: "team-email-suite",
+    name: "Team Email Suite",
+    category: "email",
+    eyebrow: "For departments",
+    description:
+      "A structured email package for businesses with departments, support addresses, and team communication needs.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 12000,
+      regularMonthlyPrice: 16000,
+    },
+    orderPath: "/order/email/team-email-suite",
+    ctaLabel: "Choose suite",
+    features: [
+      "Team mailbox planning",
+      "Support and info emails",
+      "Forwarders and routing support",
+      "Email setup guidance",
+      "Business communication structure",
+      "DNS email records guidance",
+      "Upgrade-ready for more users",
+    ],
+  },
+
+  {
+    id: "wordpress-launch",
+    name: "WordPress Launch",
+    category: "wordpress",
+    eyebrow: "Starter WordPress",
+    description:
+      "A WordPress-ready plan for simple business websites, blogs, and landing pages.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 6500,
+      regularMonthlyPrice: 9000,
+    },
+    orderPath: "/order/wordpress/launch",
+    ctaLabel: "Choose WordPress",
+    features: [
+      "WordPress-ready hosting",
+      "Free SSL support",
+      "1 website",
+      "Business email support",
+      "Basic setup guidance",
+      "Good for blogs and company pages",
+      "Upgrade-ready hosting",
+    ],
+  },
+  {
+    id: "wordpress-business",
+    name: "WordPress Business",
+    category: "wordpress",
+    popular: true,
+    eyebrow: "Business website",
+    description:
+      "For growing business websites that need stronger hosting resources and guided support.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 12000,
+      regularMonthlyPrice: 16000,
+    },
+    orderPath: "/order/wordpress/business",
+    ctaLabel: "Choose WordPress",
+    features: [
+      "WordPress-ready hosting",
+      "Up to 3 websites",
+      "Free SSL support",
+      "Business email support",
+      "Migration support",
+      "DNS guidance",
+      "Better performance path",
+      "Support included",
+    ],
+  },
+  {
+    id: "managed-wordpress",
+    name: "Managed WordPress",
+    category: "wordpress",
+    eyebrow: "Managed support",
+    description:
+      "For businesses that want WordPress hosting with more setup guidance, support, and care.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 25000,
+      regularMonthlyPrice: 32000,
+    },
+    orderPath: "/order/wordpress/managed",
+    ctaLabel: "Choose managed",
+    features: [
+      "Managed WordPress direction",
+      "Migration assistance",
+      "SSL support",
+      "Backup guidance",
+      "Performance guidance",
+      "Business email support",
+      "Support included",
+      "Suitable for serious business sites",
+    ],
+  },
+
+  {
+    id: "launch-shared-hosting",
+    name: "Launch",
+    category: "hosting",
+    eyebrow: "Shared Hosting",
+    description:
+      "For simple portfolio, landing page, and small business websites that need a clean online start.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 4500,
+      regularMonthlyPrice: 6500,
+    },
+    orderPath: "/order/shared-hosting/launch",
+    ctaLabel: "Choose plan",
+    features: [
+      "1 Website",
+      "1 GB SSD Storage",
+      "10 GB Bandwidth",
+      "2 Email Accounts",
+      "2 Subdomains",
+      "1 MySQL Database",
+      "1 FTP Account",
+      "Free SSL Certificate",
+      "PHP Access",
+      "CGI Access",
+      "DNS Control",
+      "Cron Jobs",
+      "Spam Protection",
+      "Login Keys",
+      "System Info Access",
+      "Suspend at Limit Protection",
+    ],
+  },
+  {
+    id: "starter-shared-hosting",
+    name: "Starter",
+    category: "hosting",
+    popular: true,
+    eyebrow: "Shared Hosting",
+    description:
+      "Best for business websites, growing brands, and multi-page projects that need more room.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 9500,
+      regularMonthlyPrice: 12000,
+    },
+    orderPath: "/order/shared-hosting/starter",
+    ctaLabel: "Choose plan",
+    features: [
+      "Up to 3 Websites",
+      "10 GB SSD Storage",
+      "Unlimited Bandwidth",
+      "Unlimited Email Accounts",
+      "Unlimited Subdomains",
+      "10 MySQL Databases",
+      "3 FTP Accounts",
+      "3 Domain Pointers",
+      "Free SSL Certificate",
+      "PHP Access",
+      "CGI Access",
+      "DNS Control",
+      "Cron Jobs",
+      "Spam Protection",
+      "Unlimited Autoresponders",
+      "Unlimited Email Forwarders",
+      "Priority Setup Guidance",
+    ],
+  },
+  {
+    id: "pro-shared-hosting",
+    name: "Pro",
+    category: "hosting",
+    eyebrow: "Shared Hosting",
+    description:
+      "For stronger business websites that need more storage, more domains, and more database room.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 18000,
+      regularMonthlyPrice: 25000,
+    },
+    orderPath: "/order/shared-hosting/pro",
+    ctaLabel: "Choose plan",
+    features: [
+      "Up to 10 Websites",
+      "50 GB SSD Storage",
+      "Unlimited Bandwidth",
+      "Unlimited Email Accounts",
+      "25 MySQL Databases",
+      "10 FTP Accounts",
+      "10 Domain Pointers",
+      "Free SSL Certificate",
+      "Cron Jobs",
+      "DNS Control",
+      "Spam Protection",
+      "Priority setup guidance",
+      "Business-ready hosting",
+    ],
+  },
+  {
+    id: "unlimited-shared-hosting",
+    name: "Unlimited",
+    category: "hosting",
+    eyebrow: "Shared Hosting",
+    description:
+      "For businesses that need fewer limits, stronger flexibility, and more hosting capacity.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 35000,
+      regularMonthlyPrice: 45000,
+    },
+    orderPath: "/order/shared-hosting/unlimited",
+    ctaLabel: "Choose plan",
+    features: [
+      "Unlimited Websites",
+      "Unlimited Disk Space",
+      "Unlimited Bandwidth",
+      "Unlimited Email Accounts",
+      "Unlimited MySQL Databases",
+      "Unlimited FTP Accounts",
+      "Free SSL Certificate",
+      "SSH Access",
+      "DNS Control",
+      "Cron Jobs",
+      "Spam Protection",
+      "Best for larger hosting needs",
+    ],
+  },
+
+  {
+    id: "ssl-security",
+    name: "SSL Security",
+    category: "security",
+    eyebrow: "Website trust",
+    description:
+      "Secure your website with SSL support so visitors can browse safely and trust your domain.",
+    pricing: {
+      kind: "fixed",
+      price: 0,
+      suffix: "included",
+    },
+    orderPath: "/order/security/ssl",
+    ctaLabel: "Secure site",
+    features: [
+      "Free SSL support",
+      "HTTPS setup guidance",
+      "Better browser trust",
+      "Domain security support",
+      "Works with hosting plans",
+      "Guided activation",
+    ],
+  },
+  {
+    id: "backup-security",
+    name: "Backup & Recovery",
+    category: "security",
+    eyebrow: "Website safety",
+    description:
+      "Add safer recovery planning for websites that need backup guidance and better continuity.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 7500,
+      regularMonthlyPrice: 10000,
+    },
+    orderPath: "/order/security/backup-recovery",
+    ctaLabel: "Add backup",
+    features: [
+      "Backup guidance",
+      "Recovery planning",
+      "Hosting support",
+      "Better continuity",
+      "Suitable for business websites",
+      "Support included",
+    ],
+  },
+  {
+    id: "website-security-care",
+    name: "Website Security Care",
+    category: "security",
+    eyebrow: "Protection support",
+    description:
+      "Security support for websites that need stronger care against malware, hacks, and downtime risks.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 15000,
+      regularMonthlyPrice: 20000,
+    },
+    orderPath: "/order/security/website-care",
+    ctaLabel: "Choose care",
+    features: [
+      "Website security review",
+      "Malware check guidance",
+      "SSL support",
+      "Backup guidance",
+      "Migration support",
+      "Ongoing support path",
+      "Business website protection",
+    ],
+  },
+
+  {
+    id: "vps-1",
+    name: "VPS 1",
+    category: "vps",
+    eyebrow: "Cloud Server",
+    popular: true,
+    description:
+      "For projects that need more control, stronger performance, and better scalability than shared hosting.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 35000,
+      regularMonthlyPrice: 45000,
+      billingAdjustments: {
+        "48mo": 22,
+      },
+    },
+    orderPath: "/order/vps/vps-1",
+    ctaLabel: "Choose VPS",
+    features: [
+      "Dedicated VPS Environment",
+      "Better Performance Isolation",
+      "Custom Server Setup",
+      "Host Multiple Projects",
+      "Free SSL Support",
+      "Server-Level Flexibility",
+      "Migration Assistance",
+      "Business-Ready Infrastructure",
+      "Scalable Upgrade Path",
+      "Technical Setup Guidance",
+      "Suitable for Apps & Portals",
+      "Improved Resource Control",
+      "Managed Support Option",
+    ],
+  },
+  {
+    id: "vps-2",
+    name: "VPS 2",
+    category: "vps",
+    eyebrow: "Cloud Server",
+    description:
+      "A stronger VPS option for larger websites, portals, dashboards, and growing business applications.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 65000,
+      regularMonthlyPrice: 82000,
+      billingAdjustments: {
+        "48mo": 24,
+      },
+    },
+    orderPath: "/order/vps/vps-2",
+    ctaLabel: "Choose VPS",
+    features: [
+      "More VPS resources",
+      "Better app performance",
+      "Server-level flexibility",
+      "Migration support",
+      "SSL support",
+      "Suitable for portals",
+      "Good for dashboards",
+      "Scalable infrastructure path",
+      "Technical setup guidance",
+    ],
+  },
+  {
+    id: "managed-vps",
+    name: "Managed VPS",
+    category: "vps",
+    eyebrow: "Managed Server",
+    description:
+      "For businesses that want VPS power with more guidance, support, and management assistance.",
+    pricing: {
+      kind: "cycle",
+      baseMonthlyPrice: 110000,
+      regularMonthlyPrice: 140000,
+      billingAdjustments: {
+        "12mo": 8,
+        "24mo": 12,
+        "48mo": 18,
+      },
+    },
+    orderPath: "/order/vps/managed-vps",
+    ctaLabel: "Choose managed",
+    features: [
+      "Managed VPS direction",
+      "Server setup guidance",
+      "Migration assistance",
+      "SSL and DNS support",
+      "Suitable for serious business apps",
+      "Better support path",
+      "Infrastructure planning",
+      "Scalable upgrade direction",
+    ],
+  },
+];
+
+export function formatNaira(value: number) {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function roundPrice(value: number) {
+  return Math.round(value / 100) * 100;
+}
+
+export function getBillingCycle(key: BillingCycleKey) {
+  return billingCycles.find((cycle) => cycle.key === key) ?? billingCycles[0];
+}
+
+export function calculatePlanPricing(
+  plan: HomePricePlan,
+  billingCycleKey: BillingCycleKey,
+): PlanPricingDisplay {
+  if (plan.pricing.kind === "fixed") {
+    const discountPercent =
+      plan.pricing.regularPrice &&
+      plan.pricing.regularPrice > plan.pricing.price
+        ? Math.round(
+            ((plan.pricing.regularPrice - plan.pricing.price) /
+              plan.pricing.regularPrice) *
+              100,
+          )
+        : undefined;
+
+    return {
+      priceLabel:
+        plan.pricing.price === 0 ? "₦0" : formatNaira(plan.pricing.price),
+      suffix: plan.pricing.suffix,
+      regularPriceLabel: plan.pricing.regularPrice
+        ? formatNaira(plan.pricing.regularPrice)
+        : undefined,
+      discountPercent,
+    };
+  }
+
+  const cycle = getBillingCycle(billingCycleKey);
+  const discountPercent =
+    plan.pricing.billingAdjustments?.[cycle.key] ?? cycle.discountPercent;
+
+  const regularMonthly =
+    plan.pricing.regularMonthlyPrice ?? plan.pricing.baseMonthlyPrice;
+
+  const regularTotal = regularMonthly * cycle.months;
+  const total = roundPrice(
+    plan.pricing.baseMonthlyPrice *
+      cycle.months *
+      ((100 - discountPercent) / 100),
+  );
+
+  const monthlyEquivalent = Math.max(0, roundPrice(total / cycle.months));
+  const regularMonthlyEquivalent = roundPrice(regularTotal / cycle.months);
+
+  return {
+    priceLabel: formatNaira(monthlyEquivalent),
+    suffix: "/mo",
+    regularPriceLabel:
+      regularMonthlyEquivalent > monthlyEquivalent
+        ? formatNaira(regularMonthlyEquivalent)
+        : undefined,
+    totalLabel:
+      cycle.months === 1
+        ? `Pay ${formatNaira(total)} today.`
+        : `Get ${cycle.label} for ${formatNaira(total)}.`,
+    renewsLabel: `Renews at ${formatNaira(regularMonthly)}/mo.`,
+    discountPercent: discountPercent > 0 ? discountPercent : undefined,
+  };
+}
+
+export function buildPlanCtaHref(
+  plan: HomePricePlan,
+  billingCycleKey: BillingCycleKey,
+) {
+  const base = plan.ctaHref ?? `${cloudLinks.console}${plan.orderPath ?? ""}`;
+
+  if (plan.pricing.kind !== "cycle") {
+    return base;
+  }
+
+  const separator = base.includes("?") ? "&" : "?";
+
+  return `${base}${separator}cycle=${billingCycleKey}`;
+}

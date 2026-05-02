@@ -1,474 +1,347 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { cloudLinks } from "@/features/cloud/data/cloud-links";
-
-type PackageCategory = "Shared Hosting" | "VPS";
-
-type BillingCycle = "1mo" | "3mo" | "6mo" | "1yr" | "2yr" | "5yr" | "10yr";
-
-type BillingOption = {
-  key: BillingCycle;
-  label: string;
-  price: number;
-  billingLabel: string;
-  ctaHref: string;
-};
-
-type HostingPlan = {
-  name: string;
-  slug: string;
-  category: PackageCategory;
-  description: string;
-  popular?: boolean;
-  ctaLabel: string;
-  billingOptions: BillingOption[];
-  features: string[];
-};
+import {
+  BadgeCheck,
+  Check,
+  ChevronDown,
+  Headphones,
+  RefreshCcw,
+  ShieldCheck,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  billingCycles,
+  buildPlanCtaHref,
+  calculatePlanPricing,
+  DEFAULT_BILLING_CYCLE,
+  homePriceCategories,
+  homePricePlans,
+  type BillingCycleKey,
+  type PackageCategoryKey,
+} from "@/features/cloud/data/home-price";
 
 const INITIAL_VISIBLE_FEATURES = 7;
 
-/**
- * Internal Octalve Cloud order route.
- *
- * This is for our own infrastructure, not Paymenter.
- * Future backend route idea:
- * console.octalve.cloud/order/:category/:package?cycle=:cycle
- */
-function buildOrderLink(
-  category: "shared-hosting" | "vps",
-  packageSlug: string,
-  cycle: BillingCycle,
-) {
-  return `${cloudLinks.console}/order/${category}/${packageSlug}?cycle=${cycle}`;
-}
-
-/**
- * Edit package names, prices, billing duration, and order links here.
- * Each package has independent pricing and independent CTA links per duration.
- */
-const packages: HostingPlan[] = [
+const benefitItems = [
   {
-    name: "Launch",
-    slug: "launch",
-    category: "Shared Hosting",
-    description:
-      "For simple portfolio, landing page, and small business websites.",
-    ctaLabel: "Get Started",
-    billingOptions: [
-      {
-        key: "1mo",
-        label: "1 mo",
-        price: 4500,
-        billingLabel: "/1 month",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "1mo"),
-      },
-      {
-        key: "3mo",
-        label: "3 mo",
-        price: 12500,
-        billingLabel: "/3 months",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "3mo"),
-      },
-      {
-        key: "6mo",
-        label: "6 mo",
-        price: 24000,
-        billingLabel: "/6 months",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "6mo"),
-      },
-      {
-        key: "1yr",
-        label: "1 yr",
-        price: 45000,
-        billingLabel: "/year",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "1yr"),
-      },
-      {
-        key: "2yr",
-        label: "2 yr",
-        price: 85000,
-        billingLabel: "/2 years",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "2yr"),
-      },
-      {
-        key: "5yr",
-        label: "5 yr",
-        price: 200000,
-        billingLabel: "/5 years",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "5yr"),
-      },
-      {
-        key: "10yr",
-        label: "10 yr",
-        price: 380000,
-        billingLabel: "/10 years",
-        ctaHref: buildOrderLink("shared-hosting", "launch", "10yr"),
-      },
-    ],
-    features: [
-      "1 Website",
-      "1 GB SSD Storage",
-      "10 GB Bandwidth",
-      "2 Email Accounts",
-      "2 Subdomains",
-      "1 MySQL Database",
-      "1 FTP Account",
-      "Free SSL Certificate",
-      "PHP Access",
-      "CGI Access",
-      "DNS Control",
-      "Cron Jobs",
-      "Spam Protection",
-      "Login Keys",
-      "System Info Access",
-      "Suspend at Limit Protection",
-    ],
+    label: "30-day money-back guarantee",
+    icon: ShieldCheck,
   },
   {
-    name: "Starter",
-    slug: "starter",
-    category: "Shared Hosting",
-    description:
-      "Best for business websites, growing brands, and multi-page projects.",
-    popular: true,
-    ctaLabel: "Get Started",
-    billingOptions: [
-      {
-        key: "1mo",
-        label: "1 mo",
-        price: 9500,
-        billingLabel: "/1 month",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "1mo"),
-      },
-      {
-        key: "3mo",
-        label: "3 mo",
-        price: 27000,
-        billingLabel: "/3 months",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "3mo"),
-      },
-      {
-        key: "6mo",
-        label: "6 mo",
-        price: 52000,
-        billingLabel: "/6 months",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "6mo"),
-      },
-      {
-        key: "1yr",
-        label: "1 yr",
-        price: 95000,
-        billingLabel: "/year",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "1yr"),
-      },
-      {
-        key: "2yr",
-        label: "2 yr",
-        price: 180000,
-        billingLabel: "/2 years",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "2yr"),
-      },
-      {
-        key: "5yr",
-        label: "5 yr",
-        price: 430000,
-        billingLabel: "/5 years",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "5yr"),
-      },
-      {
-        key: "10yr",
-        label: "10 yr",
-        price: 800000,
-        billingLabel: "/10 years",
-        ctaHref: buildOrderLink("shared-hosting", "starter", "10yr"),
-      },
-    ],
-    features: [
-      "Up to 3 Websites",
-      "10 GB SSD Storage",
-      "Unlimited Bandwidth",
-      "Unlimited Email Accounts",
-      "Unlimited Subdomains",
-      "10 MySQL Databases",
-      "3 FTP Accounts",
-      "3 Domain Pointers",
-      "Free SSL Certificate",
-      "PHP Access",
-      "CGI Access",
-      "DNS Control",
-      "Cron Jobs",
-      "Spam Protection",
-      "Unlimited Autoresponders",
-      "Unlimited Email Forwarders",
-      "Priority Setup Guidance",
-    ],
+    label: "24/7 support",
+    icon: Headphones,
   },
   {
-    name: "VPS 1",
-    slug: "vps-1",
-    category: "VPS",
-    description:
-      "For projects that need more control, stronger performance, and scalability.",
-    ctaLabel: "Get Started",
-    billingOptions: [
-      {
-        key: "1mo",
-        label: "1 mo",
-        price: 35000,
-        billingLabel: "/1 month",
-        ctaHref: buildOrderLink("vps", "vps-1", "1mo"),
-      },
-      {
-        key: "3mo",
-        label: "3 mo",
-        price: 100000,
-        billingLabel: "/3 months",
-        ctaHref: buildOrderLink("vps", "vps-1", "3mo"),
-      },
-      {
-        key: "6mo",
-        label: "6 mo",
-        price: 195000,
-        billingLabel: "/6 months",
-        ctaHref: buildOrderLink("vps", "vps-1", "6mo"),
-      },
-      {
-        key: "1yr",
-        label: "1 yr",
-        price: 380000,
-        billingLabel: "/year",
-        ctaHref: buildOrderLink("vps", "vps-1", "1yr"),
-      },
-      {
-        key: "2yr",
-        label: "2 yr",
-        price: 740000,
-        billingLabel: "/2 years",
-        ctaHref: buildOrderLink("vps", "vps-1", "2yr"),
-      },
-      {
-        key: "5yr",
-        label: "5 yr",
-        price: 1750000,
-        billingLabel: "/5 years",
-        ctaHref: buildOrderLink("vps", "vps-1", "5yr"),
-      },
-      {
-        key: "10yr",
-        label: "10 yr",
-        price: 3300000,
-        billingLabel: "/10 years",
-        ctaHref: buildOrderLink("vps", "vps-1", "10yr"),
-      },
-    ],
-    features: [
-      "Dedicated VPS Environment",
-      "Better Performance Isolation",
-      "Custom Server Setup",
-      "Host Multiple Projects",
-      "Free SSL Support",
-      "Server-Level Flexibility",
-      "Migration Assistance",
-      "Business-Ready Infrastructure",
-      "Scalable Upgrade Path",
-      "Technical Setup Guidance",
-      "Suitable for Apps & Portals",
-      "Improved Resource Control",
-      "Managed Support Option",
-    ],
+    label: "Upgrade anytime",
+    icon: RefreshCcw,
   },
 ];
 
-function formatNaira(value: number) {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 export function Packages() {
+  const [activeCategory, setActiveCategory] =
+    useState<PackageCategoryKey>("hosting");
+
+  const [billingCycle, setBillingCycle] = useState<BillingCycleKey>(
+    DEFAULT_BILLING_CYCLE,
+  );
+
   const [expandedPlans, setExpandedPlans] = useState<Record<string, boolean>>(
     {},
   );
 
-  const [selectedBilling, setSelectedBilling] = useState<
-    Record<string, BillingCycle>
-  >({});
+  const activeCategoryData =
+    homePriceCategories.find((item) => item.key === activeCategory) ??
+    homePriceCategories[0];
 
-  function togglePlan(planSlug: string) {
+  const visiblePlans = useMemo(() => {
+    return homePricePlans.filter((plan) => plan.category === activeCategory);
+  }, [activeCategory]);
+
+  function togglePlan(planId: string) {
     setExpandedPlans((current) => ({
       ...current,
-      [planSlug]: !current[planSlug],
-    }));
-  }
-
-  function updateBilling(planSlug: string, billingKey: BillingCycle) {
-    setSelectedBilling((current) => ({
-      ...current,
-      [planSlug]: billingKey,
+      [planId]: !current[planId],
     }));
   }
 
   return (
-    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section className="bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
-            Hosting Packages
+            Packages
           </p>
 
-          <h2 className="mt-4 text-3xl font-medium tracking-[-0.045em] text-slate-950 sm:text-4xl lg:text-5xl">
-            Simple, <span className="text-cloud-blue">Transparent Pricing</span>
+          <h2 className="mt-4 text-3xl font-medium tracking-[-0.05em] text-slate-950 sm:text-4xl lg:text-5xl">
+            Buy a domain and everything else you need.
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
-            Pick the plan that fits your website, business, or application.
-            Choose a billing duration and see the price update instantly.
+            Choose domains, hosting, email, WordPress, security, and VPS
+            services from one clean Octalve Cloud experience.
           </p>
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-5 text-sm font-medium text-slate-600">
+            {benefitItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.label}
+                  className="inline-flex items-center gap-2"
+                >
+                  <Icon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          {packages.map((plan) => {
-            const selectedBillingKey =
-              selectedBilling[plan.slug] ?? plan.billingOptions[0].key;
+        <div className="mx-auto mt-10 max-w-5xl">
+          <div className="grid gap-4 lg:grid-cols-[1fr_0.55fr] lg:items-end">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700 lg:hidden">
+                Choose package type
+              </label>
 
-            const selectedOption =
-              plan.billingOptions.find(
-                (option) => option.key === selectedBillingKey,
-              ) ?? plan.billingOptions[0];
+              <select
+                value={activeCategory}
+                onChange={(event) =>
+                  setActiveCategory(event.target.value as PackageCategoryKey)
+                }
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10 lg:hidden"
+              >
+                {homePriceCategories.map((category) => (
+                  <option key={category.key} value={category.key}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
 
-            const isExpanded = Boolean(expandedPlans[plan.slug]);
+              <div className="hidden rounded-2xl border border-slate-200 bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.04)] lg:flex">
+                {homePriceCategories.map((category) => {
+                  const isActive = activeCategory === category.key;
+
+                  return (
+                    <button
+                      key={category.key}
+                      type="button"
+                      onClick={() => setActiveCategory(category.key)}
+                      className={[
+                        "min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold transition",
+                        isActive
+                          ? "bg-cloud-blue text-white shadow-[0_10px_26px_rgba(0,100,224,0.18)]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-cloud-blue",
+                      ].join(" ")}
+                    >
+                      {category.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Length of subscription
+              </label>
+
+              <div className="relative">
+                <select
+                  value={billingCycle}
+                  onChange={(event) =>
+                    setBillingCycle(event.target.value as BillingCycleKey)
+                  }
+                  className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none shadow-[0_12px_34px_rgba(15,23,42,0.04)] transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
+                >
+                  {billingCycles.map((cycle) => (
+                    <option key={cycle.key} value={cycle.key}>
+                      {cycle.label}
+                      {cycle.badge ? ` — ${cycle.badge}` : ""}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-7 rounded-[1.75rem] border border-slate-200 bg-white px-5 py-5 text-center shadow-[0_16px_45px_rgba(15,23,42,0.045)] sm:px-7">
+            <p className="text-sm font-semibold text-cloud-blue">
+              {activeCategoryData.label}
+            </p>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-500">
+              {activeCategoryData.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {visiblePlans.map((plan) => {
+            const displayPrice = calculatePlanPricing(plan, billingCycle);
+            const ctaHref = buildPlanCtaHref(plan, billingCycle);
+            const isExpanded = Boolean(expandedPlans[plan.id]);
 
             const visibleFeatures = isExpanded
               ? plan.features
               : plan.features.slice(0, INITIAL_VISIBLE_FEATURES);
 
+            const isExternal = ctaHref.startsWith("http");
+
             return (
               <article
-                key={plan.slug}
+                key={plan.id}
                 className={[
-                  "relative flex h-full flex-col rounded-[2rem] border bg-white p-7 transition duration-300",
+                  "relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-white p-7 transition duration-300",
                   plan.popular
-                    ? "border-cloud-blue/30 shadow-[0_24px_70px_rgba(0,100,224,0.13)]"
-                    : "border-slate-200 shadow-sm hover:border-cloud-blue/20 hover:shadow-[0_20px_50px_rgba(15,23,42,0.06)]",
+                    ? "border-cloud-blue/40 shadow-[0_28px_80px_rgba(0,100,224,0.16)]"
+                    : "border-slate-200 shadow-[0_18px_50px_rgba(15,23,42,0.045)] hover:-translate-y-1 hover:border-cloud-blue/25 hover:shadow-[0_28px_75px_rgba(15,23,42,0.08)]",
                 ].join(" ")}
               >
                 {plan.popular ? (
-                  <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-                    <span className="inline-flex rounded-full bg-cloud-blue px-4 py-1.5 text-xs font-semibold text-white shadow-sm">
-                      Most Popular
-                    </span>
+                  <div className="absolute inset-x-0 top-0 bg-cloud-blue px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-white">
+                    Most Popular
                   </div>
                 ) : null}
 
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    {plan.category}
-                  </p>
+                <div className={plan.popular ? "pt-9" : ""}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      {plan.eyebrow ? (
+                        <p className="text-sm font-medium text-slate-500">
+                          {plan.eyebrow}
+                        </p>
+                      ) : null}
 
-                  <h3 className="mt-3 text-2xl font-medium tracking-[-0.03em] text-slate-950">
-                    {plan.name}
-                  </h3>
+                      <h3 className="mt-2 text-2xl font-medium tracking-[-0.04em] text-slate-950">
+                        {plan.name}
+                      </h3>
+                    </div>
 
-                  <div className="mt-5 flex items-end gap-1">
-                    <span className="text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl">
-                      {formatNaira(selectedOption.price)}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      {plan.badge ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {plan.badge}
+                        </span>
+                      ) : null}
 
-                    <span className="pb-1 text-base font-normal text-slate-500">
-                      {selectedOption.billingLabel}
-                    </span>
+                      {displayPrice.discountPercent ? (
+                        <span className="rounded-full bg-cloud-blue/10 px-3 py-1 text-xs font-semibold text-cloud-blue">
+                          {displayPrice.discountPercent}% off
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
-                  <p className="mt-3 text-sm font-semibold text-cloud-blue">
-                    Reliable setup for your business
-                  </p>
-
-                  <p className="mt-3 text-base leading-7 text-slate-500">
+                  <p className="mt-4 min-h-[56px] text-base leading-7 text-slate-500">
                     {plan.description}
                   </p>
-                </div>
 
-                <div className="mt-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    Billing duration
-                  </p>
+                  <div className="mt-6">
+                    {displayPrice.regularPriceLabel ? (
+                      <p className="text-sm font-medium text-slate-400 line-through">
+                        {displayPrice.regularPriceLabel}
+                      </p>
+                    ) : null}
 
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {plan.billingOptions.map((option) => {
-                      const isSelected = option.key === selectedOption.key;
-
-                      return (
-                        <button
-                          key={option.key}
-                          type="button"
-                          onClick={() => updateBilling(plan.slug, option.key)}
-                          className={[
-                            "rounded-full border px-3 py-2 text-xs font-semibold transition",
-                            isSelected
-                              ? "border-cloud-blue bg-cloud-blue text-white shadow-sm"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-cloud-blue/40 hover:text-cloud-blue",
-                          ].join(" ")}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <ul className="mt-8 flex-1 space-y-4">
-                  {visibleFeatures.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-3 text-sm leading-6 text-slate-700 sm:text-base"
-                    >
-                      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    <div className="mt-1 flex items-end gap-1">
+                      <span className="text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl">
+                        {displayPrice.priceLabel}
                       </span>
 
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                      <span className="pb-1 text-base font-normal text-slate-500">
+                        {displayPrice.suffix}
+                      </span>
+                    </div>
 
-                {plan.features.length > INITIAL_VISIBLE_FEATURES ? (
-                  <button
-                    type="button"
-                    onClick={() => togglePlan(plan.slug)}
-                    className="mx-auto mt-7 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cloud-blue"
-                    aria-expanded={isExpanded}
-                  >
-                    {isExpanded ? "Show less" : "Show more"}
+                    {displayPrice.totalLabel ? (
+                      <p className="mt-3 text-sm leading-6 text-slate-500">
+                        {displayPrice.totalLabel}
+                      </p>
+                    ) : null}
 
-                    <ChevronDown
-                      className={[
-                        "h-4 w-4 transition-transform",
-                        isExpanded ? "rotate-180" : "",
-                      ].join(" ")}
-                      aria-hidden="true"
-                    />
-                  </button>
-                ) : null}
+                    {displayPrice.renewsLabel ? (
+                      <p className="mt-1 text-sm leading-6 text-slate-400">
+                        {displayPrice.renewsLabel}
+                      </p>
+                    ) : null}
+                  </div>
 
-                <div className="mt-8">
                   <Link
-                    href={selectedOption.ctaHref}
-                    target="_blank"
-                    rel="noreferrer"
+                    href={ctaHref}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noreferrer" : undefined}
                     className={[
-                      "inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition",
+                      "mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold transition",
                       plan.popular
-                        ? "bg-cloud-blue text-white shadow-[0_14px_35px_rgba(0,100,224,0.25)] hover:-translate-y-0.5 hover:bg-blue-600"
-                        : "border border-slate-200 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-cloud-blue/30 hover:bg-slate-50 hover:text-cloud-blue",
+                        ? "bg-cloud-blue text-white shadow-[0_16px_35px_rgba(0,100,224,0.24)] hover:-translate-y-0.5 hover:bg-blue-600"
+                        : "border border-cloud-blue/35 bg-white text-cloud-blue hover:-translate-y-0.5 hover:bg-cloud-blue hover:text-white",
                     ].join(" ")}
                   >
-                    {plan.ctaLabel}
+                    {plan.ctaLabel ?? "Choose plan"}
                   </Link>
+
+                  {plan.finePrint ? (
+                    <p className="mt-4 text-xs leading-6 text-slate-400">
+                      {plan.finePrint}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="mt-7 border-t border-slate-200 pt-7">
+                  <ul className="space-y-4">
+                    {visibleFeatures.map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-start gap-3 text-sm leading-6 text-slate-700"
+                      >
+                        <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                        </span>
+
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {plan.features.length > INITIAL_VISIBLE_FEATURES ? (
+                    <button
+                      type="button"
+                      onClick={() => togglePlan(plan.id)}
+                      className="mx-auto mt-7 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cloud-blue"
+                      aria-expanded={isExpanded}
+                    >
+                      {isExpanded ? "Show less" : "Show more"}
+
+                      <ChevronDown
+                        className={[
+                          "h-4 w-4 transition-transform",
+                          isExpanded ? "rotate-180" : "",
+                        ].join(" ")}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ) : null}
+                </div>
+
+                {plan.popular ? (
+                  <div
+                    className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-cloud-blue/10 blur-3xl"
+                    aria-hidden="true"
+                  />
+                ) : null}
+
+                <div
+                  className="pointer-events-none absolute bottom-5 right-5 text-cloud-blue/5"
+                  aria-hidden="true"
+                >
+                  <BadgeCheck className="h-24 w-24" />
                 </div>
               </article>
             );
