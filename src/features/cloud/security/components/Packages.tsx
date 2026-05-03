@@ -2,7 +2,10 @@ import Link from "next/link";
 import {
   BadgeCheck,
   Check,
+  GlobeLock,
+  Headphones,
   LockKeyhole,
+  RefreshCcw,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -25,6 +28,33 @@ const benefitItems = [
   {
     label: "Centralised pricing from one source",
     icon: Sparkles,
+  },
+];
+
+const certificateIncludes = [
+  {
+    title: "HTTPS protection",
+    description:
+      "Every certificate helps your website load securely over HTTPS and improves visitor trust.",
+    icon: GlobeLock,
+  },
+  {
+    title: "Setup guidance",
+    description:
+      "Get direction for SSL activation, DNS alignment, hosting connection, and browser trust checks.",
+    icon: Headphones,
+  },
+  {
+    title: "Domain validation support",
+    description:
+      "We guide the validation process so the certificate can be issued and connected properly.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Renewal-ready structure",
+    description:
+      "Your SSL setup is prepared for future renewal, upgrade, or migration when your business grows.",
+    icon: RefreshCcw,
   },
 ];
 
@@ -75,6 +105,7 @@ export function Packages() {
               plan,
               DEFAULT_BILLING_CYCLE,
             );
+
             const ctaHref = buildPlanCtaHref(plan, DEFAULT_BILLING_CYCLE);
             const isExternal = ctaHref.startsWith("http");
 
@@ -210,6 +241,67 @@ export function Packages() {
             );
           })}
         </div>
+
+        <div className="mt-10 overflow-hidden rounded-[2rem] border border-slate-200 bg-[#000A16] p-6 text-white shadow-[0_28px_90px_rgba(15,23,42,0.16)] sm:p-8 lg:p-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-200">
+              Included with SSL setup
+            </p>
+
+            <h3 className="mt-3 text-2xl font-medium tracking-[-0.045em] text-white sm:text-3xl lg:text-4xl">
+              Every certificate includes{" "}
+              <span className="text-cloud-blue">the protection essentials</span>{" "}
+              your website needs.
+            </h3>
+
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+              Beyond the certificate itself, Octalve Cloud helps you connect,
+              validate, and prepare your website for trusted secure browsing.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {certificateIncludes.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur transition hover:-translate-y-1 hover:border-cloud-blue/40"
+                >
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-cloud-blue/15 text-cloud-blue">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </div>
+
+                  <h4 className="mt-5 text-lg font-semibold tracking-[-0.03em] text-white">
+                    {item.title}
+                  </h4>
+
+                  <p className="mt-3 text-sm leading-7 text-slate-300">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {!securityPlans.length ? (
+          <div className="mt-10 rounded-[1.75rem] border border-orange-200 bg-orange-50 p-6 text-center">
+            <p className="text-sm font-semibold text-orange-700">
+              No security plans found.
+            </p>
+
+            <p className="mt-2 text-sm leading-7 text-orange-700/80">
+              Add SSL/Security plans inside{" "}
+              <code className="rounded bg-white px-1.5 py-0.5">
+                src/features/cloud/data/home-price.ts
+              </code>{" "}
+              using category{" "}
+              <code className="rounded bg-white px-1.5 py-0.5">security</code>.
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
   );
