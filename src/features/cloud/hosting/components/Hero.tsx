@@ -15,13 +15,13 @@ const heroPoints = [
 export function Hero() {
   return (
     <section className="overflow-hidden bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16">
-        <div className="max-w-3xl">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-14">
+        <div className="max-w-[680px]">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
             Web Hosting
           </p>
 
-          <h1 className="mt-5 max-w-[14ch] text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[4.5rem] lg:leading-[0.94]">
+          <h1 className="mt-5 max-w-[11.5ch] text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[3.95rem] lg:leading-[0.96] xl:text-[4.25rem]">
             Everything your website needs to grow — fast, secure, and
             affordable.
           </h1>
@@ -74,7 +74,7 @@ export function Hero() {
 
         <div className="relative">
           <div
-            className="relative mx-auto max-w-[860px] select-none"
+            className="relative mx-auto max-w-[640px] select-none"
             onContextMenu={(event) => event.preventDefault()}
             onDragStart={(event) => event.preventDefault()}
             onCopy={(event) => event.preventDefault()}
@@ -91,7 +91,7 @@ export function Hero() {
               alt="Octalve Cloud hosting hero visual"
               priority
               draggable={false}
-              className="pointer-events-none relative z-10 h-auto w-full select-none object-contain drop-shadow-[0_28px_70px_rgba(15,23,42,0.18)]"
+              className="pointer-events-none relative z-10 h-auto w-full select-none object-contain drop-shadow-[0_28px_70px_rgba(15,23,42,0.16)]"
             />
 
             <div
