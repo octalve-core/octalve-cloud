@@ -5,7 +5,7 @@ export function CTA() {
     <GetStarted
       eyebrow="Start with Octalve Cloud"
       title="Let’s start building your online presence today."
-      description="Use this Web Hosting page to guide visitors toward the right action, then send them to the client console or sales contact."
+      description="Fast, secure hosting for websites that need to stay online."
       primaryLabel="Get started"
       secondaryLabel="Contact sales"
     />

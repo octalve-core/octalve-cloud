@@ -9,6 +9,10 @@ export const cloudLinks = {
 
 export const cloudNavLinks = [
   {
+    label: "Home",
+    href: "/",
+  },
+  {
     label: "Domains",
     href: "/domains",
   },
