@@ -21,7 +21,7 @@ export function Hero() {
             Web Hosting
           </p>
 
-          <h1 className="mt-5 max-w-[11.5ch] text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[3.95rem] lg:leading-[0.96] xl:text-[4.25rem]">
+          <h1 className="mt-5 max-w-[11.5ch] text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[3.5rem] lg:leading-[0.96] xl:text-[4.25rem]">
             Everything your website needs to grow — fast, secure, and
             affordable.
           </h1>
