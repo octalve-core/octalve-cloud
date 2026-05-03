@@ -37,11 +37,11 @@ export function Hero() {
             <span className="block">secure, and affordable.</span>
           </h1> */}
 
-          <p className="mt-6 max-w-xl text-base leading-8 text-slate-500 sm:text-lg">
+          {/* <p className="mt-6 max-w-xl text-base leading-8 text-slate-500 sm:text-lg">
             Launch with dependable hosting infrastructure built for performance,
             security, and smooth growth. Get the speed and support you need to
             stay online with confidence.
-          </p>
+          </p> */}
 
           <ul className="mt-8 space-y-4">
             {heroPoints.map((point) => (
