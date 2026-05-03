@@ -1,7 +1,7 @@
 import { CloudShell } from "@/features/cloud/components/CloudShell";
 import { Hero } from "./components/Hero";
 import { Overview } from "./components/Overview";
-import { Services } from "./components/Services";
+// import { Services } from "./components/Services";
 import { Packages } from "./components/Packages";
 import { DomainSearch } from "./components/DomainSearch";
 import { WhyOctalveCloud } from "./components/WhyOctalveCloud";
@@ -14,7 +14,7 @@ export function CloudServersPage() {
     <CloudShell>
       <Hero />
       <Overview />
-      <Services />
+      {/* <Services /> */}
       <Packages />
       <WhyOctalveCloud />
       <DomainSearch />
