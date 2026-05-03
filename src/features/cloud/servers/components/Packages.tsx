@@ -84,7 +84,7 @@ export function Packages() {
           </p>
 
           <h2 className="mt-4 text-3xl font-medium tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
-            Choose your <span className="text-cloud-blue">AI-managed VPS</span>{" "}
+            Choose your <span className="text-cloud-blue">Cloud VPS</span>{" "}
             hosting plan.
           </h2>
 

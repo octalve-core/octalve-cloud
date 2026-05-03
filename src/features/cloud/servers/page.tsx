@@ -16,8 +16,8 @@ export function CloudServersPage() {
       <Overview />
       <Services />
       <Packages />
-      <DomainSearch />
       <WhyOctalveCloud />
+      <DomainSearch />
       <Migration />
       <FAQ />
       <CTA />
