@@ -14,21 +14,21 @@ const heroPoints = [
 
 export function Hero() {
   return (
-    <section className="bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14">
+    <section className="overflow-hidden bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
             Web Hosting
           </p>
 
-          <h1 className="mt-5 text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[4.3rem] lg:leading-[0.95]">
+          <h1 className="mt-5 max-w-[14ch] text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-[4.5rem] lg:leading-[0.94]">
             Everything your website needs to grow — fast, secure, and
             affordable.
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-500 sm:text-lg">
             Launch with dependable hosting infrastructure built for performance,
-            security, and smooth growth, get the speed and support you need to
+            security, and smooth growth. Get the speed and support you need to
             stay online with confidence.
           </p>
 
@@ -41,6 +41,7 @@ export function Hero() {
                 <span className="mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                   <Check className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
+
                 <span>{point}</span>
               </li>
             ))}
@@ -73,31 +74,32 @@ export function Hero() {
 
         <div className="relative">
           <div
-            className="relative mx-auto max-w-[760px] select-none"
+            className="relative mx-auto max-w-[860px] select-none"
             onContextMenu={(event) => event.preventDefault()}
             onDragStart={(event) => event.preventDefault()}
-            style={{
-              WebkitUserSelect: "none",
-              userSelect: "none",
-            }}
+            onCopy={(event) => event.preventDefault()}
+            onCut={(event) => event.preventDefault()}
+            style={{ userSelect: "none" }}
           >
+            <div
+              className="pointer-events-none absolute inset-0 rounded-[2rem] bg-cloud-blue/10 blur-3xl"
+              aria-hidden="true"
+            />
+
             <Image
               src={hostingHeroVisual}
               alt="Octalve Cloud hosting hero visual"
               priority
               draggable={false}
-              className="pointer-events-none h-auto w-full select-none object-contain"
-              style={
-                {
-                  WebkitTouchCallout: "none",
-                } as React.CSSProperties
-              }
+              className="pointer-events-none relative z-10 h-auto w-full select-none object-contain drop-shadow-[0_28px_70px_rgba(15,23,42,0.18)]"
             />
 
             <div
-              className="absolute inset-0 z-10"
+              className="absolute inset-0 z-20"
               aria-hidden="true"
               onContextMenu={(event) => event.preventDefault()}
+              onDragStart={(event) => event.preventDefault()}
+              onCopy={(event) => event.preventDefault()}
             />
           </div>
         </div>

@@ -9,6 +9,7 @@ import { Migration } from "./components/Migration";
 import { FAQ } from "./components/FAQ";
 import { CTA } from "./components/CTA";
 import { SSL } from "./components/ssl";
+import { Performance } from "./components/performance";
 
 export function CloudHostingPage() {
   return (
@@ -19,7 +20,8 @@ export function CloudHostingPage() {
       <Packages />
       <DomainSearch />
       <SSL />
-      <WhyOctalveCloud />
+      <Performance />
+      {/* <WhyOctalveCloud /> */}
       <Migration />
       <FAQ />
       <CTA />
