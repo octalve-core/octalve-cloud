@@ -18,102 +18,97 @@ const faqs: FAQItem[] = [
   {
     question: "What is web hosting?",
     answer:
-      "Web hosting is the service that stores your website files, database, images, emails, and other website resources on a server so people can access your website online. Your domain is the address people type, while hosting is the space where your website actually lives.",
+      "Web hosting is the service that keeps your website files, images, database, emails, and other resources on a server so people can access your website online. Your domain is the address, while hosting is the space where the website actually lives.",
   },
   {
-    question: "Why do I need web hosting for my website?",
+    question: "Why does my business need hosting?",
     answer:
-      "You need web hosting because a website cannot stay online by itself. Hosting gives your website the server space, speed, security, storage, and technical environment it needs to load properly when visitors open your domain.",
+      "Your website needs hosting to stay online, load properly, store content, handle visitors, and support important services like SSL, email, databases, backups, and website management. Without hosting, your domain will not have a website to show visitors.",
   },
   {
-    question: "What type of hosting is best for my business?",
+    question: "What type of hosting is right for me?",
     answer:
-      "For most small businesses, blogs, landing pages, portfolios, and starter websites, shared or managed hosting is usually enough. For websites with higher traffic, custom applications, large databases, or heavier workloads, VPS, cloud, or dedicated hosting may be better. Octalve Cloud helps you choose based on your website size, traffic, budget, and growth plan.",
+      "For small business websites, portfolios, blogs, and landing pages, a managed web hosting plan is usually enough. For heavier websites, online platforms, large traffic, or custom applications, VPS, cloud, or dedicated hosting may be better. Octalve Cloud helps you choose based on your website size, traffic, and growth plan.",
   },
   {
-    question: "Can I host a WordPress website on Octalve Cloud?",
+    question: "Can I host a WordPress website?",
     answer:
-      "Yes. Octalve Cloud hosting is suitable for WordPress websites, business websites, blogs, landing pages, and other CMS-based projects. You can use it to run WordPress smoothly, install themes and plugins, manage content, and keep your website online with reliable support.",
+      "Yes. Octalve Cloud hosting is suitable for WordPress websites, business websites, blogs, landing pages, and CMS-based projects. You can install WordPress, manage your content, connect your domain, and run your website with guided hosting support.",
   },
   {
-    question: "What is the difference between web hosting and a domain name?",
+    question: "What is the difference between hosting and a domain name?",
     answer:
-      "A domain name is your website address, such as yourbusiness.com. Web hosting is the server space where your website files and data are stored. You need both for a complete website: the domain points visitors to the hosting server where your website is hosted.",
+      "A domain name is your website address, such as yourbusiness.com. Hosting is the server space where your website files and data are stored. You need both for a complete website because the domain points people to the hosting server.",
   },
   {
-    question: "Do I get SSL with my hosting?",
+    question: "Will my hosting come with SSL?",
     answer:
-      "SSL helps secure your website by enabling HTTPS, which protects data shared between your visitors and your website. Octalve Cloud hosting is structured to support SSL setup so your website can look more trustworthy and avoid browser security warnings.",
+      "SSL helps your website use HTTPS, which makes your website more secure and trustworthy. Octalve Cloud hosting is structured to support SSL setup so visitors can access your website with better confidence and fewer browser security warnings.",
   },
   {
-    question: "Can Octalve Cloud migrate my existing website?",
+    question: "Can Octalve Cloud move my existing website?",
     answer:
-      "Yes. If your website is already hosted somewhere else, Octalve Cloud can help move your website files, database, email records, DNS settings, and SSL configuration where needed. Migration support helps reduce downtime and technical confusion during the switch.",
+      "Yes. If your website is already hosted somewhere else, Octalve Cloud can help with website migration. This may include moving website files, databases, DNS records, email settings, and SSL configuration depending on your current setup.",
   },
   {
-    question: "How long does it take for my hosting to become active?",
+    question: "How long does hosting setup take?",
     answer:
-      "Hosting setup can usually be completed quickly after payment and account activation. However, if a domain or DNS change is involved, it may take some time before the website reflects everywhere. In many cases it works within minutes or a few hours, but full DNS propagation can take up to 24–48 hours.",
+      "Hosting setup can usually begin shortly after payment and account activation. If your domain or DNS settings need to be updated, the website may start working within minutes or a few hours, but full DNS propagation can sometimes take 24–48 hours.",
   },
   {
-    question: "What does uptime mean in web hosting?",
+    question: "What does uptime mean?",
     answer:
-      "Uptime means the amount of time your website stays online and accessible to visitors. Strong uptime is important because downtime can affect sales, trust, customer experience, and search visibility. Octalve Cloud hosting is built with reliability as a key priority.",
+      "Uptime means the amount of time your website stays online and accessible to visitors. Strong uptime is important because downtime can affect sales, customer trust, search visibility, and the overall experience people have with your business online.",
   },
   {
-    question: "Will my website load fast on Octalve Cloud?",
+    question: "Will my website load fast?",
     answer:
-      "Octalve Cloud hosting is designed for fast, stable website delivery. Website speed can also depend on your website design, image sizes, plugins, code quality, caching, and traffic level. For best performance, Octalve Cloud can guide you on the right hosting plan and basic optimization practices.",
+      "Octalve Cloud hosting is built to support fast and stable website delivery. Website speed also depends on your website design, image sizes, plugins, caching, code quality, and hosting plan. We help you choose the right setup for better performance.",
   },
   {
-    question: "Does web hosting include business email?",
+    question: "Does hosting include business email?",
     answer:
-      "Some hosting packages may support professional email accounts using your domain, such as info@yourbusiness.com or support@yourbusiness.com. Availability depends on the selected package and configuration. Octalve Cloud can help you set up email properly when included or when connected through an external email provider.",
+      "Some hosting packages can support professional email addresses like info@yourbusiness.com or support@yourbusiness.com. Availability depends on the selected plan and setup. Octalve Cloud can help you configure business email when it is included or connected externally.",
   },
   {
-    question: "What is bandwidth in web hosting?",
+    question: "What is bandwidth in hosting?",
     answer:
-      "Bandwidth refers to the amount of data transferred between your website and your visitors. When people open pages, view images, download files, or submit forms, bandwidth is used. A website with more visitors, larger images, or heavier files usually needs more bandwidth.",
+      "Bandwidth is the amount of data transferred between your website and visitors. When people open pages, view images, download files, or submit forms, bandwidth is used. Websites with more traffic or heavier media usually need more bandwidth.",
   },
   {
-    question: "What is storage in web hosting?",
+    question: "What is storage in hosting?",
     answer:
-      "Storage is the amount of server space available for your website files, images, videos, emails, databases, backups, and other assets. A simple business website may need less storage, while an online store, media-heavy website, or large portal may need more.",
+      "Storage is the server space available for your website files, images, videos, emails, databases, backups, and other assets. A simple website may need less storage, while an online store or media-heavy platform may require more.",
   },
   {
-    question: "Can I upgrade my hosting plan later?",
+    question: "Can I upgrade my hosting later?",
     answer:
-      "Yes. As your website grows, you may need more storage, bandwidth, processing power, email capacity, or advanced server resources. Octalve Cloud is structured to let you start with a suitable plan and upgrade when your business or traffic increases.",
+      "Yes. As your website grows, you can move to a higher hosting package with more resources, storage, bandwidth, email capacity, or server power. Octalve Cloud is designed to help you start properly and scale when your business needs more.",
   },
   {
     question: "Do I need technical knowledge to use Octalve Cloud hosting?",
     answer:
-      "No. Octalve Cloud is built to make hosting easier for business owners, founders, and teams who do not want to struggle with technical server setup. You can get guided support for hosting, domain connection, SSL, email, and basic website launch needs.",
+      "No. Octalve Cloud is built for business owners, founders, creators, and teams who want reliable hosting without unnecessary technical stress. We help with domain connection, SSL, hosting setup, email configuration, and basic website launch support.",
   },
   {
-    question: "Are backups included with hosting?",
+    question: "Are backups included?",
     answer:
-      "Backups help protect your website by keeping copies of important files and data. Backup availability, frequency, and restoration options may depend on the hosting package. For important business websites, it is always advisable to use a plan or add-on that supports reliable backups.",
+      "Backups help protect your website by keeping copies of important files and data. Backup availability, frequency, and restoration options may depend on your hosting package. For business websites, we recommend choosing a plan or add-on with reliable backup support.",
   },
   {
     question: "Can I host more than one website?",
     answer:
-      "This depends on the hosting package you choose. Some plans are designed for one website, while higher plans may support multiple websites, extra domains, subdomains, databases, and email accounts. Octalve Cloud can recommend the right package based on how many projects you want to host.",
+      "This depends on the hosting package you choose. Some plans are made for one website, while higher plans may support multiple websites, domains, subdomains, databases, and email accounts.",
   },
   {
     question: "What happens if my hosting expires?",
     answer:
-      "If your hosting expires and is not renewed, your website, email, and related services may stop working. To avoid downtime or data loss, it is important to renew before the expiry date. Octalve Cloud can help with reminders and renewal guidance.",
+      "If your hosting expires and is not renewed, your website, email, and related services may stop working. To avoid downtime or possible data issues, it is best to renew before the expiry date.",
   },
   {
     question: "Can Octalve Cloud help me connect my domain to hosting?",
     answer:
       "Yes. If you already have a domain, Octalve Cloud can help point it to your hosting account by configuring nameservers or DNS records correctly. This makes your domain load the website hosted on Octalve Cloud.",
-  },
-  {
-    question: "Is Octalve Cloud hosting good for small businesses?",
-    answer:
-      "Yes. Octalve Cloud is especially useful for small businesses, startups, personal brands, agencies, and organizations that need reliable hosting without unnecessary technical stress. It gives your website a stronger foundation for speed, trust, visibility, and growth.",
   },
 ];
 
@@ -149,9 +144,9 @@ export function FAQ() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Everything you need to understand Octalve Cloud hosting, from
-            website speed and uptime to SSL, migration, backups, WordPress,
-            email, DNS, and choosing the right plan for your business.
+            Clear answers about hosting, website speed, uptime, SSL, migration,
+            backups, WordPress, business email, DNS, and how Octalve Cloud helps
+            your website stay fast, secure, and online.
           </p>
         </div>
 
