@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import {
-  BadgeCheck,
   Check,
   ChevronDown,
+  Cpu,
+  Database,
+  HardDrive,
   Headphones,
+  Network,
   RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
@@ -15,14 +18,25 @@ import {
   buildPlanCtaHref,
   calculatePlanPricing,
   DEFAULT_BILLING_CYCLE,
-  homePriceCategories,
   homePricePlans,
   type BillingCycleKey,
   type PackageCategoryKey,
 } from "@/features/cloud/data/home-price";
 
 const VPS_CATEGORY_KEY = "vps" as PackageCategoryKey;
-const INITIAL_VISIBLE_FEATURES = 7;
+const INITIAL_VISIBLE_FEATURES = 4;
+
+const sharedFeatures = [
+  "AMD EPYC-ready performance",
+  "NVMe SSD storage",
+  "Global-ready server foundation",
+  "Free weekly backups",
+  "Firewall management guidance",
+  "Fast network performance",
+  "API-ready infrastructure",
+  "AI-managed support direction",
+  "Free domain for 1 year on eligible plans",
+];
 
 const benefitItems = [
   {
@@ -39,6 +53,8 @@ const benefitItems = [
   },
 ];
 
+const planIcons = [Cpu, Database, HardDrive, Network];
+
 export function Packages() {
   const [billingCycle, setBillingCycle] = useState<BillingCycleKey>(
     DEFAULT_BILLING_CYCLE,
@@ -47,15 +63,6 @@ export function Packages() {
   const [expandedPlans, setExpandedPlans] = useState<Record<string, boolean>>(
     {},
   );
-
-  const activeCategoryData = homePriceCategories.find(
-    (item) => item.key === VPS_CATEGORY_KEY,
-  ) ?? {
-    key: VPS_CATEGORY_KEY,
-    label: "VPS & Cloud Servers",
-    description:
-      "Choose a VPS plan for stronger performance, better control, and scalable infrastructure for serious projects.",
-  };
 
   const visiblePlans = useMemo(() => {
     return homePricePlans.filter((plan) => plan.category === VPS_CATEGORY_KEY);
@@ -69,26 +76,24 @@ export function Packages() {
   }
 
   return (
-    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section className="overflow-hidden bg-[#000A16] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-200">
             VPS Packages
           </p>
 
-          <h2 className="mt-4 text-3xl font-medium tracking-[-0.05em] text-slate-950 sm:text-4xl lg:text-5xl">
-            Powerful VPS hosting for{" "}
-            <span className="text-cloud-blue">
-              serious projects and growing systems.
-            </span>
+          <h2 className="mt-4 text-3xl font-medium tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
+            Choose your <span className="text-cloud-blue">AI-managed VPS</span>{" "}
+            hosting plan.
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
-            Pick a VPS plan that gives your website, app, portal, or business
-            system more performance, control, security, and room to scale.
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+            Pick the VPS plan that gives your website, app, portal, or business
+            system more speed, control, security, and room to scale.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-5 text-sm font-medium text-slate-600">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-5 text-sm font-medium text-slate-300">
             {benefitItems.map((item) => {
               const Icon = item.icon;
 
@@ -97,7 +102,10 @@ export function Packages() {
                   key={item.label}
                   className="inline-flex items-center gap-2"
                 >
-                  <Icon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  <Icon
+                    className="h-4 w-4 text-cloud-blue"
+                    aria-hidden="true"
+                  />
                   <span>{item.label}</span>
                 </div>
               );
@@ -105,48 +113,40 @@ export function Packages() {
           </div>
         </div>
 
-        <div className="mx-auto mt-10 max-w-5xl">
-          <div className="mx-auto max-w-md">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Length of subscription
-            </label>
+        <div className="mx-auto mt-10 max-w-md">
+          <label className="mb-2 block text-sm font-medium text-slate-300">
+            Length of subscription
+          </label>
 
-            <div className="relative">
-              <select
-                value={billingCycle}
-                onChange={(event) =>
-                  setBillingCycle(event.target.value as BillingCycleKey)
-                }
-                className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-900 outline-none shadow-[0_12px_34px_rgba(15,23,42,0.04)] transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
-              >
-                {billingCycles.map((cycle) => (
-                  <option key={cycle.key} value={cycle.key}>
-                    {cycle.label}
-                    {cycle.badge ? ` — ${cycle.badge}` : ""}
-                  </option>
-                ))}
-              </select>
+          <div className="relative">
+            <select
+              value={billingCycle}
+              onChange={(event) =>
+                setBillingCycle(event.target.value as BillingCycleKey)
+              }
+              className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-white/10 px-4 pr-10 text-sm font-semibold text-white outline-none shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/20"
+            >
+              {billingCycles.map((cycle) => (
+                <option
+                  key={cycle.key}
+                  value={cycle.key}
+                  className="text-slate-950"
+                >
+                  {cycle.label}
+                  {cycle.badge ? ` — ${cycle.badge}` : ""}
+                </option>
+              ))}
+            </select>
 
-              <ChevronDown
-                className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-
-          <div className="mt-7 rounded-[1.75rem] border border-slate-200 bg-[#F8FAFC] px-5 py-5 text-center shadow-[0_16px_45px_rgba(15,23,42,0.045)] sm:px-7">
-            <p className="text-sm font-semibold text-cloud-blue">
-              {activeCategoryData.label}
-            </p>
-
-            <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-500">
-              {activeCategoryData.description}
-            </p>
+            <ChevronDown
+              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300"
+              aria-hidden="true"
+            />
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {visiblePlans.map((plan) => {
+        <div className="mt-10 grid gap-5 lg:grid-cols-4">
+          {visiblePlans.map((plan, planIndex) => {
             const displayPrice = calculatePlanPricing(plan, billingCycle);
             const ctaHref = buildPlanCtaHref(plan, billingCycle);
             const isExpanded = Boolean(expandedPlans[plan.id]);
@@ -161,10 +161,11 @@ export function Packages() {
               <article
                 key={plan.id}
                 className={[
-                  "relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-white p-6 transition duration-300",
+                  "relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border p-5 transition duration-300",
+                  "bg-white/[0.075] shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur",
                   plan.popular
-                    ? "border-cloud-blue/40 shadow-[0_28px_80px_rgba(0,100,224,0.16)]"
-                    : "border-slate-200 shadow-[0_18px_50px_rgba(15,23,42,0.045)] hover:-translate-y-1 hover:border-cloud-blue/25 hover:shadow-[0_28px_75px_rgba(15,23,42,0.08)]",
+                    ? "border-cloud-blue shadow-[0_28px_90px_rgba(0,100,224,0.24)]"
+                    : "border-white/10 hover:-translate-y-1 hover:border-cloud-blue/45",
                 ].join(" ")}
               >
                 {plan.popular ? (
@@ -173,65 +174,45 @@ export function Packages() {
                   </div>
                 ) : null}
 
-                <div className={plan.popular ? "pt-9" : ""}>
+                <div className={plan.popular ? "pt-10" : ""}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      {plan.eyebrow ? (
-                        <p className="text-sm font-medium text-slate-500">
-                          {plan.eyebrow}
-                        </p>
-                      ) : null}
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
+                        {plan.eyebrow ?? "Cloud Server"}
+                      </p>
 
-                      <h3 className="mt-2 text-2xl font-medium tracking-[-0.04em] text-slate-950">
+                      <h3 className="mt-3 text-xl font-semibold tracking-[-0.035em] text-white">
                         {plan.name}
                       </h3>
                     </div>
 
-                    <div className="flex flex-col items-end gap-2">
-                      {plan.badge ? (
-                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          {plan.badge}
-                        </span>
-                      ) : null}
-
-                      {displayPrice.discountPercent ? (
-                        <span className="rounded-full bg-cloud-blue/10 px-3 py-1 text-xs font-semibold text-cloud-blue">
-                          {displayPrice.discountPercent}% off
-                        </span>
-                      ) : null}
-                    </div>
+                    {displayPrice.discountPercent ? (
+                      <span className="rounded-full bg-cloud-blue/20 px-3 py-1 text-xs font-semibold text-blue-200">
+                        {displayPrice.discountPercent}% off
+                      </span>
+                    ) : null}
                   </div>
-
-                  <p className="mt-4 min-h-[72px] text-sm leading-7 text-slate-500">
-                    {plan.description}
-                  </p>
 
                   <div className="mt-6">
                     {displayPrice.regularPriceLabel ? (
-                      <p className="text-sm font-medium text-slate-400 line-through">
+                      <p className="text-sm font-medium text-slate-500 line-through">
                         {displayPrice.regularPriceLabel}
                       </p>
                     ) : null}
 
                     <div className="mt-1 flex items-end gap-1">
-                      <span className="text-4xl font-medium tracking-[-0.055em] text-slate-950">
+                      <span className="text-3xl font-semibold tracking-[-0.055em] text-white sm:text-4xl">
                         {displayPrice.priceLabel}
                       </span>
 
-                      <span className="pb-1 text-sm font-normal text-slate-500">
+                      <span className="pb-1 text-sm font-normal text-slate-300">
                         {displayPrice.suffix}
                       </span>
                     </div>
 
-                    {displayPrice.totalLabel ? (
-                      <p className="mt-3 text-xs leading-6 text-slate-500">
-                        {displayPrice.totalLabel}
-                      </p>
-                    ) : null}
-
                     {displayPrice.renewsLabel ? (
-                      <p className="mt-1 text-xs leading-6 text-slate-400">
-                        {displayPrice.renewsLabel}
+                      <p className="mt-3 min-h-[40px] text-xs leading-6 text-slate-400">
+                        {displayPrice.renewsLabel} Cancel anytime.
                       </p>
                     ) : null}
                   </div>
@@ -241,43 +222,41 @@ export function Packages() {
                     target={isExternal ? "_blank" : undefined}
                     rel={isExternal ? "noreferrer" : undefined}
                     className={[
-                      "mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition",
+                      "mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition",
                       plan.popular
-                        ? "bg-cloud-blue text-white shadow-[0_16px_35px_rgba(0,100,224,0.24)] hover:-translate-y-0.5 hover:bg-blue-600"
-                        : "border border-cloud-blue/35 bg-white text-cloud-blue hover:-translate-y-0.5 hover:bg-cloud-blue hover:text-white",
+                        ? "bg-white text-slate-950 hover:-translate-y-0.5 hover:bg-blue-50"
+                        : "border border-white/35 bg-transparent text-white hover:-translate-y-0.5 hover:border-cloud-blue hover:bg-cloud-blue",
                     ].join(" ")}
                   >
                     {plan.ctaLabel ?? "Choose plan"}
                   </Link>
-
-                  {plan.finePrint ? (
-                    <p className="mt-4 text-xs leading-6 text-slate-400">
-                      {plan.finePrint}
-                    </p>
-                  ) : null}
                 </div>
 
-                <div className="mt-7 border-t border-slate-200 pt-7">
+                <div className="mt-7 border-t border-white/10 pt-6">
                   <ul className="space-y-4">
-                    {visibleFeatures.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3 text-sm leading-6 text-slate-700"
-                      >
-                        <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        </span>
+                    {visibleFeatures.map((feature, featureIndex) => {
+                      const Icon = planIcons[featureIndex] ?? Check;
 
-                        <span>{feature}</span>
-                      </li>
-                    ))}
+                      return (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 text-sm leading-6 text-slate-200"
+                        >
+                          <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-slate-400">
+                            <Icon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+
+                          <span>{feature}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {plan.features.length > INITIAL_VISIBLE_FEATURES ? (
                     <button
                       type="button"
                       onClick={() => togglePlan(plan.id)}
-                      className="mx-auto mt-7 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cloud-blue"
+                      className="mx-auto mt-7 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition hover:text-white"
                       aria-expanded={isExpanded}
                     >
                       {isExpanded ? "Show less" : "Show more"}
@@ -293,36 +272,53 @@ export function Packages() {
                   ) : null}
                 </div>
 
-                {plan.popular ? (
-                  <div
-                    className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-cloud-blue/10 blur-3xl"
-                    aria-hidden="true"
-                  />
-                ) : null}
-
                 <div
-                  className="pointer-events-none absolute bottom-5 right-5 text-cloud-blue/5"
+                  className={[
+                    "pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl",
+                    planIndex === 1 ? "bg-cloud-blue/20" : "bg-white/5",
+                  ].join(" ")}
                   aria-hidden="true"
-                >
-                  <BadgeCheck className="h-24 w-24" />
-                </div>
+                />
               </article>
             );
           })}
         </div>
 
+        <div className="mt-6 rounded-[1.75rem] border border-white/10 bg-white/[0.075] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
+          <h3 className="text-center text-2xl font-semibold tracking-[-0.04em] text-white">
+            Every plan has{" "}
+            <span className="text-cloud-blue">everything you need</span> and
+            more
+          </h3>
+
+          <div className="mx-auto mt-8 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {sharedFeatures.map((feature) => (
+              <div
+                key={feature}
+                className="flex items-start gap-3 text-sm leading-6 text-slate-200"
+              >
+                <span className="mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+
+                <span>{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {!visiblePlans.length ? (
-          <div className="mt-10 rounded-[1.75rem] border border-orange-200 bg-orange-50 p-6 text-center">
-            <p className="text-sm font-semibold text-orange-700">
+          <div className="mt-10 rounded-[1.75rem] border border-orange-300/20 bg-orange-400/10 p-6 text-center">
+            <p className="text-sm font-semibold text-orange-200">
               No VPS plans found.
             </p>
-            <p className="mt-2 text-sm leading-7 text-orange-700/80">
+            <p className="mt-2 text-sm leading-7 text-orange-100/80">
               Add VPS plans inside{" "}
-              <code className="rounded bg-white px-1.5 py-0.5">
+              <code className="rounded bg-white/10 px-1.5 py-0.5">
                 src/features/cloud/data/home-price.ts
               </code>{" "}
               using category{" "}
-              <code className="rounded bg-white px-1.5 py-0.5">vps</code>.
+              <code className="rounded bg-white/10 px-1.5 py-0.5">vps</code>.
             </p>
           </div>
         ) : null}
