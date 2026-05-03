@@ -10,8 +10,8 @@ import vpsHeroVisual from "@/assets/sections/vps-hero-visual.png";
 const heroPoints = [
   "Blazing-fast infrastructure",
   "Advanced customization",
-  "Seamless scalability",
-  "Strong security",
+  // "Seamless scalability",
+  // "Strong security",
   "Free weekly backups",
 ];
 
@@ -25,9 +25,7 @@ export function Hero() {
           </p>
 
           <h1 className="mt-5 text-[2.1rem] font-medium tracking-[-0.045em] text-white sm:text-[2.45rem] lg:text-[2.9rem] lg:leading-[1.06] xl:text-[3.15rem]">
-            <span className="block">Boost Your Online Presence</span>
-            <span className="block">with High-Performance</span>
-            <span className="block">Hosting</span>
+            Boost Your Online Presence with High-Performance Cloud Servers
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">
