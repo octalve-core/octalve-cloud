@@ -25,11 +25,17 @@ export function Hero() {
             Up to <span className="text-cloud-blue">73% off</span> web hosting
           </p>
 
-          <h1 className="mt-4 text-[2.55rem] font-medium tracking-[-0.055em] text-slate-950 sm:text-[3.05rem] lg:text-[3.65rem] lg:leading-[0.98] xl:text-[3.95rem]">
+          <h1 className="mt-4 text-[2.25rem] font-medium tracking-[-0.05em] text-slate-950 sm:text-[2.7rem] lg:text-[3.15rem] lg:leading-[1.02] xl:text-[3.4rem]">
             <span className="block">Everything your website</span>
             <span className="block">needs to grow — fast,</span>
             <span className="block">secure, and affordable.</span>
           </h1>
+
+          {/* <h1 className="mt-4 text-[2.55rem] font-medium tracking-[-0.055em] text-slate-950 sm:text-[3.05rem] lg:text-[3.65rem] lg:leading-[0.98] xl:text-[3.95rem]">
+            <span className="block">Everything your website</span>
+            <span className="block">needs to grow — fast,</span>
+            <span className="block">secure, and affordable.</span>
+          </h1> */}
 
           <p className="mt-6 max-w-xl text-base leading-8 text-slate-500 sm:text-lg">
             Launch with dependable hosting infrastructure built for performance,
