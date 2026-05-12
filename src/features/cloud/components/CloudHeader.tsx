@@ -390,7 +390,7 @@ export function CloudHeader() {
       className="sticky top-0 z-50 border-b border-slate-200 bg-white"
     >
       <div className="border-b border-slate-200/80 bg-[#F4F6FF]">
-        <div className="mx-auto flex h-11 w-full max-w-[1740px] items-center justify-between gap-4 px-4 text-sm font-medium text-slate-700 sm:px-6 xl:px-8">
+        <div className="mx-auto flex h-11 w-full max-w-[1540px] items-center justify-between gap-4 px-4 text-sm font-medium text-slate-700 sm:px-6 lg:px-8">
           <div className="flex items-center gap-5">
             <Link
               href="/contact"
@@ -484,11 +484,13 @@ export function CloudHeader() {
       </div>
 
       <div className="bg-white">
-        <div className="mx-auto flex h-[84px] w-full max-w-[1740px] items-center justify-between gap-8 px-4 sm:px-6 xl:px-8">
-          <CloudLogo />
+        <div className="mx-auto flex h-[80px] w-full max-w-[1540px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+          <div className="shrink-0">
+            <CloudLogo />
+          </div>
 
           <nav
-            className="hidden flex-1 items-center justify-center gap-2 xl:flex"
+            className="hidden flex-1 items-center justify-center gap-1.5 xl:flex"
             aria-label="Main navigation"
           >
             {mainNavItems.map((item) => {
@@ -506,12 +508,12 @@ export function CloudHeader() {
                     onClick={closeAllMenus}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "relative inline-flex h-12 items-center whitespace-nowrap rounded-xl px-4 text-[15px] font-semibold text-cloud-navy transition hover:bg-cloud-mist hover:text-cloud-blue",
+                      "relative inline-flex h-11 items-center whitespace-nowrap rounded-xl px-3.5 text-[14.5px] font-semibold text-cloud-navy transition hover:bg-cloud-mist hover:text-cloud-blue",
                       active && "bg-cloud-mist text-cloud-blue",
                     )}
                   >
                     {item.badge ? (
-                      <span className="absolute -top-2 left-4">
+                      <span className="absolute -top-2 left-3.5">
                         <Badge badge={item.badge} compact />
                       </span>
                     ) : null}
@@ -536,13 +538,13 @@ export function CloudHeader() {
                       setLoginOpen(false);
                     }}
                     className={cn(
-                      "relative inline-flex h-12 items-center gap-1.5 whitespace-nowrap rounded-xl px-4 text-[15px] font-semibold text-cloud-navy transition hover:bg-cloud-mist hover:text-cloud-blue",
+                      "relative inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-xl px-3.5 text-[14.5px] font-semibold text-cloud-navy transition hover:bg-cloud-mist hover:text-cloud-blue",
                       (active || open) && "bg-cloud-mist text-cloud-blue",
                     )}
                     aria-expanded={open}
                   >
                     {item.badge ? (
-                      <span className="absolute -top-2 left-4">
+                      <span className="absolute -top-2 left-3.5">
                         <Badge badge={item.badge} compact />
                       </span>
                     ) : null}
@@ -561,12 +563,12 @@ export function CloudHeader() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-4 xl:flex">
+          <div className="hidden shrink-0 items-center gap-3 xl:flex">
             <a
               href={cloudLinks.console}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-xl border border-cloud-border bg-white px-5 text-[15px] font-semibold text-cloud-navy transition hover:border-cloud-blue hover:text-cloud-blue"
+              className="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-xl border border-cloud-border bg-white px-4 text-[14.5px] font-semibold text-cloud-navy transition hover:border-cloud-blue hover:text-cloud-blue"
             >
               Account
             </a>
@@ -575,7 +577,7 @@ export function CloudHeader() {
               href={cloudLinks.console}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-xl bg-cloud-blue px-6 text-[15px] font-semibold text-white shadow-[0_14px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-cloud-navy"
+              className="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-xl bg-cloud-blue px-5 text-[14.5px] font-semibold text-white shadow-[0_14px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-cloud-navy"
             >
               Get Started
             </a>
