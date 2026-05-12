@@ -18,69 +18,182 @@ const FOOTER_COLORS = {
   iconText: "#FFFFFF",
 };
 
-const services = [
-  { label: "Domain Registration", href: "/domains" },
-  { label: "Shared Web Hosting", href: "/hosting" },
-  { label: "Business Email", href: "/email" },
-  { label: "SSL / Security", href: "/ssl-security" },
-  { label: "VPS & Cloud Servers", href: "/servers" },
-  { label: "Website Migration", href: "/migration" },
-  { label: "Support Center", href: "/support" },
+type FooterLabelTone = "new" | "free" | "ai" | "secure" | "popular" | "support";
+
+type FooterLabel = {
+  text: string;
+  tone: FooterLabelTone;
+};
+
+type FooterLinkItem = {
+  label: string;
+  href: string;
+  labels?: FooterLabel[];
+};
+
+const footerLabelClasses: Record<FooterLabelTone, string> = {
+  new: "bg-[#F04D23] text-white",
+  free: "bg-[#2369B3] text-white",
+  ai: "bg-[#651FFF] text-white",
+  secure: "bg-[#16A34A] text-white",
+  popular: "bg-[#FC7E24] text-white",
+  support: "bg-[#0064E0] text-white",
+};
+
+const services: FooterLinkItem[] = [
+  {
+    label: "Domain Registration",
+    href: "/domains",
+    labels: [{ text: "NEW", tone: "new" }],
+  },
+  {
+    label: "Shared Web Hosting",
+    href: "/hosting",
+    labels: [{ text: "POPULAR", tone: "popular" }],
+  },
+  {
+    label: "Business Email",
+    href: "/email",
+    labels: [{ text: "NEW", tone: "new" }],
+  },
+  {
+    label: "SSL / Security",
+    href: "/ssl-security",
+    labels: [{ text: "SECURE", tone: "secure" }],
+  },
+  {
+    label: "VPS & Cloud Servers",
+    href: "/servers",
+    labels: [{ text: "POWER", tone: "support" }],
+  },
+  {
+    label: "Website Migration",
+    href: "/migration",
+  },
+  {
+    label: "Support Center",
+    href: "/support",
+    labels: [{ text: "HELP", tone: "support" }],
+  },
 ];
 
-const octalve = [
+const octalve: FooterLinkItem[] = [
   { label: "Octalve Home", href: "https://octalve.com" },
   { label: "Who We Are", href: "https://octalve.com/who-we-are" },
-  { label: "Octalve Suite", href: "https://octalve.com/models/suite" },
+  {
+    label: "Octalve Suite",
+    href: "https://octalve.com/models/suite",
+    labels: [{ text: "GROWTH", tone: "support" }],
+  },
   { label: "Octalve Consult", href: "https://octalve.com/models/consult" },
   { label: "Octalve Lab", href: "https://octalve.com/models/lab" },
   { label: "Octalve Leap", href: "https://octalve.com/models/leap" },
 ];
 
-const tools = [
+const tools: FooterLinkItem[] = [
   {
     label: "AI Domain Name Generator",
     href: "/tools/ai-domain-name-generator",
+    labels: [{ text: "AI", tone: "ai" }],
   },
   {
     label: "Privacy Policy Generator",
     href: "/tools/privacy-policy-generator",
+    labels: [{ text: "FREE", tone: "free" }],
   },
   {
     label: "Terms of Service Generator",
     href: "/tools/terms-of-service-generator",
+    labels: [{ text: "FREE", tone: "free" }],
   },
-  { label: "Domain Name Search", href: "/tools/domain-name-search" },
-  { label: "WHOIS Lookup", href: "/tools/whois-lookup" },
-  { label: "Compare Domain Sellers", href: "/tools/compare-domain-sellers" },
-  { label: "Malware & Hack Checker", href: "/tools/malware-scan" },
+  {
+    label: "Domain Name Search",
+    href: "/tools/domain-name-search",
+  },
+  {
+    label: "WHOIS Lookup",
+    href: "/tools/whois-lookup",
+  },
+  {
+    label: "Compare Domain Sellers",
+    href: "/tools/compare-domain-sellers",
+  },
+  {
+    label: "Malware & Hack Checker",
+    href: "/tools/malware-scan",
+    labels: [
+      { text: "NEW", tone: "new" },
+      { text: "AI", tone: "ai" },
+    ],
+  },
 ];
 
-const accessHelp = [
-  { label: "Client Console", href: cloudLinks.console },
-  { label: "Hosting Panel", href: cloudLinks.opanel },
+const accessHelp: FooterLinkItem[] = [
+  {
+    label: "Client Console",
+    href: cloudLinks.console,
+    labels: [{ text: "ACCOUNT", tone: "support" }],
+  },
+  {
+    label: "Hosting Panel",
+    href: cloudLinks.opanel,
+    labels: [{ text: "PANEL", tone: "secure" }],
+  },
   { label: "Contact Sales", href: "/contact" },
-  { label: "Support Center", href: "/support" },
-  { label: "WhatsApp Support", href: cloudLinks.whatsapp },
+  {
+    label: "Support Center",
+    href: "/support",
+    labels: [{ text: "HELP", tone: "support" }],
+  },
+  {
+    label: "WhatsApp Support",
+    href: cloudLinks.whatsapp,
+    labels: [{ text: "FAST", tone: "secure" }],
+  },
   { label: "Email Support", href: `mailto:${cloudLinks.supportEmail}` },
 ];
 
-const feedback = [
+const feedback: FooterLinkItem[] = [
   { label: "Give feedback", href: "/contact" },
   {
     label: cloudLinks.supportPhone,
     href: `tel:${cloudLinks.supportPhone.replace(/\s+/g, "")}`,
   },
   { label: cloudLinks.supportEmail, href: `mailto:${cloudLinks.supportEmail}` },
-  { label: "Client Console", href: cloudLinks.console },
-  { label: "Hosting Panel", href: cloudLinks.opanel },
+  {
+    label: "Client Console",
+    href: cloudLinks.console,
+    labels: [{ text: "LOGIN", tone: "support" }],
+  },
+  {
+    label: "Hosting Panel",
+    href: cloudLinks.opanel,
+    labels: [{ text: "PANEL", tone: "secure" }],
+  },
 ];
+
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
 
 function isExternalLink(href: string) {
   return (
     href.startsWith("http") ||
     href.startsWith("mailto:") ||
     href.startsWith("tel:")
+  );
+}
+
+function FooterMiniLabel({ label }: { label: FooterLabel }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center rounded-md px-1.5 py-1 text-[9px] font-bold uppercase leading-none tracking-[0.03em]",
+        footerLabelClasses[label.tone],
+      )}
+    >
+      {label.text}
+    </span>
   );
 }
 
@@ -186,14 +299,7 @@ function XIcon() {
   );
 }
 
-function FooterItem({
-  item,
-}: {
-  item: {
-    label: string;
-    href: string;
-  };
-}) {
+function FooterItem({ item }: { item: FooterLinkItem }) {
   const content = (
     <>
       <span
@@ -202,7 +308,19 @@ function FooterItem({
       >
         <ArrowUpRightIcon />
       </span>
-      <span className="group-hover:text-white">{item.label}</span>
+
+      <span className="min-w-0">
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="group-hover:text-white">{item.label}</span>
+
+          {item.labels?.map((label) => (
+            <FooterMiniLabel
+              key={`${item.label}-${label.text}-${label.tone}`}
+              label={label}
+            />
+          ))}
+        </span>
+      </span>
     </>
   );
 
@@ -239,10 +357,7 @@ function FooterSection({
   items,
 }: {
   title: string;
-  items: {
-    label: string;
-    href: string;
-  }[];
+  items: FooterLinkItem[];
 }) {
   return (
     <div>
@@ -403,12 +518,16 @@ export function CloudFooter() {
             className="rounded-[28px] border p-6 sm:p-7"
             style={{ borderColor: FOOTER_COLORS.divider }}
           >
-            <h3
-              className="text-[15px] font-semibold tracking-[-0.02em]"
-              style={{ color: FOOTER_COLORS.text }}
-            >
-              Social Media Links
-            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3
+                className="text-[15px] font-semibold tracking-[-0.02em]"
+                style={{ color: FOOTER_COLORS.text }}
+              >
+                Social Media Links
+              </h3>
+
+              <FooterMiniLabel label={{ text: "OFFICIAL", tone: "support" }} />
+            </div>
 
             <div className="mt-6 flex flex-wrap gap-4">
               <SocialLink
