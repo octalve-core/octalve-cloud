@@ -44,3 +44,10 @@ pnpm-debug.log*
 
 # deployment
 .ftp-deploy-sync-state.json
+.octalve-backups/
+_inspection/
+_octalve-header-package*/
+octalve-cloud-hybrid-header-v*.zip
+octalve-dev-output.txt
+octalve-local-diagnostic.txt
+fix-octalve-cloud-lint-and-install-header.ps1

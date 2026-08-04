@@ -201,13 +201,19 @@ export function Packages() {
   }
 
   useEffect(() => {
-    setActiveSlide(0);
+    const animationFrame = window.requestAnimationFrame(() => {
+      setActiveSlide(0);
 
-    const slider = sliderRef.current;
+      const slider = sliderRef.current;
 
-    if (slider) {
-      slider.scrollTo({ left: 0, behavior: "instant" });
-    }
+      if (slider) {
+        slider.scrollTo({ left: 0, behavior: "instant" });
+      }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
   }, [activeCategory]);
 
   useEffect(() => {

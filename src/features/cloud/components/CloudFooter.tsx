@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import octalveCloudIcon from "@/assets/logo/Octalve Cloud Icon.png";
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
@@ -417,20 +417,30 @@ function getGreetingByHour(hour: number) {
   return { text: "evening", emoji: "🌙" };
 }
 
+function subscribeToClock(onStoreChange: () => void) {
+  const intervalId = window.setInterval(onStoreChange, 60_000);
+
+  return () => {
+    window.clearInterval(intervalId);
+  };
+}
+
+function getClientHour(): number | null {
+  return new Date().getHours();
+}
+
+function getServerHour(): number | null {
+  return null;
+}
+
 export function CloudFooter() {
-  const [hour, setHour] = useState<number | null>(null);
+  const hour = useSyncExternalStore(
+    subscribeToClock,
+    getClientHour,
+    getServerHour,
+  );
 
-  useEffect(() => {
-    setHour(new Date().getHours());
-  }, []);
-
-  const greeting = useMemo(() => {
-    if (hour === null) {
-      return { text: "evening", emoji: "🌙" };
-    }
-
-    return getGreetingByHour(hour);
-  }, [hour]);
+  const greeting = getGreetingByHour(hour ?? 18);
 
   const currentYear = new Date().getFullYear();
 

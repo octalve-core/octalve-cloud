@@ -4,7 +4,7 @@ import { Hero } from "./components/Hero";
 // import { Services } from "./components/Services";
 import { Packages } from "./components/Packages";
 import { DomainSearch } from "./components/DomainSearch";
-import { WhyOctalveCloud } from "./components/WhyOctalveCloud";
+
 import { Migration } from "./components/Migration";
 import { FAQ } from "./components/FAQ";
 import { CTA } from "./components/CTA";
