@@ -8,6 +8,7 @@ import type {
 } from "@/features/cloud/types/navigation";
 import { HeaderBadge } from "./HeaderBadge";
 import { SmartLink } from "./SmartLink";
+import { cloudLinks } from "@/features/cloud/data/cloud-links";
 import { cn } from "./cn";
 
 function MegaMenuProductLink({
@@ -23,6 +24,7 @@ function MegaMenuProductLink({
     <SmartLink
       href={item.href}
       external={item.external}
+      newTab={item.href === cloudLinks.console ? false : undefined}
       onNavigate={onNavigate}
       className="group flex min-h-[112px] items-start gap-4 rounded-2xl border border-transparent p-4 transition duration-200 hover:border-slate-200 hover:bg-white hover:shadow-[0_16px_42px_rgba(15,23,42,0.08)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100 motion-reduce:transition-none"
     >

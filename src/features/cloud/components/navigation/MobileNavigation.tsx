@@ -189,6 +189,7 @@ export function MobileNavigation({
                 key={item.id}
                 href={item.href}
                 external
+                newTab={item.href === cloudLinks.console ? false : undefined}
                 onNavigate={onNavigate}
                 className="rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-cloud-blue hover:bg-cloud-mist focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
               >
