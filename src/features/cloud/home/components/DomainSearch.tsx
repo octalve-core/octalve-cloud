@@ -387,7 +387,7 @@ export function DomainSearch() {
                     </div>
                   ) : (
                     <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                      No AI suggestions returned yet for this search.
+                      Live domain verification is not connected. Availability and current pricing cannot yet be confirmed.
                     </div>
                   )}
                 </div>

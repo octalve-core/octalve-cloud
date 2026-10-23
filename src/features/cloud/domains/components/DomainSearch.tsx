@@ -295,7 +295,7 @@ export function DomainSearch() {
                   ))
                 ) : (
                   <div className="rounded-2xl bg-[#F8FAFC] p-4 text-sm text-slate-500">
-                    No result returned yet. Try another domain idea.
+                    Live domain verification is not connected. We cannot confirm availability or current prices yet.
                   </div>
                 )}
               </div>

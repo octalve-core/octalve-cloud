@@ -324,7 +324,7 @@ export function ToolPanel() {
                   ))
                 ) : (
                   <div className="rounded-2xl border border-dashed border-slate-200 bg-[#F8FAFC] p-5 text-sm leading-7 text-slate-500">
-                    No result returned yet. Try another domain idea or choose a
+                    Live domain verification is not yet connected. Please contact Octalve or choose a
                     popular extension above.
                   </div>
                 )}

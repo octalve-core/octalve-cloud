@@ -72,22 +72,9 @@ type LiveDomainPricesResponse = {
  * Later, when the backend is ready, update only these two constants.
  */
 
-const DOMAIN_SEARCH_ENDPOINT = "";
+const DOMAIN_SEARCH_ENDPOINT = process.env.NEXT_PUBLIC_DOMAIN_SEARCH_API_URL?.trim() ?? "";
 
-const DOMAIN_PRICES_ENDPOINT = "";
-
-const FALLBACK_PRICES: Record<string, string> = {
-  ".com": "₦15,000/Year",
-  ".net": "₦30,986/Year",
-  ".cloud": "₦22,500/Year",
-  ".ai": "₦95,000/Year",
-  ".shop": "₦19,800/Year",
-  ".org": "₦28,934/Year",
-  ".co": "₦34,500/Year",
-  ".africa": "₦60,170/Year",
-  ".com.ng": "₦Free/1 Year",
-  ".ng": "₦16,500/Year",
-};
+const DOMAIN_PRICES_ENDPOINT = process.env.NEXT_PUBLIC_DOMAIN_PRICES_API_URL?.trim() ?? "";
 
 function formatMoney(amount: number, currency: "NGN" | "USD", period = "year") {
   const formatted = new Intl.NumberFormat(
@@ -119,40 +106,17 @@ function normalizeQuery(query: string) {
     .replace(/[^a-z0-9.-]/g, "");
 }
 
-function fallbackSuggestions(
-  request: DomainPricingRequest,
-): DomainSuggestion[] {
-  const query = normalizeQuery(request.query || "yourbrand");
-
-  return request.tlds.map((tld, index) => {
-    const base = query.endsWith(tld)
-      ? query.slice(0, query.length - tld.length)
-      : query;
-
-    const domain = `${base}${tld}`;
-
-    return {
-      domain,
-      tld,
-      available: index !== 2,
-      priceLabel: FALLBACK_PRICES[tld] ?? "Check price",
-      renewalLabel: "Live pricing soon",
-      orderUrl: buildFallbackOrderUrl(domain),
-    };
-  });
-}
-
 export async function getDomainSuggestions(
   request: DomainPricingRequest,
 ): Promise<DomainSuggestion[]> {
   const cleanQuery = normalizeQuery(request.query);
 
   if (!cleanQuery) {
-    return fallbackSuggestions({ ...request, query: "yourbrand" });
+    return [];
   }
 
   if (!DOMAIN_SEARCH_ENDPOINT) {
-    return fallbackSuggestions({ ...request, query: cleanQuery });
+    return [];
   }
 
   try {
@@ -168,19 +132,19 @@ export async function getDomainSuggestions(
     });
 
     if (!response.ok) {
-      return fallbackSuggestions({ ...request, query: cleanQuery });
+      return [];
     }
 
     const data = (await response.json()) as DomainSearchAdapterResponse;
 
     if (!data.suggestions?.length) {
-      return fallbackSuggestions({ ...request, query: cleanQuery });
+      return [];
     }
 
     return data.suggestions.map((item) => {
       const priceLabel = item.price
         ? formatMoney(item.price.amount, item.price.currency, item.price.period)
-        : (FALLBACK_PRICES[item.tld] ?? "Check price");
+        : ("Price unconfirmed");
 
       const renewalLabel = item.renewalPrice
         ? `Renews ${formatMoney(
@@ -200,7 +164,7 @@ export async function getDomainSuggestions(
       };
     });
   } catch {
-    return fallbackSuggestions({ ...request, query: cleanQuery });
+    return [];
   }
 }
 
