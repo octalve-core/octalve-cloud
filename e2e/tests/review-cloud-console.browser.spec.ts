@@ -12,7 +12,7 @@ test("review Cloud → Get Started → actual Console login screen", async ({pag
   await page.goto("/");
   const cta = page.getByRole("link", {name:"Get Started", exact:true});
   await expect(cta).toBeVisible();
-  await expect(cta).toHaveAttribute("target", /^(?!_blank).*$/); // same-tab first-party handoff
+  await expect(cta).not.toHaveAttribute("target", "_blank"); // same-tab first-party handoff
   await cta.click();
   await expect(page).toHaveURL(/octalve-console.*vercel\.app|console\.cloud\.octalve\.com/, {timeout: 30000});
   await page.screenshot({path:"test-results/14-review-console-landing.png",fullPage:true});

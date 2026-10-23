@@ -16,11 +16,9 @@ test("Cloud homepage → Get Started → Console signup view → login → works
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Get Started" })).toBeVisible();
 
-  // SmartLink intentionally opens a separate tab for cross-origin links.
-  const [consolePage] = await Promise.all([
-    context.waitForEvent("page"),
-    page.getByRole("link", { name: "Get Started" }).click(),
-  ]);
+  // Approved first-party Console navigation stays in the same browser tab.
+  await page.getByRole("link", { name: "Get Started" }).click();
+  const consolePage = page;
   await consolePage.waitForLoadState("domcontentloaded");
   await expect(consolePage.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await consolePage.screenshot({ path: "test-results/06-console-login.png", fullPage: true });

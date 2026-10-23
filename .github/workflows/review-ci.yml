@@ -19,7 +19,12 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - name: Build review site with verified Console Preview destination
+        env:
+          # Build-time link override for review only. Canonical public default
+          # remains https://console.cloud.octalve.com when no override is set.
+          NEXT_PUBLIC_CLOUD_CONSOLE_URL: https://octalve-console-git-review-cloud-foundatio-15b74e-octalve-vault.vercel.app
+        run: pnpm build
       - run: test -f out/index.html
       - name: Install browser-walkthrough runner (separate from app dependencies)
         run: npm install --prefix e2e --ignore-scripts --no-audit --no-fund
@@ -29,6 +34,13 @@ jobs:
       - name: Run continuous browser-only customer walkthrough
         working-directory: e2e
         run: npm test
+      - name: Try visible review Cloud → Console login journey
+        id: review-console-smoke
+        continue-on-error: true # Report as explicit blocked gate until protected preview permits browser access
+        working-directory: e2e
+        env:
+          OCTALVE_REVIEW_CONSOLE_BROWSER: "true"
+        run: npm test -- --grep "review Cloud"
       # A failed Cloud -> Console click is a genuine release blocker, not
       # optional success. Review builds remain available with failing CI.
       - name: Observe existing public .com website through browser only
