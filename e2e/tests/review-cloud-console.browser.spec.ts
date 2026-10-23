@@ -16,5 +16,14 @@ test("review Cloud → Get Started → actual Console login screen", async ({pag
   await cta.click();
   await expect(page).toHaveURL(/octalve-console.*vercel\.app|console\.cloud\.octalve\.com/, {timeout: 30000});
   await page.screenshot({path:"test-results/14-review-console-landing.png",fullPage:true});
-  await expect(page.getByRole("heading", {name:/Welcome back/i})).toBeVisible({timeout:20000});
+  // Distinguish Vercel's protected-access gateway from an application defect.
+  // The actual navigation still occurs only through the public Get Started UI.
+  const loginHeading = page.getByRole("heading", {name:/Welcome back/i});
+  if (!(await loginHeading.isVisible())) {
+    const currentUrl = new URL(page.url());
+    if (currentUrl.hostname === "vercel.com" || currentUrl.hostname.endsWith(".vercel.com")) {
+      throw new Error("Protected Console Preview redirected to Vercel Authentication. The journey needs an authorized Vercel viewer; deployment protection must not be silently disabled.");
+    }
+  }
+  await expect(loginHeading).toBeVisible({timeout:20000});
 });
