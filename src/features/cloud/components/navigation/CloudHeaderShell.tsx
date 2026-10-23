@@ -254,6 +254,7 @@ export function CloudHeader() {
               <SmartLink
                 href={cloudLinks.console}
                 external
+                newTab={false}
                 onNavigate={closeAll}
                 className="inline-flex h-11 items-center justify-center rounded-xl bg-cloud-blue px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-cloud-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 motion-reduce:transform-none motion-reduce:transition-none"
               >

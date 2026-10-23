@@ -892,6 +892,12 @@ export function buildPlanCtaHref(
   plan: HomePricePlan,
   billingCycleKey: BillingCycleKey,
 ) {
+  // Until a real checkout and provisioning lifecycle is verified, route
+  // visitors to an enquiry instead of an unimplemented purchase endpoint.
+  if (process.env.NEXT_PUBLIC_CLOUD_CHECKOUT_ENABLED !== "true") {
+    return `/contact?interest=${encodeURIComponent(plan.id)}&cycle=${billingCycleKey}`;
+  }
+
   const base = plan.ctaHref ?? `${cloudLinks.console}${plan.orderPath ?? ""}`;
 
   if (plan.pricing.kind !== "cycle") {

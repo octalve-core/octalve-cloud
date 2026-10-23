@@ -44,11 +44,8 @@ function removeKnownTld(value: string) {
 }
 
 function buildConsoleDomainUrl(domain: string) {
-  const separator = cloudLinks.console.includes("?") ? "&" : "?";
-
-  return `${cloudLinks.console}${separator}domain=${encodeURIComponent(
-    domain,
-  )}`;
+  // Until a verified checkout provider is integrated, request an enquiry.
+  return `/contact?interest=domain&domain=${encodeURIComponent(domain)}`;
 }
 
 export function DomainSearch() {
@@ -295,7 +292,7 @@ export function DomainSearch() {
                   ))
                 ) : (
                   <div className="rounded-2xl bg-[#F8FAFC] p-4 text-sm text-slate-500">
-                    No result returned yet. Try another domain idea.
+                    Live domain verification is not connected. We cannot confirm availability or current prices yet.
                   </div>
                 )}
               </div>

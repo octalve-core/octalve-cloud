@@ -1,0 +1,62 @@
+name: Cloud website review build
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-static-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build review site with verified Console Preview destination
+        env:
+          # Build-time link override for review only. Canonical public default
+          # remains https://console.cloud.octalve.com when no override is set.
+          NEXT_PUBLIC_CLOUD_CONSOLE_URL: https://octalve-console-git-review-cloud-foundatio-15b74e-octalve-vault.vercel.app
+        run: pnpm build
+      - run: test -f out/index.html
+      - name: Install browser-walkthrough runner (separate from app dependencies)
+        run: npm install --prefix e2e --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - name: Run continuous browser-only customer walkthrough
+        working-directory: e2e
+        run: npm test
+      - name: Try visible review Cloud → Console login journey
+        id: review-console-smoke
+        # Deliberately fail the review acceptance if the browser cannot reach Console.
+        working-directory: e2e
+        env:
+          OCTALVE_REVIEW_CONSOLE_BROWSER: "true"
+        run: npm test -- --grep "review Cloud"
+      # A failed Cloud -> Console click is a genuine release blocker, not
+      # optional success. Review builds remain available with failing CI.
+      - name: Observe existing public .com website through browser only
+        id: live-site-browser
+        continue-on-error: false
+        working-directory: e2e
+        env:
+          OCTALVE_LIVE_BROWSER_SMOKE: "true"
+          OCTALVE_BROWSER_BASE_URL: "https://cloud.octalve.com"
+        run: npm test -- --grep "live Cloud homepage|live public Cloud browser navigation"
+      - name: Upload screenshot/trace review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: octalve-cloud-browser-review
+          path: |
+            e2e/test-results/
+            e2e/report/
+          if-no-files-found: warn

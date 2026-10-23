@@ -189,6 +189,7 @@ export function MobileNavigation({
                 key={item.id}
                 href={item.href}
                 external
+                newTab={item.href === cloudLinks.console ? false : undefined}
                 onNavigate={onNavigate}
                 className="rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-cloud-blue hover:bg-cloud-mist focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
               >
@@ -215,6 +216,7 @@ export function MobileNavigation({
 
           <SmartLink
             href={cloudLinks.console}
+              newTab={false}
             external
             onNavigate={onNavigate}
             className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-cloud-blue px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-cloud-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 motion-reduce:transform-none"

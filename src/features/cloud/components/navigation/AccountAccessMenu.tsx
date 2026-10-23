@@ -2,6 +2,7 @@
 
 import { ChevronDown, ExternalLink, User } from "lucide-react";
 import { accountAccessLinks } from "@/features/cloud/data/cloud-navigation";
+import { cloudLinks } from "@/features/cloud/data/cloud-links";
 import { SmartLink } from "./SmartLink";
 import { cn } from "./cn";
 
@@ -62,6 +63,7 @@ export function AccountAccessMenu({
                 key={item.id}
                 href={item.href}
                 external
+                newTab={item.href === cloudLinks.console ? false : undefined}
                 onNavigate={onNavigate}
                 className="group mt-1 flex items-start gap-3 rounded-xl px-3 py-3.5 transition hover:bg-cloud-mist focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
               >

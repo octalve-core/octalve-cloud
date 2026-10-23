@@ -1,7 +1,7 @@
 export const cloudLinks = {
-  console: "https://console.octalve.cloud",
-  opanel: "https://opanel.octalve.cloud",
-  domainSearch: "https://console.octalve.cloud",
+  console: process.env.NEXT_PUBLIC_CLOUD_CONSOLE_URL?.trim() || "https://console.cloud.octalve.com",
+  opanel: process.env.NEXT_PUBLIC_CLOUD_OPANEL_URL?.trim() || "https://opanel.cloud.octalve.com",
+  domainSearch: "/domains",
   supportEmail: "info@octalve.cloud",
   supportPhone: "+234 807 345 9090",
   whatsapp: "https://wa.me/2348073459090",
