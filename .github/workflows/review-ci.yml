@@ -36,7 +36,7 @@ jobs:
         run: npm test
       - name: Try visible review Cloud → Console login journey
         id: review-console-smoke
-        continue-on-error: true # Report as explicit blocked gate until protected preview permits browser access
+        # Deliberately fail the review acceptance if the browser cannot reach Console.
         working-directory: e2e
         env:
           OCTALVE_REVIEW_CONSOLE_BROWSER: "true"
