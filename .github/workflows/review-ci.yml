@@ -36,7 +36,7 @@ jobs:
         env:
           OCTALVE_LIVE_BROWSER_SMOKE: "true"
           OCTALVE_BROWSER_BASE_URL: "https://cloud.octalve.com"
-        run: npm test -- --grep "live public Cloud browser navigation"
+        run: npm test -- --grep "live Cloud homepage|live public Cloud browser navigation"
       - name: Upload screenshot/trace review evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
