@@ -21,3 +21,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: test -f out/index.html
+      - name: Install browser-walkthrough runner (separate from app dependencies)
+        run: npm install --prefix e2e --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - name: Run continuous browser-only customer walkthrough
+        working-directory: e2e
+        run: npm test
+      - name: Upload screenshot/trace review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: octalve-cloud-browser-review
+          path: |
+            e2e/test-results/
+            e2e/report/
+          if-no-files-found: warn
