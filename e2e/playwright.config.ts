@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const externalBrowserOrigin = process.env.OCTALVE_BROWSER_BASE_URL;
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
@@ -8,13 +10,13 @@ export default defineConfig({
   reporter: [["list"], ["html", { outputFolder: "report", open: "never" }]],
   outputDir: "test-results",
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: externalBrowserOrigin || "http://127.0.0.1:4173",
     ...devices["Desktop Chrome"],
     trace: "on",
     screenshot: "on",
     video: "retain-on-failure",
   },
-  webServer: {
+  webServer: externalBrowserOrigin ? undefined : {
     command: "python3 -m http.server 4173 --directory ../out",
     port: 4173,
     reuseExistingServer: !process.env.CI,
