@@ -12,6 +12,7 @@ export function SmartLink({
   onNavigate,
   children,
   ariaLabel,
+  newTab,
 }: {
   href: string;
   external?: boolean;
@@ -19,15 +20,16 @@ export function SmartLink({
   onNavigate?: () => void;
   children: ReactNode;
   ariaLabel?: string;
+  newTab?: boolean;
 }) {
   if (external || !href.startsWith("/")) {
-    const newTab = shouldOpenInNewTab(href);
+    const openNewTab = newTab ?? shouldOpenInNewTab(href);
 
     return (
       <a
         href={href}
-        target={newTab ? "_blank" : undefined}
-        rel={newTab ? "noopener noreferrer" : undefined}
+        target={openNewTab ? "_blank" : undefined}
+        rel={openNewTab ? "noopener noreferrer" : undefined}
         className={className}
         onClick={onNavigate}
         aria-label={ariaLabel}
