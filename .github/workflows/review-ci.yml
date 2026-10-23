@@ -29,9 +29,11 @@ jobs:
       - name: Run continuous browser-only customer walkthrough
         working-directory: e2e
         run: npm test
+      # A failed Cloud -> Console click is a genuine release blocker, not
+      # optional success. Review builds remain available with failing CI.
       - name: Observe existing public .com website through browser only
         id: live-site-browser
-        continue-on-error: true
+        continue-on-error: false
         working-directory: e2e
         env:
           OCTALVE_LIVE_BROWSER_SMOKE: "true"
