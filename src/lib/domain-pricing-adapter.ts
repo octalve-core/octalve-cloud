@@ -64,10 +64,10 @@ type LiveDomainPricesResponse = {
  * This single adapter file serves:
  *
  * 1. Domain search suggestions:
- *    POST https://console.octalve.cloud/api/domains/search
+ *    POST an explicitly configured Django registrar-search endpoint
  *
  * 2. Domain package pricing:
- *    GET https://console.octalve.cloud/api/domains/prices
+ *    GET an explicitly configured Django domain-pricing endpoint
  *
  * Later, when the backend is ready, update only these two constants.
  */
@@ -90,7 +90,7 @@ function formatMoney(amount: number, currency: "NGN" | "USD", period = "year") {
 }
 
 function buildFallbackOrderUrl(domain: string) {
-  return `https://console.octalve.cloud/order/domain?domain=${encodeURIComponent(
+  return `/contact?interest=domain&domain=${encodeURIComponent(
     domain,
   )}`;
 }

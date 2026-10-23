@@ -65,12 +65,8 @@ function removeKnownTld(value: string) {
 }
 
 function buildConsoleDomainUrl(domain: string) {
-  const cleanDomain = normalizeDomain(domain);
-  const baseUrl = cloudLinks.console.replace(/\/$/, "");
-
-  return `${baseUrl}/order/domain-search?domain=${encodeURIComponent(
-    cleanDomain,
-  )}`;
+  // Until a verified checkout provider is integrated, request an enquiry.
+  return `/contact?interest=domain&domain=${encodeURIComponent(domain)}`;
 }
 
 export function ToolPanel() {

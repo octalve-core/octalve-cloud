@@ -44,11 +44,8 @@ function removeKnownTld(value: string) {
 }
 
 function buildConsoleDomainUrl(domain: string) {
-  const separator = cloudLinks.console.includes("?") ? "&" : "?";
-
-  return `${cloudLinks.console}${separator}domain=${encodeURIComponent(
-    domain,
-  )}`;
+  // Until a verified checkout provider is integrated, request an enquiry.
+  return `/contact?interest=domain&domain=${encodeURIComponent(domain)}`;
 }
 
 export function DomainSearch() {

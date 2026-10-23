@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+const cloudPublicUrl = process.env.NEXT_PUBLIC_CLOUD_PUBLIC_URL?.trim() || "https://cloud.octalve.com";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -9,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://octalve.cloud"),
+  metadataBase: new URL(cloudPublicUrl),
   title: {
     default: "Octalve Cloud — Domains, Hosting, Email & Digital Infrastructure",
     template: "%s | Octalve Cloud"
@@ -20,7 +22,7 @@ export const metadata: Metadata = {
     title: "Octalve Cloud — Grow your business online",
     description:
       "Domains, hosting, business email, SSL, servers and migration support for modern businesses.",
-    url: "https://octalve.cloud",
+    url: cloudPublicUrl,
     siteName: "Octalve Cloud",
     type: "website"
   },
