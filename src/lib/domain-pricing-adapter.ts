@@ -22,7 +22,7 @@ export async function getDomainSuggestions(request:DomainPricingRequest):Promise
   const tlds=[...new Set(request.tlds.filter(t=>/^\.[a-z0-9.-]{2,30}$/.test(t)))].slice(0,8);
   const roots=tlds.length?tlds:[".com"];
   const names=roots.map(tld=>keyword.endsWith(tld)?keyword:keyword.replace(/\.[a-z0-9.-]+$/,"")+tld);
-  const results=await Promise.all(names.map(async domain=>{
+  const results=await Promise.all(names.map(async (domain):Promise<DomainSuggestion|null>=>{
     try{
       const resp=await fetch(`${API}/domains/lookup/?domain=${encodeURIComponent(domain)}`,{credentials:"omit",cache:"no-store"});
       if(!resp.ok)return null;
