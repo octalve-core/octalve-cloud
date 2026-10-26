@@ -1,5 +1,5 @@
 export const cloudLinks = {
-  console: "https://console.octalve.cloud",
+  console: "https://console.cloud.octalve.com",
   opanel: "https://opanel.octalve.cloud",
   domainSearch: "https://console.octalve.cloud",
   supportEmail: "info@octalve.cloud",

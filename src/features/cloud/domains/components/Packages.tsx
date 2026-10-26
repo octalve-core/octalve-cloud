@@ -127,9 +127,7 @@ export function Packages() {
     DEFAULT_DOMAIN_PRICE_CATEGORY,
   );
 
-  const [domainPackages, setDomainPackages] = useState<DomainPackage[]>(
-    fallbackDomainPackages,
-  );
+  const [domainPackages, setDomainPackages] = useState<DomainPackage[]>([]);
 
   const [isLoadingLivePrices, setIsLoadingLivePrices] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -171,6 +169,8 @@ export function Packages() {
   }, [activeCategory, domainPackages]);
 
   const maxSlideIndex = Math.max(visiblePackages.length - 1, 0);
+  // No static fallback prices: show only Admin-configured TLD rates.
+
 
   function scrollToSlide(index: number) {
     const slider = sliderRef.current;

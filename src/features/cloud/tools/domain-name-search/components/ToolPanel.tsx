@@ -276,14 +276,14 @@ export function ToolPanel() {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          {item.available ? (
+                          {item.available === true ? (
                             <CheckCircle2
                               className="h-4 w-4 text-emerald-500"
                               aria-hidden="true"
                             />
                           ) : (
                             <XCircle
-                              className="h-4 w-4 text-red-500"
+                              className="h-4 w-4 text-slate-400"
                               aria-hidden="true"
                             />
                           )}
@@ -294,7 +294,7 @@ export function ToolPanel() {
                         </div>
 
                         <p className="mt-1 text-xs leading-5 text-slate-500">
-                          {item.available ? "Available now" : "Currently taken"}{" "}
+                          {item.available === true ? "Registrar-verified available" : item.available === false ? "Registered" : "Availability awaiting registrar verification"}{" "}
                           · {item.renewalLabel ?? "Registration pricing"}
                         </p>
                       </div>
@@ -305,19 +305,17 @@ export function ToolPanel() {
                         </p>
 
                         <a
-                          href={
-                            item.orderUrl || buildConsoleDomainUrl(item.domain)
-                          }
+                          href={item.orderUrl || "/support"}
                           target="_blank"
                           rel="noreferrer"
                           className={[
                             "inline-flex h-10 items-center justify-center rounded-full px-4 text-xs font-medium transition",
-                            item.available
+                            item.available === true
                               ? "bg-cloud-blue text-white hover:bg-blue-600"
                               : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300",
                           ].join(" ")}
                         >
-                          {item.available ? "Order" : "View"}
+                          {item.available === true ? "Order" : "Enquire"}
                         </a>
                       </div>
                     </div>

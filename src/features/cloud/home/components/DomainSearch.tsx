@@ -7,7 +7,7 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
 import {
   getDomainSuggestions,
@@ -49,29 +49,7 @@ type TldCard = {
   note: string;
 };
 
-const DOMAIN_PRICE_GROUPS: Record<PricingTab, TldCard[]> = {
-  popular: [
-    { tld: ".com", price: "₦15,000", note: "/year" },
-    { tld: ".net", price: "₦30,986", note: "/year" },
-    { tld: ".org", price: "₦28,934", note: "/year" },
-    { tld: ".com.ng", price: "₦Free", note: "/1 year" },
-    { tld: ".ng", price: "₦16,500", note: "/year" },
-  ],
-  business: [
-    { tld: ".com", price: "₦15,000", note: "/year" },
-    { tld: ".org", price: "₦28,934", note: "/year" },
-    { tld: ".co", price: "₦34,500", note: "/year" },
-    { tld: ".shop", price: "₦19,800", note: "/year" },
-    { tld: ".com.ng", price: "₦Free", note: "/1 year" },
-  ],
-  new: [
-    { tld: ".cloud", price: "₦22,500", note: "/year" },
-    { tld: ".ai", price: "₦95,000", note: "/year" },
-    { tld: ".shop", price: "₦19,800", note: "/year" },
-    { tld: ".africa", price: "₦60,170", note: "/year" },
-    { tld: ".ng", price: "₦16,500", note: "/year" },
-  ],
-};
+const DOMAIN_PRICE_GROUPS: Record<PricingTab, TldCard[]> = {popular:[],business:[],new:[]};
 
 /**
  * LIVE BACKEND / ADAPTER INSTRUCTION
@@ -115,13 +93,18 @@ function buildConsoleDomainUrl(domain: string) {
 }
 
 function buildOrderDomainUrl(domain: string) {
-  return `${cloudLinks.console}/order/domain?domain=${encodeURIComponent(
-    domain,
-  )}`;
+  return `/tools/domain-name-search/?domain=${encodeURIComponent(domain)}`;
 }
 
 export function DomainSearch() {
   const [domain, setDomain] = useState("");
+  const [liveGroups,setLiveGroups] = useState(DOMAIN_PRICE_GROUPS);
+  useEffect(()=>{let active=true;fetch("https://api.cloud.octalve.com/api/storefront/domains/prices/",{credentials:"omit",cache:"no-store"})
+    .then(r=>{if(!r.ok)throw Error("prices");return r.json()})
+    .then((data:{tlds?:{tld:string;registration_price:string}[]})=>{if(!active)return;
+      const list=(data.tlds||[]).filter(t=>Number(t.registration_price)>0).map(t=>({tld:t.tld,price:new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(t.registration_price)),note:"/year"}));
+      setLiveGroups({popular:list.slice(0,5),business:list.slice(5,10),new:list.slice(10,15)});
+    }).catch(()=>{});return()=>{active=false};},[]);
   const [activeTab, setActiveTab] = useState<PricingTab>("popular");
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -129,8 +112,8 @@ export function DomainSearch() {
   const [suggestions, setSuggestions] = useState<DomainSuggestion[]>([]);
 
   const activePrices = useMemo(
-    () => DOMAIN_PRICE_GROUPS[activeTab],
-    [activeTab],
+    () => liveGroups[activeTab],
+    [activeTab,liveGroups],
   );
 
   async function handleSearch() {
@@ -161,7 +144,7 @@ export function DomainSearch() {
   }
 
   function openConsoleWithDomain(value: string) {
-    window.location.assign(buildConsoleDomainUrl(value));
+    window.location.assign("/support");
   }
 
   return (
@@ -340,9 +323,7 @@ export function DomainSearch() {
                   ) : suggestions.length > 0 ? (
                     <div className="space-y-3">
                       {suggestions.slice(0, 6).map((item, index) => {
-                        const suggestedDomain =
-                          item.domain ||
-                          `${normalizeDomain(domain)}-${index + 1}.com`;
+                        const suggestedDomain = item.domain;
 
                         return (
                           <button
@@ -376,10 +357,10 @@ export function DomainSearch() {
                                 "inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold",
                                 item.available === false
                                   ? "bg-red-50 text-red-600"
-                                  : "bg-emerald-50 text-emerald-600",
+                                  : item.available === null ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-600",
                               ].join(" ")}
                             >
-                              {item.available === false ? "Taken" : "Available"}
+                              {item.available === false ? "Registered" : item.available === null ? "Verification required" : "Available"}
                             </span>
                           </button>
                         );
