@@ -31,6 +31,17 @@ jobs:
       - name: Build static website
         run: pnpm build
 
+      # Independent build artifact remains available even if SSH hosting is
+      # temporarily inaccessible. No passwords, SSH keys or environment
+      # variables are included in the exported static site artifact.
+      - name: Preserve static website release
+        uses: actions/upload-artifact@v4
+        with:
+          name: octalve-cloud-public-site
+          path: out/
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
