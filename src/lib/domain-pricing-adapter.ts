@@ -31,7 +31,7 @@ export async function getDomainSuggestions(request:DomainPricingRequest):Promise
         data.registrar_connected&&data.availability==="registered"?false:null,
         priceLabel:data.registration_price?`Indicative ${money(data.registration_price,data.currency||"NGN")}/year`:"Pricing pending",
         renewalLabel:data.renewal_price?`Renewal estimate ${money(data.renewal_price,data.currency||"NGN")}/year`:undefined,
-        orderUrl:data.checkout_enabled?`https://console.cloud.octalve.com/client/order?domain=${encodeURIComponent(data.domain)}`:"",
+        orderUrl:`https://console.cloud.octalve.com/client/domains?domain=${encodeURIComponent(data.domain)}`,
       } satisfies DomainSuggestion;
     }catch{return null;}
   }));

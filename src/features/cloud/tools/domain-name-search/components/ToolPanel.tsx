@@ -305,7 +305,7 @@ export function ToolPanel() {
                         </p>
 
                         <a
-                          href={item.orderUrl || "/support"}
+                          href={item.orderUrl || `${cloudLinks.console}/client/domains?domain=${encodeURIComponent(item.domain)}`}
                           target="_blank"
                           rel="noreferrer"
                           className={[
@@ -315,7 +315,7 @@ export function ToolPanel() {
                               : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300",
                           ].join(" ")}
                         >
-                          {item.available === true ? "Order" : "Enquire"}
+                          {item.available === true ? "Continue" : "Review domain"}
                         </a>
                       </div>
                     </div>

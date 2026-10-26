@@ -66,7 +66,10 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
           if(!selected)return null;
           const discount=selected.regular_price&&Number(selected.regular_price)>Number(selected.total_price)
             ?Math.round((1-Number(selected.total_price)/Number(selected.regular_price))*100):0;
-          const url=`${CONSOLE}/client/order?plan=${encodeURIComponent(String(plan.id))}&cycle=${encodeURIComponent(selected.key)}`;
+          const canCheckout = ["shared_hosting", "wordpress_hosting", "vps"].includes(plan.product_type);
+          const url = canCheckout
+            ? `${CONSOLE}/client/order?plan=${encodeURIComponent(String(plan.id))}&cycle=${encodeURIComponent(selected.key)}`
+            : `${CONSOLE}/client/support/new?product=${encodeURIComponent(String(plan.id))}`;
           return <article key={plan.id} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-[0_16px_50px_rgba(4,29,59,.045)] ${plan.is_popular?"border-[#0064E0]":"border-slate-200"}`}>
             {plan.is_popular&&<div className="-mx-6 -mt-6 mb-5 bg-[#0064E0] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-white">Popular choice</div>}
             <span className="text-[11px] font-semibold uppercase tracking-wider text-[#0064E0]">{plan.product_name}</span>
@@ -86,7 +89,8 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
                 </select>
               </label>
             </div>
-            <Link href={url} className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#0064E0] px-4 py-3 text-sm font-bold text-white hover:bg-[#0052B8]">Choose this plan</Link>
+            <Link href={url} className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#0064E0] px-4 py-3 text-sm font-bold text-white hover:bg-[#0052B8]">{canCheckout ? "Choose this plan" : "Ask about this plan"}</Link>
+            {!canCheckout && <p className="mt-2 text-xs text-amber-700">Our team will confirm availability and ordering options for this service.</p>}
             <div className="mt-5 border-t border-slate-100 pt-5">
               <p className="mb-3 text-xs font-bold text-slate-600">Included features</p>
               <ul className="space-y-3">{plan.features.map((feature,i)=><li key={i} className="flex items-start gap-2 text-sm leading-5 text-slate-600">

@@ -144,7 +144,7 @@ export function DomainSearch() {
   }
 
   function openConsoleWithDomain(value: string) {
-    window.location.assign("/support");
+    window.location.assign(`${cloudLinks.console}/client/domains?domain=${encodeURIComponent(value)}`);
   }
 
   return (
