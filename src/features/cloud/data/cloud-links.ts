@@ -37,6 +37,10 @@ export const cloudNavLinks = [
     href: "/migration",
   },
   {
+    label: "Knowledge Base",
+    href: "/knowledge-base",
+  },
+  {
     label: "Support",
     href: "/support",
   },
