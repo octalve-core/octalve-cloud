@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
+import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
 import {
   getDomainSuggestions,
   type DomainSuggestion,
@@ -65,12 +66,8 @@ function removeKnownTld(value: string) {
 }
 
 function buildConsoleDomainUrl(domain: string) {
-  const cleanDomain = normalizeDomain(domain);
-  const baseUrl = cloudLinks.console.replace(/\/$/, "");
-
-  return `${baseUrl}/order/domain-search?domain=${encodeURIComponent(
-    cleanDomain,
-  )}`;
+  return buildDomainRegistrationHref(normalizeDomain(domain)) ||
+    `${cloudLinks.console}/client/domains/register`;
 }
 
 export function ToolPanel() {
@@ -305,7 +302,7 @@ export function ToolPanel() {
                         </p>
 
                         <a
-                          href={item.orderUrl || `${cloudLinks.console}/client/domains?domain=${encodeURIComponent(item.domain)}`}
+                          href={item.orderUrl || buildConsoleDomainUrl(item.domain)}
                           target="_blank"
                           rel="noreferrer"
                           className={[
