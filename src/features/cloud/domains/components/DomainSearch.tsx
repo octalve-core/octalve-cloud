@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
+import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
 import {
   getDomainSuggestions,
   type DomainSuggestion,
@@ -44,11 +45,8 @@ function removeKnownTld(value: string) {
 }
 
 function buildConsoleDomainUrl(domain: string) {
-  const separator = cloudLinks.console.includes("?") ? "&" : "?";
-
-  return `${cloudLinks.console}${separator}domain=${encodeURIComponent(
-    domain,
-  )}`;
+  return buildDomainRegistrationHref(normalizeDomain(domain)) ||
+    `${cloudLinks.console}/client/domains/register`;
 }
 
 export function DomainSearch() {

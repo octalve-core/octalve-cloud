@@ -2,9 +2,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Globe2, RefreshCcw, ShieldCheck } from "lucide-react";
+import {buildHostingCheckoutHref} from "@/lib/console-commerce-links";
 
 type Cycle = { key: string; months: number; label: string; total_price: string; regular_price: string | null; setup_fee: string; is_default: boolean };
-type Plan = { id: number; name: string; description: string; product_name: string; product_type: string;
+type Plan = { id: number; name: string; slug: string; product_slug: string; published_revision: number; description: string; product_name: string; product_type: string;
   currency: string; features: string[]; is_popular: boolean; billing_cycles: Cycle[] };
 type ResponseShape = { plans: Plan[] };
 export type PlanCategory = "all" | "hosting" | "email" | "vps" | "security" | "migration";
@@ -66,9 +67,13 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
           if(!selected)return null;
           const discount=selected.regular_price&&Number(selected.regular_price)>Number(selected.total_price)
             ?Math.round((1-Number(selected.total_price)/Number(selected.regular_price))*100):0;
-          const canCheckout = ["shared_hosting", "wordpress_hosting", "vps"].includes(plan.product_type);
-          const url = canCheckout
-            ? `${CONSOLE}/client/order?plan=${encodeURIComponent(String(plan.id))}&cycle=${encodeURIComponent(selected.key)}`
+          const purchaseUrl = buildHostingCheckoutHref({
+            productSlug:plan.product_slug,planSlug:plan.slug,
+            cycle:selected.key,revision:plan.published_revision
+          });
+          const canCheckout = ["shared_hosting", "wordpress_hosting", "vps"].includes(plan.product_type) && Boolean(purchaseUrl);
+          const url = canCheckout && purchaseUrl
+            ? purchaseUrl
             : `${CONSOLE}/client/support/new?product=${encodeURIComponent(String(plan.id))}`;
           return <article key={plan.id} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-[0_16px_50px_rgba(4,29,59,.045)] ${plan.is_popular?"border-[#0064E0]":"border-slate-200"}`}>
             {plan.is_popular&&<div className="-mx-6 -mt-6 mb-5 bg-[#0064E0] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-white">Popular choice</div>}
