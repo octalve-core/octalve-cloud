@@ -1,4 +1,4 @@
-import { cloudLinks } from "@/features/cloud/data/cloud-links";
+
 
 export type DomainPriceCategoryKey =
   | "all"
@@ -243,13 +243,6 @@ export function formatNaira(value: number) {
 }
 
 export function buildDomainAvailabilityHref(domainPackage: DomainPackage) {
-  if (domainPackage.ctaHref) {
-    return domainPackage.ctaHref;
-  }
-
-  const separator = cloudLinks.console.includes("?") ? "&" : "?";
-
-  return `${cloudLinks.console}${separator}tld=${encodeURIComponent(
-    domainPackage.tld,
-  )}`;
+  if (domainPackage.ctaHref) return domainPackage.ctaHref;
+  return `/tools/domain-name-search/?tld=${encodeURIComponent(domainPackage.tld)}`;
 }
