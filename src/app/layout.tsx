@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://octalve.cloud"),
+  metadataBase: new URL("https://cloud.octalve.com"),
   title: {
     default: "Octalve Cloud — Domains, Hosting, Email & Digital Infrastructure",
     template: "%s | Octalve Cloud"
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Octalve Cloud — Grow your business online",
     description:
       "Domains, hosting, business email, SSL, servers and migration support for modern businesses.",
-    url: "https://octalve.cloud",
+    url: "https://cloud.octalve.com",
     siteName: "Octalve Cloud",
     type: "website"
   },
