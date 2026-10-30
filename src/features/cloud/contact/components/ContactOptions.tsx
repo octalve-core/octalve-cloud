@@ -3,7 +3,7 @@ import { cloudLinks } from "@/features/cloud/data/cloud-links";
 const options = [
   { title: "Email", value: cloudLinks.supportEmail },
   { title: "Phone", value: cloudLinks.supportPhone },
-  { title: "Client Console", value: "console.octalve.cloud" },
+  { title: "Client Console", value: cloudLinks.console },
 ];
 
 export function ContactOptions() {

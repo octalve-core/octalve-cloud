@@ -585,6 +585,10 @@ export function CloudFooter() {
               © {currentYear} Octalve Cloud. All Rights Reserved.
             </p>
 
+            <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
+              <Link className="hover:underline" style={{color:FOOTER_COLORS.muted}} href="/privacy-policy">Privacy Policy</Link>
+              <Link className="hover:underline" style={{color:FOOTER_COLORS.muted}} href="/terms-of-service">Terms of Service</Link>
+            </nav>
             <p style={{ color: FOOTER_COLORS.soft }}>
               Powered by{" "}
               <span style={{ color: FOOTER_COLORS.accent }}>Octalve Cloud</span>
