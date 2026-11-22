@@ -360,7 +360,7 @@ export function DomainSearch() {
                                   : item.available === null ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-600",
                               ].join(" ")}
                             >
-                              {item.available === false ? "Registered" : item.available === null ? "Verification required" : "Available"}
+                              {item.available === false ? "Unavailable" : item.available === null ? "Verification required" : "Available"}
                             </span>
                           </button>
                         );
