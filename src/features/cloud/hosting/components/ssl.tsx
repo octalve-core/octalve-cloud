@@ -19,8 +19,8 @@ export function SSL(){
     <p className="mt-5 text-base leading-7 text-slate-600">Help keep your website, customers and business information protected with the right security tools.</p>
    </div>
    <div className="mt-10 overflow-hidden rounded-[24px] border border-slate-200">
-    <div className="flex items-center justify-center bg-[#F46D35] px-5 pt-8 sm:px-10 sm:pt-12">
-     <Image src={sslSecurityVisual} alt="Octalve Cloud SSL and website security illustration" sizes="(min-width: 1280px) 850px, 90vw" className="h-auto max-h-[440px] w-full max-w-[850px] object-contain object-bottom"/>
+    <div className="overflow-hidden bg-[#F46D35]">
+     <Image src={sslSecurityVisual} alt="Octalve Cloud SSL and website security illustration" sizes="(min-width: 1344px) 1280px, (min-width: 1024px) calc(100vw - 64px), (min-width: 640px) calc(100vw - 48px), calc(100vw - 32px)" className="block h-auto w-full object-cover"/>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
      {features.map(({icon:Icon,title,description,accent},i)=><article key={title} className={`relative flex min-w-0 flex-col p-6 pb-8 sm:p-7 sm:pb-8 ${i>0?"border-t border-slate-200":""} ${i%2===1?"sm:border-l sm:border-t-0":""} ${i===2?"sm:border-t":""} ${i>0?"lg:border-l lg:border-t-0":""}`}>
