@@ -3,11 +3,11 @@ import { Hero } from "./components/Hero";
 // import { Overview } from "./components/Overview";
 // import { Services } from "./components/Services";
 // import { Packages } from "./components/Packages";
-// import { DomainSearch } from "./components/DomainSearch";
+import { ServiceDomainSearch } from "@/features/cloud/components/ServiceDomainSearch";
 // import { WhyOctalveCloud } from "./components/WhyOctalveCloud";
 import { Migration } from "./components/Migration";
 import { FAQ } from "./components/FAQ";
-import { CTA } from "./components/CTA";
+import { CTA } from "@/features/cloud/home/components/CTA";
 
 export function CloudMigrationPage() {
   return (
@@ -17,9 +17,9 @@ export function CloudMigrationPage() {
       <Overview />
       <Services />
       <Packages />
-      <DomainSearch />
       <WhyOctalveCloud /> */}
       <Migration />
+      <ServiceDomainSearch />
       <FAQ />
       <CTA />
     </CloudShell>

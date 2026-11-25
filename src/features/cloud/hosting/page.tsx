@@ -3,11 +3,11 @@ import { Hero } from "./components/Hero";
 // import { Overview } from "./components/Overview";
 // import { Services } from "./components/Services";
 import { Packages } from "./components/Packages";
-import { DomainSearch } from "./components/DomainSearch";
+import { ServiceDomainSearch } from "@/features/cloud/components/ServiceDomainSearch";
 
 import { Migration } from "./components/Migration";
 import { FAQ } from "./components/FAQ";
-import { CTA } from "./components/CTA";
+import { CTA } from "@/features/cloud/home/components/CTA";
 import { SSL } from "./components/ssl";
 import { Performance } from "./components/performance";
 
@@ -18,7 +18,7 @@ export function CloudHostingPage() {
       {/* <Overview /> */}
       {/* <Services /> */}
       <div id="hosting-plans" className="scroll-mt-32"><Packages /></div>
-      <DomainSearch />
+      <ServiceDomainSearch />
       <SSL />
       <Performance />
       {/* <WhyOctalveCloud /> */}
