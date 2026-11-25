@@ -2,7 +2,7 @@ export const cloudLinks = {
   console: "https://console.cloud.octalve.com",
   opanel: "https://opanel.octalve.cloud",
   domainSearch: "/tools/domain-name-search/",
-  supportEmail: "info@octalve.cloud",
+  supportEmail: "info@cloud.octalve.com",
   supportPhone: "+234 807 345 9090",
   whatsapp: "https://wa.me/2348073459090",
 };
