@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Globe2, RefreshCcw, ShieldCheck } from "lucide-react";
+import { Globe2 } from "lucide-react";
+import {PublishedPackageCard} from "./PublishedPackageCard";
 import {buildHostingCheckoutHref} from "@/lib/console-commerce-links";
 
 type Cycle = { key: string; months: number; label: string; total_price: string; regular_price: string | null; setup_fee: string; is_default: boolean };
@@ -18,9 +19,9 @@ const KINDS: Record<PlanCategory, string[]> = {
 const periodLabel: Record<string,string> = {"1mo":"Monthly","3mo":"Quarterly","6mo":"Every 6 months","12mo":"Annually","24mo":"Every 2 years","36mo":"Every 3 years","once":"One-time"};
 function money(value: string | number, currency: string) {
   const amount = Number(value);
-  if (!Number.isFinite(amount) || amount < 0) return "Price unavailable";
+  if (!Number.isFinite(amount) || amount < 0 || !/^[A-Z]{3}$/.test(currency)) return "Price unavailable";
   return new Intl.NumberFormat(currency==="NGN"?"en-NG":"en-US",{
-    style:"currency",currency:currency==="NGN"?"NGN":currency==="USD"?"USD":"NGN",
+    style:"currency",currency,
     maximumFractionDigits:2
   }).format(amount);
 }
@@ -35,7 +36,7 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
     fetch(API,{signal:abort.signal,credentials:"omit",cache:"no-store"})
       .then(async r=>{if(!r.ok)throw Error("catalog unavailable");return await r.json() as ResponseShape})
       .then(data=>{if(!abort.signal.aborted)setPlans(Array.isArray(data.plans)?data.plans:[])})
-      .catch(()=>{if(!abort.signal.aborted)setError("Our latest plans are temporarily unavailable. No prices or orders have been changed.")})
+      .catch(()=>{if(!abort.signal.aborted)setError("Plans are temporarily unavailable.")})
       .finally(()=>{if(!abort.signal.aborted)setLoading(false)});
     return()=>abort.abort();
   },[]);
@@ -46,7 +47,7 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
       <div className="mx-auto max-w-3xl text-center">
         <span className="text-xs font-bold uppercase tracking-[0.23em] text-[#0064E0]">Octalve Cloud packages</span>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#071A33] sm:text-4xl">Find the right plan for what comes next.</h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">Transparent features and pricing, published by Octalve Cloud and kept consistent through checkout.</p>
+        <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">Compare plans and billing periods.</p>
       </div>
       {category==="all"&&<div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Service categories">
         {tabs.map(tab=><button key={tab} onClick={()=>setSelectedCategory(tab)} type="button" aria-pressed={selectedCategory===tab}
@@ -56,7 +57,7 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
       {error&&<div role="alert" className="mt-8 rounded-2xl border border-rose-100 bg-rose-50 p-8 text-center text-sm text-rose-700">{error}</div>}
       {!loading&&!error&&shown.length===0&&<div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-slate-200 bg-[#F8FAFC] p-8 text-center">
         <Globe2 className="mx-auto h-9 w-9 text-[#0064E0]" />
-        <h3 className="mt-3 text-lg font-semibold text-[#10233A]">We're preparing these packages.</h3>
+        <h3 className="mt-3 text-lg font-semibold text-[#10233A]">Packages coming soon.</h3>
         <p className="mt-2 text-sm leading-6 text-slate-600">Only published, verified offers appear here. Contact our team for a package tailored to your needs.</p>
         <Link href="/support" className="mt-5 inline-flex rounded-xl bg-[#0064E0] px-5 py-3 text-sm font-semibold text-white">Talk to our team</Link>
       </div>}
@@ -75,37 +76,24 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
           const url = canCheckout && purchaseUrl
             ? purchaseUrl
             : `${CONSOLE}/client/support/new?product=${encodeURIComponent(String(plan.id))}`;
-          return <article key={plan.id} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-[0_16px_50px_rgba(4,29,59,.045)] ${plan.is_popular?"border-[#0064E0]":"border-slate-200"}`}>
-            {plan.is_popular&&<div className="-mx-6 -mt-6 mb-5 bg-[#0064E0] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-white">Popular choice</div>}
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#0064E0]">{plan.product_name}</span>
-            <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#071A33]">{plan.name}</h3>
-            <p className="mt-3 min-h-16 text-sm leading-6 text-slate-500">{plan.description}</p>
-            <div className="mt-4 border-t border-slate-100 pt-5">
-              <p className="text-xs font-medium text-slate-500">{periodLabel[selected.key]||selected.label}</p>
-              {discount>0&&<p className="mt-2 text-xs text-slate-400 line-through">{money(selected.regular_price!,plan.currency)}</p>}
-              <p className="mt-1 text-3xl font-bold tracking-tight text-[#071A33]">{money(selected.total_price,plan.currency)}</p>
-              {discount>0&&<p className="mt-1 text-xs font-semibold text-emerald-600">Save {discount}%</p>}
-              {Number(selected.setup_fee)>0&&<p className="mt-1 text-xs text-slate-500">Setup {money(selected.setup_fee,plan.currency)}</p>}
-              <label className="mt-4 block text-xs font-semibold text-slate-600">Billing period
+          return <PublishedPackageCard key={plan.id} name={plan.name} description={plan.description}
+            price={money(selected.total_price,plan.currency)} period={periodLabel[selected.key]||selected.label}
+            features={plan.features}
+            badge={plan.is_popular?<span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700">Popular</span>:undefined}
+            action={<>
+              {discount>0&&<p className="mb-2 text-xs text-slate-600"><span className="line-through">{money(selected.regular_price!,plan.currency)}</span> · Save {discount}%</p>}
+              {Number(selected.setup_fee)>0&&<p className="mb-2 text-xs text-slate-600">Setup {money(selected.setup_fee,plan.currency)}</p>}
+              <label className="block text-xs font-medium text-slate-700">Billing period
                 <select aria-label={`Billing period for ${plan.name}`} value={selected.key}
                   onChange={event=>setCycles(v=>({...v,[plan.id]:event.target.value}))}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 focus:border-[#0064E0] focus:outline-none">
+                  className="mt-1 min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700">
                   {plan.billing_cycles.map(c=><option key={c.key} value={c.key}>{periodLabel[c.key]||c.label}</option>)}
                 </select>
               </label>
-            </div>
-            <Link href={url} className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#0064E0] px-4 py-3 text-sm font-bold text-white hover:bg-[#0052B8]">{canCheckout ? "Choose this plan" : "Ask about this plan"}</Link>
-            {!canCheckout && <p className="mt-2 text-xs text-amber-700">Our team will confirm availability and ordering options for this service.</p>}
-            <div className="mt-5 border-t border-slate-100 pt-5">
-              <p className="mb-3 text-xs font-bold text-slate-600">Included features</p>
-              <ul className="space-y-3">{plan.features.map((feature,i)=><li key={i} className="flex items-start gap-2 text-sm leading-5 text-slate-600">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"/>{feature}</li>)}</ul>
-              {!plan.features.length&&<p className="text-xs text-slate-500">Contact us for full package specifications.</p>}
-            </div>
-          </article>;
+              <Link href={url} className="mt-3 flex min-h-11 items-center justify-center rounded-full bg-[#0064E0] px-4 text-sm font-medium text-white">{canCheckout ? "Choose this plan" : "Ask about this plan"}</Link>
+            </>}/>;
         })}
       </div>}
-      <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-500"><ShieldCheck className="h-4 w-4 text-[#0064E0]"/> Plans are taken directly from Octalve's published catalog. <RefreshCcw className="h-3.5 w-3.5"/></div>
     </div>
   </section>;
 }
