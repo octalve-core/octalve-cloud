@@ -5,10 +5,10 @@ import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
  * Only a connected and independently verified registrar may ever report
  * `available: true`. Until then lookup status is unknown, not "taken".
  */
-export type DomainPricingRequest = { query: string; tlds: string[] };
+export type DomainPricingRequest = { query: string; tlds: string[]; signal?: AbortSignal };
 export type DomainSuggestion = {
   domain: string; tld: string; available: boolean | null;
-  priceLabel: string; renewalLabel?: string; orderUrl: string;
+  priceLabel: string; renewalLabel?: string; orderUrl: string; checkoutEnabled?: boolean;
 };
 const API="https://api.cloud.octalve.com/api/storefront";
 const clean=(v:string)=>v.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"").replace(/[^a-z0-9.-]/g,"");
@@ -25,11 +25,13 @@ export async function getDomainSuggestions(request:DomainPricingRequest):Promise
   const names=roots.map(tld=>keyword.endsWith(tld)?keyword:keyword.replace(/\.[a-z0-9.-]+$/,"")+tld);
   const results=await Promise.all(names.map(async (domain):Promise<DomainSuggestion|null>=>{
     try{
-      const resp=await fetch(`${API}/domains/lookup/?domain=${encodeURIComponent(domain)}`,{credentials:"omit",cache:"no-store"});
+      const resp=await fetch(`${API}/domains/lookup/?domain=${encodeURIComponent(domain)}`,{credentials:"omit",cache:"no-store",signal:request.signal});
       if(!resp.ok)return null;
       const data=await resp.json() as Lookup;
+      if(data.domain !== domain) return null;
       return {domain:data.domain,tld:data.tld||"",available:data.registrar_connected&&data.availability==="available"?true:
         data.registrar_connected&&["registered", "unavailable"].includes(data.availability)?false:null,
+        checkoutEnabled:data.checkout_enabled===true,
         priceLabel:data.registration_price?`Indicative ${money(data.registration_price,data.currency||"NGN")}/year`:"Pricing pending",
         renewalLabel:data.renewal_price?`Renewal estimate ${money(data.renewal_price,data.currency||"NGN")}/year`:undefined,
         orderUrl:buildDomainRegistrationHref(data.domain) || "https://console.cloud.octalve.com/client/domains/register",
