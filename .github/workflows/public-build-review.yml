@@ -20,10 +20,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
-      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs
+      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs tests/support-page.test.mjs
       - run: pnpm build
       - name: Verify static export
         run: |
           test -f out/index.html
+          test -f out/support/index.html
           test -f out/knowledge-base/index.html
           test -f out/tools/domain-name-search/index.html
