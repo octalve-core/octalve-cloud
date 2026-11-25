@@ -231,7 +231,7 @@ export function Hero() {
           </div>
 
           <h1
-            className="mx-auto max-w-[980px] font-medium tracking-[-0.055em] text-slate-950"
+            className="mx-auto max-w-[980px] font-normal tracking-[-0.055em] text-slate-950"
             style={{
               fontSize: "clamp(2.45rem, 5.2vw, 5.35rem)",
               lineHeight: 0.98,
@@ -259,14 +259,14 @@ export function Hero() {
               href={cloudLinks.console}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-cloud-blue px-7 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-cloud-blue px-7 py-3 text-sm font-medium text-white shadow-[0_12px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
             >
               Start Now
             </Link>
 
             <Link
               href="/contact"
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-cloud-blue shadow-sm transition hover:-translate-y-0.5 hover:border-cloud-blue/30 hover:bg-slate-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-medium text-cloud-blue shadow-sm transition hover:-translate-y-0.5 hover:border-cloud-blue/30 hover:bg-slate-50"
             >
               Contact Sales
             </Link>
@@ -311,7 +311,7 @@ export function Hero() {
                   aria-label="Search domain"
                   onClick={handleDomainSearch}
                   disabled={isSearching}
-                  className="inline-flex h-14 w-full flex-shrink-0 items-center justify-center gap-2 rounded-[1.35rem] bg-cloud-blue px-7 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(0,100,224,0.24)] transition hover:-translate-y-0.5 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+                  className="inline-flex h-14 w-full flex-shrink-0 items-center justify-center gap-2 rounded-[1.35rem] bg-cloud-blue px-7 text-sm font-medium text-white shadow-[0_14px_34px_rgba(0,100,224,0.24)] transition hover:-translate-y-0.5 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
                 >
                   {isSearching ? (
                     <>
@@ -422,7 +422,7 @@ export function Hero() {
             <Link
               key={item.label}
               href={item.href}
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-cloud-blue px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,100,224,0.16)] transition hover:-translate-y-0.5 hover:bg-blue-600"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-cloud-blue px-4 py-3 text-center text-sm font-medium text-white shadow-[0_10px_25px_rgba(0,100,224,0.16)] transition hover:-translate-y-0.5 hover:bg-blue-600"
             >
               {item.label}
             </Link>
