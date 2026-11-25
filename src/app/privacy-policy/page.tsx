@@ -1,6 +1,6 @@
-import type {Metadata} from "next";
+import {pageMetadata} from "@/lib/public-seo";
 import {LegalPage,LegalSection} from "@/features/cloud/legal/LegalPage";
-export const metadata:Metadata={title:"Privacy Policy",description:"How Octalve Cloud collects, uses and protects account and hosting-service information."};
+export const metadata=pageMetadata("/privacy-policy/");
 export default function PrivacyPolicyPage(){
  return <LegalPage title="Privacy Policy" description="How information is handled when you browse Octalve Cloud, create an account or request hosting and related services.">
   <LegalSection title="Who is responsible"><p>Octalve Cloud provides this website and its connected customer Console. For privacy questions, access or correction requests, use the contact details below. This notice applies to the Octalve Cloud public website and Console, not unrelated third-party sites.</p></LegalSection>
