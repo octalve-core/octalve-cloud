@@ -13,7 +13,7 @@ export const headerGroups: readonly HeaderGroup[] = [
     { label: "Website Migration", href: "/migration" },
     { label: "SSL & Website Security", href: "/ssl-security" },
   ] },
-  { id: "domains", label: "Domains", links: [
+  { id: "domains", label: "Domain", links: [
     { label: "Domain Registration & Transfer", href: "/domains" },
     { label: "Domain Name Search", href: "/tools/domain-name-search" },
     { label: "WHOIS Lookup", href: "/tools/whois-lookup" },
@@ -21,13 +21,14 @@ export const headerGroups: readonly HeaderGroup[] = [
   { id: "servers", label: "Servers", links: [
     { label: "VPS & Cloud Servers", href: "/servers" },
   ] },
-  { id: "email", label: "Email", links: [
+  { id: "email", label: "Emails", links: [
     { label: "Business Email", href: "/email" },
   ] },
   { id: "resources", label: "Resources", links: [
     { label: "Free Cloud Tools", href: "/tools" },
     { label: "Knowledge Base", href: "/knowledge-base" },
     { label: "Help & Support", href: "/support" },
+    { label: "Contact Sales", href: "/contact" },
     { label: "Hosting Panel", href: cloudLinks.opanel },
   ] },
 ];
