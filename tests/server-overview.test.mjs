@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const read=p=>readFileSync(new URL("../src/features/cloud/"+p,import.meta.url),"utf8");
+test("servers share service domain search and exact home CTA",()=>{const s=read("servers/page.tsx");assert.match(s,/components\/ServiceDomainSearch/);assert.match(s,/home\/components\/CTA/);assert.match(s,/<ServiceDomainSearch \/>/);assert.match(s,/id="server-plans"/);assert.match(s,/<Packages \/>/);});
+test("server overview is a compact responsive panel with a valid plan anchor",()=>{const s=read("servers/components/Overview.tsx");assert.equal((s.match(/title: "/g)||[]).length,4);assert.match(s,/lg:grid-cols-4/);assert.match(s,/sm:grid-cols-2/);assert.match(s,/bg-white/);assert.match(s,/href="#server-plans"/);assert.doesNotMatch(s,/cloudLinks.console|font-semibold|blur-3xl/);});
