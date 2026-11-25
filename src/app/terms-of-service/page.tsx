@@ -1,6 +1,6 @@
-import type {Metadata} from "next";
+import {pageMetadata} from "@/lib/public-seo";
 import {LegalPage,LegalSection} from "@/features/cloud/legal/LegalPage";
-export const metadata:Metadata={title:"Terms of Service",description:"Octalve Cloud account, order, billing and acceptable-use terms."};
+export const metadata=pageMetadata("/terms-of-service/");
 export default function TermsOfServicePage(){
  return <LegalPage title="Terms of Service" description="These terms describe basic responsibilities when creating an Octalve Cloud account and requesting available services.">
   <LegalSection title="Accounts and eligibility"><p>Provide accurate registration and billing information, use credentials only for authorized activity, and keep your password confidential. You are responsible for actions taken by people you authorize to use your account. Staff or administrative access is granted by Octalve Cloud through a separately approved process, not through a normal profile update.</p></LegalSection>
