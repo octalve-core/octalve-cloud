@@ -1,448 +1,63 @@
 "use client";
-
 import Link from "next/link";
-import {
-  ArrowRight,
-  BrainCircuit,
-  Copy,
-  Globe2,
-  Lightbulb,
-  RefreshCcw,
-  Search,
-  Sparkles,
-  WandSparkles,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { cloudLinks } from "@/features/cloud/data/cloud-links";
-
-type DomainIdea = {
-  name: string;
-  reason: string;
-  angle: string;
-};
-
-const EXTENSIONS = [
-  ".com",
-  ".com.ng",
-  ".ng",
-  ".org",
-  ".net",
-  ".cloud",
-  ".shop",
-];
-
-const STYLE_OPTIONS = [
-  "Professional",
-  "Modern",
-  "Premium",
-  "Friendly",
-  "Tech",
-  "Simple",
-];
-
-const EXAMPLES = [
-  {
-    business: "Octalve Foods",
-    industry: "food delivery",
-  },
-  {
-    business: "Grin Naturals",
-    industry: "natural skincare",
-  },
-  {
-    business: "Smart School Hub",
-    industry: "school management software",
-  },
-];
-
-function slugify(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "")
-    .replace(/-+/g, "")
-    .slice(0, 32);
-}
-
-function getStyleSuffixes(style: string) {
-  if (style === "Modern") {
-    return ["flow", "rise", "loop", "nova", "spark"];
+import {ArrowUp,ArrowRight,Loader2,Sparkles} from "lucide-react";
+import {useEffect,useRef,useState} from "react";
+import {extensions,localIdeas,validateIdeas} from "@/lib/domain-name-ideas";
+import {getDomainSuggestions,type DomainSuggestion} from "@/lib/domain-pricing-adapter";
+import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
+type Row={name:string;offer?:DomainSuggestion;checked?:boolean};
+const api=process.env.NEXT_PUBLIC_OCTALVE_GENERATOR_ENDPOINT;
+export function ToolPanel(){
+ const [query,setQuery]=useState("");const [tld,setTld]=useState(".com");const [rows,setRows]=useState<Row[]>([]);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [source,setSource]=useState("");const [filter,setFilter]=useState("all");const [limit,setLimit]=useState(30);
+ const active=useRef<AbortController|null>(null);const locked=useRef(false);
+ useEffect(()=>()=>{active.current?.abort();active.current=null},[]);
+ async function generate(){
+  if(locked.current)return;
+  if(!query.trim()||query.length>160){setMessage("Enter a business name or idea.");return}
+  const local=localIdeas(query,tld);if(!local.length){setMessage("Enter an idea containing letters or numbers.");return}
+  locked.current=true;setBusy(true);setRows([]);setLimit(30);setFilter("all");setMessage("Generating names…");setSource("");
+  const controller=new AbortController();active.current=controller;
+  let names=local;let label="Local naming suggestions";
+  try{
+   if(api){try{
+    const resp=await fetch(api,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"omit",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(12000)]),body:JSON.stringify({business:query.trim(),extension:tld,count:100})});
+    if(resp.ok){const data=await resp.json();const ideas=validateIdeas(data.ideas,tld);if(ideas.length){names=[...new Set([...ideas,...local])].slice(0,100);label=ideas.length>=100?"AI suggestions":"AI and local suggestions";}}
+   }catch{/* Explicit local fallback */}}
+   if(controller.signal.aborted)return;
+   setRows(names.map(name=>({name})));setSource(label);setMessage("Suggestions ready. Checking the first 10 domains…");
+   await check(names.slice(0,10),tld,controller);
+   if(!controller.signal.aborted)setMessage("Check more names in batches of 10 to confirm availability.");
+  }finally{if(active.current===controller){active.current=null;locked.current=false;setBusy(false)}}
+ }
+ async function check(names:string[],extension:string,controller:AbortController){
+  for(let i=0;i<names.length&&!controller.signal.aborted;i+=2){
+   const batch=names.slice(i,i+2);
+   await Promise.all(batch.map(async name=>{
+    const offers=await getDomainSuggestions({query:name,tlds:[extension],signal:AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])});
+    if(active.current!==controller||controller.signal.aborted)return;
+    const offer=offers.find(o=>o.domain===name);
+    setRows(old=>old.map(row=>row.name===name?{...row,offer,checked:true}:row));
+   }));
+   if(i+2<names.length)await new Promise(resolve=>window.setTimeout(resolve,400));
   }
-
-  if (style === "Premium") {
-    return ["prime", "crest", "elite", "vault", "select"];
-  }
-
-  if (style === "Friendly") {
-    return ["hub", "care", "mate", "easy", "plus"];
-  }
-
-  if (style === "Tech") {
-    return ["cloud", "stack", "node", "labs", "grid"];
-  }
-
-  if (style === "Simple") {
-    return ["online", "home", "base", "now", "go"];
-  }
-
-  return ["hq", "group", "works", "base", "suite"];
-}
-
-function generateIdeas(
-  business: string,
-  industry: string,
-  extension: string,
-  style: string,
-): DomainIdea[] {
-  const base = slugify(business) || "mybrand";
-  const niche = slugify(industry) || "business";
-  const suffixes = getStyleSuffixes(style);
-
-  const rawIdeas: DomainIdea[] = [
-    {
-      name: `${base}${extension}`,
-      angle: "Direct name",
-      reason: "Clean, simple, and easy for customers to remember.",
-    },
-    {
-      name: `${base}online${extension}`,
-      angle: "Online presence",
-      reason:
-        "Good for a business that wants to look active and accessible online.",
-    },
-    {
-      name: `${base}${niche}${extension}`,
-      angle: "Industry match",
-      reason: "Connects the brand name directly to the business category.",
-    },
-    {
-      name: `get${base}${extension}`,
-      angle: "Action-led",
-      reason:
-        "Useful for startups, service brands, apps, and conversion-focused businesses.",
-    },
-    {
-      name: `try${base}${extension}`,
-      angle: "Startup style",
-      reason:
-        "Short, modern, and suitable for product-led or SaaS-style brands.",
-    },
-    {
-      name: `my${base}${extension}`,
-      angle: "Customer-friendly",
-      reason: "Feels personal and easy for users to connect with.",
-    },
-    ...suffixes.slice(0, 5).map((suffix) => ({
-      name: `${base}${suffix}${extension}`,
-      angle: "Brandable variation",
-      reason: "A flexible name with room for future business expansion.",
-    })),
-  ];
-
-  return Array.from(
-    new Map(rawIdeas.map((idea) => [idea.name, idea])).values(),
-  );
-}
-
-function buildDomainSearchUrl(domain: string) {
-  const baseUrl = cloudLinks.console.replace(/\/$/, "");
-
-  return `${baseUrl}/order/domain-search?domain=${encodeURIComponent(domain)}`;
-}
-
-export function ToolPanel() {
-  const [business, setBusiness] = useState("Octalve Foods");
-  const [industry, setIndustry] = useState("food delivery");
-  const [extension, setExtension] = useState(".com");
-  const [style, setStyle] = useState("Professional");
-  const [copiedDomain, setCopiedDomain] = useState("");
-
-  const ideas = useMemo(
-    () => generateIdeas(business, industry, extension, style),
-    [business, industry, extension, style],
-  );
-
-  async function copyDomain(domain: string) {
-    try {
-      await navigator.clipboard.writeText(domain);
-      setCopiedDomain(domain);
-
-      window.setTimeout(() => {
-        setCopiedDomain("");
-      }, 1500);
-    } catch (error) {
-      console.error("Copy domain error:", error);
-    }
-  }
-
-  return (
-    <section className="relative overflow-hidden bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[-160px] top-[-160px] h-[360px] w-[360px] rounded-full bg-cloud-blue/10 blur-3xl" />
-        <div className="absolute bottom-[-170px] right-[-170px] h-[420px] w-[420px] rounded-full bg-blue-100 blur-3xl" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-cloud-blue/10 bg-blue-50 px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-cloud-blue">
-            <BrainCircuit className="h-4 w-4" aria-hidden="true" />
-            AI domain generator
-          </div>
-
-          <h2 className="mt-5 text-3xl font-medium tracking-[-0.05em] text-[#000A16] sm:text-4xl lg:text-5xl">
-            Generate smart domain ideas for your business.
-          </h2>
-
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-            Enter your business name, choose your category and style, then get
-            clean domain ideas you can search and register through Octalve
-            Cloud.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
-            <div className="rounded-[1.7rem] border border-slate-200 bg-[#F8FAFC] p-5 sm:p-6">
-              <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-cloud-blue text-white shadow-[0_12px_28px_rgba(0,100,224,0.22)]">
-                  <WandSparkles className="h-5 w-5" aria-hidden="true" />
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-medium tracking-[-0.04em] text-slate-950">
-                    Describe your idea
-                  </h3>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">
-                    This panel currently generates smart local suggestions. It
-                    can later connect to the live Octalve Console AI endpoint.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-700">
-                    Business or idea name
-                  </span>
-
-                  <div className="mt-2 flex h-12 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 transition focus-within:border-cloud-blue focus-within:ring-4 focus-within:ring-cloud-blue/10">
-                    <Search
-                      className="h-4 w-4 text-slate-400"
-                      aria-hidden="true"
-                    />
-                    <input
-                      value={business}
-                      onChange={(event) => setBusiness(event.target.value)}
-                      placeholder="Example: Octalve Foods"
-                      className="h-full w-full bg-transparent text-sm font-medium text-slate-950 outline-none placeholder:text-slate-400"
-                    />
-                  </div>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-700">
-                    Industry or business category
-                  </span>
-
-                  <input
-                    value={industry}
-                    onChange={(event) => setIndustry(event.target.value)}
-                    placeholder="Example: food delivery"
-                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-700">
-                    Preferred extension
-                  </span>
-
-                  <select
-                    value={extension}
-                    onChange={(event) => setExtension(event.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-cloud-blue focus:ring-4 focus:ring-cloud-blue/10"
-                  >
-                    {EXTENSIONS.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    Naming style
-                  </p>
-
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {STYLE_OPTIONS.map((item) => {
-                      const active = style === item;
-
-                      return (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => setStyle(item)}
-                          className={[
-                            "rounded-full border px-4 py-2 text-xs font-medium transition",
-                            active
-                              ? "border-cloud-blue bg-blue-50 text-cloud-blue"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-cloud-blue/40 hover:bg-blue-50 hover:text-cloud-blue",
-                          ].join(" ")}
-                        >
-                          {item}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <Lightbulb
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-cloud-blue"
-                      aria-hidden="true"
-                    />
-                    <p className="text-sm leading-7 text-slate-600">
-                      For better suggestions, use a clear business name and a
-                      simple category like “skincare”, “real estate”,
-                      “consulting”, “logistics”, or “online store”.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {EXAMPLES.map((item) => (
-                    <button
-                      key={`${item.business}-${item.industry}`}
-                      type="button"
-                      onClick={() => {
-                        setBusiness(item.business);
-                        setIndustry(item.industry);
-                      }}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:border-cloud-blue/40 hover:bg-blue-50 hover:text-cloud-blue"
-                    >
-                      Try {item.business}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-cloud-blue/10 text-cloud-blue">
-                  <Sparkles className="h-5 w-5" aria-hidden="true" />
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.16em] text-cloud-blue">
-                    Suggested names
-                  </p>
-                  <h3 className="mt-1 text-2xl font-medium tracking-[-0.04em] text-slate-950">
-                    Domain ideas for your brand
-                  </h3>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">
-                    Copy a name or continue to the console to search and
-                    register it.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setBusiness((current) => current.trim() || "My Brand");
-                  setIndustry((current) => current.trim() || "business");
-                }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-medium text-slate-600 transition hover:border-cloud-blue/40 hover:bg-blue-50 hover:text-cloud-blue"
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                Refresh
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              {ideas.map((idea) => (
-                <div
-                  key={idea.name}
-                  className="group rounded-2xl border border-slate-200 bg-[#F8FAFC] p-4 transition hover:border-cloud-blue/40 hover:bg-white hover:shadow-[0_16px_45px_rgba(15,23,42,0.08)]"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Globe2
-                          className="h-4 w-4 text-cloud-blue"
-                          aria-hidden="true"
-                        />
-
-                        <p className="break-all text-base font-medium text-slate-950 sm:text-lg">
-                          {idea.name}
-                        </p>
-
-                        <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-500 ring-1 ring-slate-200">
-                          {idea.angle}
-                        </span>
-                      </div>
-
-                      <p className="mt-2 text-sm leading-6 text-slate-500">
-                        {idea.reason}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                      <button
-                        type="button"
-                        onClick={() => copyDomain(idea.name)}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-medium text-slate-600 transition hover:border-cloud-blue/40 hover:text-cloud-blue"
-                      >
-                        <Copy className="h-4 w-4" aria-hidden="true" />
-                        {copiedDomain === idea.name ? "Copied" : "Copy"}
-                      </button>
-
-                      <Link
-                        href={buildDomainSearchUrl(idea.name)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-cloud-blue px-4 text-xs font-medium text-white shadow-[0_12px_28px_rgba(0,100,224,0.18)] transition hover:-translate-y-0.5 hover:bg-blue-600"
-                      >
-                        Search
-                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 rounded-[1.5rem] border border-cloud-blue/15 bg-blue-50 p-5">
-              <p className="text-sm font-medium text-slate-950">
-                Want a stronger brand name?
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-600">
-                Octalve Cloud can help you choose the right domain, register it,
-                connect DNS, set up SSL, create business email, and launch your
-                website.
-              </p>
-
-              <Link
-                href={cloudLinks.console}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-cloud-blue px-5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
-              >
-                Open Console
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+ }
+ async function more(){
+  if(locked.current)return;const pending=rows.filter(r=>!r.checked).slice(0,10);if(!pending.length)return;
+  locked.current=true;setBusy(true);setMessage("Checking more domains…");const controller=new AbortController();active.current=controller;
+  try{await check(pending.map(r=>r.name),"."+pending[0].name.split(".").slice(1).join("."),controller);if(!controller.signal.aborted)setMessage("Availability checks completed for this batch.")}
+  finally{if(active.current===controller){active.current=null;locked.current=false;setBusy(false)}}
+ }
+ const status=(row:Row)=>row.offer?.available===true?"available":row.offer?.available===false?"unavailable":row.checked?"unverified":"unchecked";
+ const visible=rows.filter(r=>filter==="all"||status(r)===filter);
+ return <section className="bg-black px-4 pb-24 text-white sm:px-6 lg:px-10"><div className="mx-auto max-w-[1500px]">
+ <form onSubmit={e=>{e.preventDefault();void generate()}} className="mx-auto max-w-3xl rounded-2xl border border-orange-400/60 bg-[#181818] p-3 focus-within:border-orange-400">
+ <label htmlFor="generator-idea" className="sr-only">Business name or idea</label><input id="generator-idea" value={query} onChange={e=>setQuery(e.target.value)} maxLength={160} placeholder="Start typing your business idea…" className="h-14 w-full border-0 bg-transparent px-3 text-lg text-white outline-none placeholder:text-zinc-400 focus:ring-0"/>
+ <div className="flex flex-wrap items-center justify-between gap-2"><nav aria-label="Domain tools" className="flex flex-wrap gap-1 rounded-lg bg-black p-1 text-sm"><Link href="/tools/domain-name-search/" className="rounded-md px-3 py-2 text-violet-300">Search</Link><Link href="/domains/" className="rounded-md px-3 py-2 text-green-300">Extensions</Link><span aria-current="page" className="rounded-md bg-orange-500 px-3 py-2 font-medium text-black"><Sparkles size={15} className="mr-1 inline"/>Generator</span><Link href="/tools/whois-lookup/" className="rounded-md px-3 py-2 text-teal-300">WHOIS</Link></nav>
+ <div className="flex items-center gap-2"><label className="sr-only" htmlFor="generator-extension">Extension</label><select id="generator-extension" value={tld} onChange={e=>setTld(e.target.value)} className="h-11 rounded-lg border border-white/10 bg-black px-3 text-sm text-white">{extensions.map(v=><option key={v}>{v}</option>)}</select><button disabled={busy} type="submit" aria-label="Generate names" className="grid h-11 w-11 place-items-center rounded-lg bg-orange-500 text-black disabled:opacity-60">{busy?<Loader2 size={20} className="motion-safe:animate-spin"/>:<ArrowUp size={20}/>}</button></div></div></form>
+ <p role="status" className="mt-5 text-center text-sm text-zinc-400">{message}</p>
+ {rows.length>0&&<section className="mt-12"><h2 className="break-all text-3xl font-medium">Domain ideas</h2><p className="mt-2 text-sm text-zinc-400">{source} · {rows.length} names · availability checked separately</p><div className="mt-5 flex flex-wrap gap-2 border-b border-white/10 pb-4">{["all","available","unavailable","unverified","unchecked"].map(v=><button key={v} type="button" aria-pressed={filter===v} onClick={()=>{setFilter(v);setLimit(30)}} className={`rounded-lg px-3 py-2 text-sm capitalize ${filter===v?"bg-white/15":"text-zinc-400 hover:bg-white/10"}`}>{v} ({v==="all"?rows.length:rows.filter(r=>status(r)===v).length})</button>)}</div>
+ <div className="mt-5 grid gap-x-8 gap-y-2 md:grid-cols-2 xl:grid-cols-3">{visible.slice(0,limit).map(row=>{const s=status(row);const href=buildDomainRegistrationHref(row.name);const buy=s==="available"&&row.offer?.checkoutEnabled===true&&!!href;return <article key={row.name} className="flex min-w-0 items-center gap-3 border-b border-white/10 py-3"><span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${s==="available"?"bg-green-400":s==="unavailable"?"bg-red-500":s==="unverified"?"bg-amber-400":"bg-zinc-500"}`}/><div className="min-w-0 flex-1"><p className="break-all text-sm font-medium">{row.name}</p><p className="mt-1 text-xs text-zinc-400">{s} {row.offer?.priceLabel&&" · "+row.offer.priceLabel}</p></div><a href={buy?href!:(s==="unavailable"?"/tools/whois-lookup/?q=":"/domains/?q=")+encodeURIComponent(row.name)} aria-label={`${buy?"Buy":s==="unavailable"?"Research":"Check"} ${row.name}`} className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#202020] ${buy?"text-green-300":s==="unavailable"?"text-red-300":"text-zinc-300"} hover:bg-white/15 focus-visible:outline focus-visible:outline-orange-400`}><ArrowRight size={18}/></a></article>})}</div>
+ <div className="mt-8 flex flex-wrap justify-center gap-3">{visible.length>limit&&<button onClick={()=>setLimit(v=>v+30)} className="rounded-lg bg-[#262626] px-5 py-3 text-sm">Load more</button>}{rows.some(r=>!r.checked)&&<button disabled={busy} onClick={()=>void more()} className="rounded-lg bg-[#262626] px-5 py-3 text-sm disabled:opacity-50">Check next 10</button>}</div></section>}
+ <div className="mx-auto mt-20 max-w-4xl border-t border-white/10 pt-10"><h2 className="text-2xl font-normal">Find a name that fits your business</h2><p className="mt-4 leading-7 text-zinc-400">Generate ideas, compare extensions and verify your favourites before registration. Availability and prices may change; final eligibility is confirmed in the Client Console.</p></div>
+ </div></section>
 }
