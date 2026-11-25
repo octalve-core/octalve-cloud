@@ -1,13 +1,2 @@
-import { Scale } from "lucide-react";
-import { ToolHero } from "@/features/cloud/tools/components/ToolHero";
-
-export function Hero() {
-  return (
-    <ToolHero
-      eyebrow="Compare Domain Sellers"
-      title="Compare sellers before you buy a domain."
-      description="See how Octalve Cloud compares with global domain sellers when local guidance, payment support and setup help matter."
-      icon={Scale}
-    />
-  );
-}
+import {Scale} from "lucide-react";
+export function Hero(){return <section className="-mt-4 bg-black px-4 pb-8 pt-20 text-center text-white sm:px-6 lg:pt-24"><Scale className="mx-auto mb-5 text-violet-400" size={32} strokeWidth={1.5} aria-hidden="true"/><p className="mb-4 text-xs font-medium uppercase tracking-[.18em] text-violet-300">Compare domain sellers</p><h1 className="mx-auto max-w-4xl text-[clamp(2.25rem,5vw,4.5rem)] font-normal leading-tight tracking-[-0.045em]">Compare sellers before you buy a domain.</h1><p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">See how Octalve Cloud compares with global domain sellers when local guidance, payment support and setup help matter.</p></section>}

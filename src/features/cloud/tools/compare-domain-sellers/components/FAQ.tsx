@@ -1,9 +1,1 @@
-export function FAQ() {
-  return (
-    <section className="bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-7 text-slate-500 shadow-sm">
-        This comparison focuses on service experience and setup guidance. Exact pricing should be reviewed directly on each seller&apos;s website because prices and promotions can change.
-      </div>
-    </section>
-  );
-}
+export function FAQ(){return <section className="bg-black px-4 pb-16 text-white sm:px-6 lg:px-8"><div className="mx-auto max-w-7xl rounded-xl border border-white/10 bg-[#141414] p-6"><h2 className="text-lg font-medium">Before you choose a seller</h2><p className="mt-3 text-sm leading-7 text-zinc-400">This comparison focuses on service experience and setup guidance. Exact pricing and promotions can change. Use the domain search above for Octalve Cloud's published registration and renewal rates; competitor prices are not collected by this tool.</p></div></section>}
