@@ -1,13 +1,1 @@
-import { Sparkles } from "lucide-react";
-import { ToolHero } from "@/features/cloud/tools/components/ToolHero";
-
-export function Hero() {
-  return (
-    <ToolHero
-      eyebrow="AI Domain Name Generator"
-      title="Generate brandable domain names in seconds."
-      description="Enter your business idea, industry and preferred extension. The frontend generates instant ideas now, while the backend API contract is ready for the future console infrastructure."
-      icon={Sparkles}
-    />
-  );
-}
+export function Hero(){return <section className="-mt-4 bg-black px-4 pb-8 pt-20 text-center text-white sm:px-6 lg:pt-24"><h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-normal tracking-[-0.045em]">Domain name generator</h1><p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Turn your business idea into memorable domain names. Explore up to 100 suggestions, check availability and secure your favourite with Octalve Cloud.</p></section>}
