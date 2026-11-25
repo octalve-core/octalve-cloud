@@ -7,12 +7,12 @@ import { getDomainSuggestions, type DomainSuggestion } from "@/lib/domain-pricin
 import { prepareHeroDomainQuery } from "@/lib/hero-domain-query";
 import { DomainResultCard } from "./DomainResultCard";
 
-const examples = ["growyourbusinessonline.com", "youridea.ai", "growmybrand.shop"];
+const example = "growyourbusinessonline.com";
 const defaultTlds = [".com", ".com.ng", ".ng", ".ai", ".shop", ".cloud"];
 
-export function HeroDomainSearch({ paused }: { paused: boolean }) {
+export function HeroDomainSearch() {
   const [query, setQuery] = useState("");
-  const [placeholder, setPlaceholder] = useState(examples[0]);
+  const [placeholder, setPlaceholder] = useState(example);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [results, setResults] = useState<DomainSuggestion[]>([]);
@@ -22,30 +22,18 @@ export function HeroDomainSearch({ paused }: { paused: boolean }) {
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let timer: number | undefined;
-    let word = 0, count = examples[0].length, deleting = false;
+    // A finite typing sequence preserves the effect without endless motion.
+    let count = 0;
     function tick() {
-      const example = examples[word];
-      if (!deleting && count === example.length) {
-        deleting = true;
-        timer = window.setTimeout(tick, 1400);
-        return;
-      }
-      if (deleting && count === 0) {
-        deleting = false;
-        word = (word + 1) % examples.length;
-      }
-      count += deleting ? -1 : 1;
-      setPlaceholder(examples[word].slice(0, count));
-      timer = window.setTimeout(tick, deleting ? 45 : 85);
+      count += 1;
+      setPlaceholder(example.slice(0, count));
+      if (count < example.length) timer = window.setTimeout(tick, 75);
     }
-    function sync() {
-      window.clearTimeout(timer);
-      if (!paused && !media.matches && !query) timer = window.setTimeout(tick, 1400);
-    }
-    sync();
-    media.addEventListener("change", sync);
-    return () => { window.clearTimeout(timer); media.removeEventListener("change", sync); };
-  }, [paused, query]);
+    if (!media.matches && !query) timer = window.setTimeout(tick, 200);
+    function stop() { window.clearTimeout(timer); setPlaceholder(example); }
+    media.addEventListener("change", stop);
+    return () => { window.clearTimeout(timer); media.removeEventListener("change", stop); };
+  }, [query]);
   useEffect(() => () => pending.current?.abort(), []);
 
   async function search() {

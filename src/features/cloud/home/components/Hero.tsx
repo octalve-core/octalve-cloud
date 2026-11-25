@@ -7,18 +7,18 @@ import { HeroDomainSearch } from "./HeroDomainSearch";
 
 export function Hero() {
   const [grow, setGrow] = useState(false);
-  const [paused, setPaused] = useState(false);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // One short rotation keeps motion under five seconds without a pause control.
     let timer: number | undefined;
     function sync() {
-      window.clearInterval(timer);
-      if (!media.matches && !paused) timer = window.setInterval(() => setGrow(value => !value), 2600);
+      window.clearTimeout(timer);
+      if (!media.matches) timer = window.setTimeout(() => setGrow(true), 2200);
     }
     sync();
     media.addEventListener("change", sync);
-    return () => { window.clearInterval(timer); media.removeEventListener("change", sync); };
-  }, [paused]);
+    return () => { window.clearTimeout(timer); media.removeEventListener("change", sync); };
+  }, []);
 
   return (
     <section className="relative isolate -mt-4 overflow-hidden bg-black px-4 pb-16 pt-20 text-white sm:px-6 md:pb-24 md:pt-28 lg:pt-32">
@@ -39,13 +39,7 @@ export function Hero() {
             Register domains, host websites, create business emails and secure your platform with reliable cloud infrastructure built for growing businesses.
           </p>
         </div>
-        <HeroDomainSearch paused={paused} />
-        <div className="mt-4 text-center">
-          <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}
-            className="rounded text-xs text-zinc-400 underline-offset-4 hover:text-white hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-400">
-            {paused ? "Resume animations" : "Pause animations"}
-          </button>
-        </div>
+        <HeroDomainSearch />
       </div>
     </section>
   );
