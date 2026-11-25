@@ -6,7 +6,7 @@ test("Inter variable is wired into the public Tailwind sans stack", () => {
   assert.match(source("../tailwind.config.ts"), /sans:\s*\["var\(--font-inter\)"/);
   const layout = source("../src/app/layout.tsx");
   assert.match(layout, /variable:\s*"--font-inter"/);
-  assert.match(layout, /weight:\s*"100 900"/);
+  assert.match(layout, /weight:\s*"variable"/);
   assert.match(layout, /className="font-sans font-normal"/);
 });
 test("hero uses regular weight and artificial weight synthesis is disabled", () => {
