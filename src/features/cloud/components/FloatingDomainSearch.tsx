@@ -1,0 +1,12 @@
+"use client";
+import {usePathname,useRouter} from "next/navigation";
+import {useEffect,useState} from "react";
+import {Search,X,ArrowUp} from "lucide-react";
+import {prepareHeroDomainQuery} from "@/lib/hero-domain-query";
+const pages=new Set(["/","/hosting","/email","/servers","/ssl-security","/migration","/support","/knowledge-base"]);
+export function FloatingDomainSearch(){
+ const pathname=usePathname();const router=useRouter();const [visible,setVisible]=useState(false);const [dismissed,setDismissed]=useState(false);const [value,setValue]=useState("");const [error,setError]=useState(false);
+ useEffect(()=>{setDismissed(false);setValue("");setError(false);function update(){setVisible(window.scrollY>Math.min(650,window.innerHeight*.65)&&window.innerHeight+window.scrollY<document.documentElement.scrollHeight-180)}update();window.addEventListener("scroll",update,{passive:true});return()=>window.removeEventListener("scroll",update)},[pathname]);
+ if(!pages.has(pathname.replace(/\/$/,"")||"/")||!visible||dismissed)return null;
+ return <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2"><form onSubmit={e=>{e.preventDefault();const request=prepareHeroDomainQuery(value,[".com"]);if(!request){setError(true);return}router.push("/domains/?q="+encodeURIComponent(request.query))}} className="flex items-center gap-2 rounded-2xl border border-violet-400 bg-[#181818] p-2 text-white shadow-[0_8px_40px_rgba(0,0,0,.35)]"><Search size={18} className="ml-2 shrink-0 text-violet-300"/><label htmlFor="floating-domain" className="sr-only">Search for a domain</label><input id="floating-domain" value={value} onChange={e=>{setValue(e.target.value);setError(false)}} placeholder="Find your domain…" maxLength={253} autoCapitalize="none" spellCheck={false} className="h-10 min-w-0 flex-1 border-0 bg-transparent text-base outline-none focus:ring-0"/><button type="submit" className="flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[#A05ACC] px-3 text-sm font-medium" aria-label="Search domain"><span className="hidden sm:inline">Search</span><ArrowUp size={18}/></button><button type="button" onClick={()=>setDismissed(true)} aria-label="Dismiss domain search" className="grid h-10 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><X size={18}/></button></form>{error&&<p role="alert" className="mt-1 rounded-lg bg-[#181818] p-2 text-sm text-amber-200">Enter a valid domain or brand name.</p>}</div>;
+}

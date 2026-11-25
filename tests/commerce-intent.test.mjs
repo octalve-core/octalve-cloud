@@ -28,8 +28,7 @@ test("public purchase and domain actions remain wired to the canonical builders"
  assert.match(cards,/buildHostingCheckoutHref/);
  assert.doesNotMatch(cards,/\/client\/order\?plan=/);
  for(const path of [
-  "../src/features/cloud/domains/components/DomainSearch.tsx",
-  "../src/features/cloud/tools/domain-name-search/components/ToolPanel.tsx",
+  "../src/features/cloud/components/DomainSearchWorkspace.tsx",
   "../src/lib/domain-pricing-adapter.ts",
  ]){
   const implementation=source(path);
