@@ -8,9 +8,9 @@ test("hero keeps exact explicit domain and compound extension",()=>{
  for(const value of ["", "bad name", "a/b", "-abc", "foo..com", "x@y.com"]) assert.equal(prepareHeroDomainQuery(value,[".com"]),null);
 });
 test("hero purchase action fails closed when checkout or availability is unverified",()=>{
- const source=readFileSync(new URL("../src/features/cloud/home/components/DomainResultCard.tsx",import.meta.url),"utf8");
- assert.match(source,/item.available === true/);
- assert.match(source,/available && item.checkoutEnabled === true && !!href/);
+ const source=readFileSync(new URL("../src/features/cloud/components/CompactDomainResult.tsx",import.meta.url),"utf8");
+ assert.match(source,/item.available===true/);
+ assert.match(source,/item.available===true&&item.checkoutEnabled===true&&!!href/);
  assert.match(source,/buildDomainRegistrationHref\(item.domain\)/);
- assert.match(source,/Availability unverified/);
+ assert.match(source,/Unverified/);
 });

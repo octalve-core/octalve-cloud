@@ -4,23 +4,33 @@ import { ArrowUp, Search, Loader2, Globe2, Sparkles, ShieldCheck } from "lucide-
 import {useEffect,useRef,useState} from "react";
 import {prepareHeroDomainQuery} from "@/lib/hero-domain-query";
 import {getDomainSuggestions,type DomainSuggestion} from "@/lib/domain-pricing-adapter";
-import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
+import {CompactDomainResult} from "./CompactDomainResult";
+import {BrandProtectionBundle} from "./BrandProtectionBundle";
 import {cloudLinks} from "@/features/cloud/data/cloud-links";
 const tlds=[".com",".com.ng",".ng",".net",".org",".ai",".shop",".cloud"];
 export function DomainSearchWorkspace({catalogue=false}:{catalogue?:boolean}){
  const [query,setQuery]=useState("");const [extension,setExtension]=useState("");const [searched,setSearched]=useState("");const [results,setResults]=useState<DomainSuggestion[]>([]);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [filter,setFilter]=useState("all");
+ const [bundle,setBundle]=useState<DomainSuggestion[]>([]);
  const active=useRef<AbortController|null>(null);
  async function run(value:string,selected=""){
   const request=prepareHeroDomainQuery(value,selected?[selected]:tlds);
   if(!request){setMessage("Enter a valid domain or brand name.");return}
   active.current?.abort();const controller=new AbortController();active.current=controller;
-  setSearched(request.query);setResults([]);setBusy(true);setFilter("all");setMessage("Checking availability and published pricing…");
+  setSearched(request.query);setResults([]);setBundle([]);setBusy(true);setFilter("all");setMessage("Checking availability and published pricing…");
   const timeout=window.setTimeout(()=>controller.abort(),15000);
   try{
    const items=await getDomainSuggestions({...request,signal:controller.signal});
    if(active.current!==controller)return;
    if(controller.signal.aborted){setMessage("Search timed out. Please retry.");return}
    setResults(items);setMessage(items.length?items.length+" results returned.":"No verified response returned. Please retry.");
+   const root=request.query.split(".")[0];
+   if(root&&(!request.query.includes(".")||request.tlds.some(t=>request.query===root+t))){
+    const targets=[".com",".ng",".cloud",".ai"];
+    const missing=targets.filter(t=>!items.some(i=>i.domain===root+t));
+    const extras=missing.length?await getDomainSuggestions({query:root,tlds:missing,signal:controller.signal}):[];
+    if(active.current!==controller||controller.signal.aborted)return;
+    setBundle(targets.map(t=>[...items,...extras].find(i=>i.domain===root+t)??{domain:root+t,tld:t,available:null,priceLabel:"Pricing unavailable",orderUrl:""}));
+   }
   }catch{if(active.current===controller)setMessage("Search unavailable. Please retry.")}
   finally{window.clearTimeout(timeout);if(active.current===controller){setBusy(false);active.current=null}}
  }
@@ -42,7 +52,7 @@ export function DomainSearchWorkspace({catalogue=false}:{catalogue?:boolean}){
  <div className="mx-auto mt-5 flex max-w-3xl flex-wrap justify-center gap-2">{["",...new Set([...tlds,...(extension?[extension]:[])])].map(t=><button key={t||"all"} type="button" aria-pressed={extension===t} onClick={()=>setExtension(t)} className={`rounded-lg border px-3 py-2 text-sm ${extension===t?"border-violet-400 bg-violet-400/15 text-violet-200":"border-white/10 bg-[#121212] text-zinc-300 hover:border-violet-400"}`}>{t||"Popular"}</button>)}</div>
  <p role="status" className="mt-5 text-center text-sm text-zinc-400">{message}</p>
  {searched&&<section aria-label="Domain search results" className="mt-10"><h2 className="break-all text-3xl font-medium tracking-tight">{searched}</h2><div className="mt-5 flex flex-wrap gap-2 border-b border-white/10 pb-4">{["all","available","registered","unknown"].map(v=><button key={v} type="button" aria-pressed={filter===v} onClick={()=>setFilter(v)} className={`rounded-md px-3 py-2 text-sm capitalize ${filter===v?"bg-white/15 text-white":"text-zinc-400 hover:bg-white/10"}`}>{v} ({v==="all"?results.length:results.filter(i=>v==="available"?i.available===true:v==="registered"?i.available===false:i.available===null).length})</button>)}</div>
- <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map(item=>{const href=buildDomainRegistrationHref(item.domain);const canBuy=item.available===true&&item.checkoutEnabled===true&&!!href;return <article key={item.domain} className="flex min-w-0 flex-col gap-3 rounded-xl border border-white/10 bg-[#121212] p-5"><p className={`text-xs font-medium ${item.available===true?"text-green-300":item.available===false?"text-red-300":"text-amber-200"}`}>{item.available===true?"Available":item.available===false?"Registered or unavailable":"Unverified"}</p><h3 className="break-all text-lg font-medium">{item.domain}</h3><p className="text-sm text-white">{item.priceLabel}</p><p className="text-xs text-zinc-400">{item.renewalLabel??"Renewal pricing not returned"}</p>{canBuy&&href?<a href={href} className="mt-auto rounded-lg bg-cloud-blue px-4 py-3 text-center text-sm font-medium text-white">Continue to cart</a>:<Link href={"/tools/whois-lookup/?q="+encodeURIComponent(item.domain)} className="mt-auto rounded-lg bg-white/10 px-4 py-3 text-center text-sm text-zinc-200">WHOIS research</Link>}</article>})}</div>{!busy&&!visible.length&&<p className="mt-4 text-sm text-zinc-400">No matching results.</p>}</section>}
+ <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map(item=><CompactDomainResult key={item.domain} item={item}/>)}</div><BrandProtectionBundle items={bundle}/><p className="mt-3 text-xs text-zinc-400">Published rates; final pricing and eligibility confirmed in the Console.</p>{!busy&&!visible.length&&<p className="mt-4 text-sm text-zinc-400">No matching results.</p>}</section>}
  {!catalogue&&<><div className="mt-14 grid gap-4 md:grid-cols-3">{[{icon:Globe2,title:"Domain guidance",text:"Choose a name that fits your brand, audience, and growth plan."},{icon:ShieldCheck,title:"Secure setup",text:"Connect your domain with DNS, SSL, hosting, and business email support."},{icon:Sparkles,title:"Launch-ready",text:"Move from domain search to website, email, and hosting setup faster."}].map(({icon:Icon,title,text})=><article key={title} className="rounded-xl border border-white/10 bg-[#121212] p-6"><Icon className="text-violet-300"/><h3 className="mt-4 font-medium">{title}</h3><p className="mt-2 text-sm leading-7 text-zinc-400">{text}</p></article>)}</div><div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-xl border border-white/10 bg-[#151515] p-6"><div><h2 className="text-2xl font-medium">Let Octalve Cloud help you secure and launch the right domain.</h2><p className="mt-2 text-sm text-zinc-400">We can help with domain registration, DNS setup, SSL, professional email, hosting, and website migration.</p></div><a href={cloudLinks.console} className="rounded-lg bg-cloud-blue px-5 py-3 text-sm font-medium">Open Console</a></div></>}
  </div></section>;
 }

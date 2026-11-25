@@ -9,7 +9,7 @@ test("both domain routes share workspace and preserve catalogue sections",()=>{
 });
 test("floating handoff preserves domain and purchase action requires checkout eligibility",()=>{
  const s=read("../src/features/cloud/components/DomainSearchWorkspace.tsx");
- assert.match(s,/item.available===true&&item.checkoutEnabled===true&&!!href/);
+ assert.match(read("../src/features/cloud/components/CompactDomainResult.tsx"),/item.available===true&&item.checkoutEnabled===true&&!!href/);
  assert.match(s,/params.get\("q"\)/);
  assert.match(read("../src/features/cloud/components/FloatingDomainSearch.tsx"),/encodeURIComponent\(request.query\)/);
 });
