@@ -17,7 +17,7 @@ export function CloudHostingPage() {
       <Hero />
       {/* <Overview /> */}
       {/* <Services /> */}
-      <Packages />
+      <div id="hosting-plans" className="scroll-mt-32"><Packages /></div>
       <DomainSearch />
       <SSL />
       <Performance />

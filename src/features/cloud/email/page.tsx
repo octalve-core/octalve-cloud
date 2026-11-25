@@ -15,7 +15,7 @@ export function CloudEmailPage() {
       <Hero />
       <Overview />
       <Services />
-      <Packages />
+      <div id="email-plans" className="scroll-mt-32"><Packages /></div>
       <DomainSearch />
       <WhyOctalveCloud />
       <Migration />

@@ -1,5 +1,5 @@
 import { CloudShell } from "@/features/cloud/components/CloudShell";
-// import { Hero } from "./components/Hero";
+import { Hero } from "./components/Hero";
 // import { Overview } from "./components/Overview";
 // import { Services } from "./components/Services";
 // import { Packages } from "./components/Packages";
@@ -12,7 +12,8 @@ import { CTA } from "./components/CTA";
 export function CloudMigrationPage() {
   return (
     <CloudShell>
-      {/* <Hero />
+      <Hero />
+      {/*
       <Overview />
       <Services />
       <Packages />

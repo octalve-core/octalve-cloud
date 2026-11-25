@@ -15,7 +15,7 @@ export function CloudSecurityPage() {
       <Hero />
       <Overview />
       <Services />
-      <Packages />
+      <div id="security-plans" className="scroll-mt-32"><Packages /></div>
       <DomainSearch />
       <WhyOctalveCloud />
       <Migration />
