@@ -4,9 +4,9 @@ import { Check, Shield } from "lucide-react";
 import migrationVisual from "@/assets/sections/cloud-migration-visual.png";
 
 const migrationPoints = [
-  "Migrate an unlimited number of websites for free",
-  "AI automates your site migration without hassle or downtime",
-  "24/7 customer support",
+  "Review your website and migration requirements",
+  "Plan your move to minimize disruption",
+  "Get guidance from our team",
 ];
 
 export function Migration() {
@@ -21,7 +21,7 @@ export function Migration() {
             </p>
 
             <h2 className="mt-4 text-4xl font-medium leading-tight tracking-[-0.05em] text-slate-950 sm:text-5xl">
-              Move your website without the usual stress.
+              A smoother move, from start to finish.
             </h2>
 
             <p className="mt-5 text-base leading-8 text-slate-500 sm:text-lg">
@@ -44,15 +44,15 @@ export function Migration() {
 
             <div className="mt-8 flex flex-col items-start gap-4">
               <Link
-                href="/migration"
+                href="/contact"
                 className="inline-flex min-h-12 items-center justify-center rounded-[14px] bg-cloud-blue px-8 text-base font-semibold text-white shadow-[0_14px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
               >
-                Migrate for free
+                Request migration
               </Link>
 
               <div className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
                 <Shield className="h-4 w-4 text-slate-700" />
-                <span>30-day money-back guarantee</span>
+                <span>Migration scope confirmed before work begins</span>
               </div>
             </div>
           </div>
