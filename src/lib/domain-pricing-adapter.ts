@@ -9,6 +9,7 @@ export type DomainPricingRequest = { query: string; tlds: string[]; signal?: Abo
 export type DomainSuggestion = {
   domain: string; tld: string; available: boolean | null;
   priceLabel: string; renewalLabel?: string; orderUrl: string; checkoutEnabled?: boolean;
+  registrationAmount?: string; currency?: string;
 };
 const API="https://api.cloud.octalve.com/api/storefront";
 const clean=(v:string)=>v.trim().toLowerCase().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"").replace(/[^a-z0-9.-]/g,"");
@@ -32,8 +33,10 @@ export async function getDomainSuggestions(request:DomainPricingRequest):Promise
       return {domain:data.domain,tld:data.tld||"",available:data.registrar_connected&&data.availability==="available"?true:
         data.registrar_connected&&["registered", "unavailable"].includes(data.availability)?false:null,
         checkoutEnabled:data.checkout_enabled===true,
-        priceLabel:data.registration_price?`Indicative ${money(data.registration_price,data.currency||"NGN")}/year`:"Pricing pending",
-        renewalLabel:data.renewal_price?`Renewal estimate ${money(data.renewal_price,data.currency||"NGN")}/year`:undefined,
+        registrationAmount: data.registration_price && /^\d+(?:\.\d{1,2})?$/.test(data.registration_price) && Number(data.registration_price)>0 ? data.registration_price : undefined,
+        currency: data.currency==="NGN"||data.currency==="USD"?data.currency:undefined,
+        priceLabel:data.registration_price&&Number.isFinite(Number(data.registration_price))&&Number(data.registration_price)>0&&["NGN","USD"].includes(data.currency||"")?`${money(data.registration_price,data.currency||"NGN")}/yr`:"Pricing pending",
+        renewalLabel:data.renewal_price&&Number.isFinite(Number(data.renewal_price))&&Number(data.renewal_price)>0&&["NGN","USD"].includes(data.currency||"")?`Renews at ${money(data.renewal_price,data.currency||"NGN")}/yr`:undefined,
         orderUrl:buildDomainRegistrationHref(data.domain) || "https://console.cloud.octalve.com/client/domains/register",
       } satisfies DomainSuggestion;
     }catch{return null;}

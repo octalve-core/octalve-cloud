@@ -18,3 +18,9 @@ export function buildDomainRegistrationHref(domain:string):string|null{
  if(!domainPattern.test(clean))return null;
  return CONSOLE+"/client/domains/register?domain="+encodeURIComponent(clean);
 }
+
+/** Selection only: Console rechecks prices and availability before importing a draft. */
+export function buildDomainBundleHref(domains:string[]):string|null{
+ if(domains.length<1||domains.length>4||new Set(domains).size!==domains.length||!domains.every(d=>domainPattern.test(d)&&d===d.toLowerCase()))return null;
+ return CONSOLE+"/client/domains/register?"+new URLSearchParams({bundle:domains.join(",")}).toString();
+}
