@@ -7,12 +7,13 @@ import { getDomainSuggestions, type DomainSuggestion } from "@/lib/domain-pricin
 import { prepareHeroDomainQuery } from "@/lib/hero-domain-query";
 import { DomainResultCard } from "./DomainResultCard";
 
-const example = "growyourbusinessonline.com";
+const examples = ["growyourbusinessonline.com", "youridea.ai", "growmybrand.shop"];
 const defaultTlds = [".com", ".com.ng", ".ng", ".ai", ".shop", ".cloud"];
 
 export function HeroDomainSearch() {
   const [query, setQuery] = useState("");
-  const [placeholder, setPlaceholder] = useState(example);
+  const [placeholder, setPlaceholder] = useState(examples[0]);
+  const [focused, setFocused] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [results, setResults] = useState<DomainSuggestion[]>([]);
@@ -22,18 +23,39 @@ export function HeroDomainSearch() {
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let timer: number | undefined;
-    // A finite typing sequence preserves the effect without endless motion.
-    let count = 0;
+    let word = 0, count = examples[0].length, deleting = true;
     function tick() {
-      count += 1;
-      setPlaceholder(example.slice(0, count));
-      if (count < example.length) timer = window.setTimeout(tick, 75);
+      const example = examples[word];
+      if (deleting) {
+        count = Math.max(0, count - 1);
+        setPlaceholder(example.slice(0, count));
+        if (count === 0) {
+          word = (word + 1) % examples.length;
+          deleting = false;
+        }
+        timer = window.setTimeout(tick, count === 0 ? 250 : 45);
+      } else {
+        count += 1;
+        setPlaceholder(example.slice(0, count));
+        if (count === example.length) deleting = true;
+        timer = window.setTimeout(tick, deleting ? 1400 : 85);
+      }
     }
-    if (!media.matches && !query) timer = window.setTimeout(tick, 200);
-    function stop() { window.clearTimeout(timer); setPlaceholder(example); }
-    media.addEventListener("change", stop);
-    return () => { window.clearTimeout(timer); media.removeEventListener("change", stop); };
-  }, [query]);
+    function sync() {
+      window.clearTimeout(timer);
+      if (!media.matches && !document.hidden && !focused && !query) {
+        timer = window.setTimeout(tick, 1400);
+      }
+    }
+    sync();
+    media.addEventListener("change", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      window.clearTimeout(timer);
+      media.removeEventListener("change", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, [query, focused]);
   useEffect(() => () => pending.current?.abort(), []);
 
   async function search() {
@@ -76,7 +98,8 @@ export function HeroDomainSearch() {
             <Search size={17} />www.
           </span>
           <input ref={input} id="hero-domain" type="text" value={query} onChange={event => { setQuery(event.target.value); }}
-            placeholder={placeholder || "growyourbusinessonline.com"} maxLength={253} autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="url"
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            placeholder={focused ? "Enter your domain name" : placeholder} maxLength={253} autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="url"
             className="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-base font-normal text-white placeholder:text-zinc-400 focus:outline-none focus:ring-0" />
         </div>
         <button type="submit" disabled={status === "loading"}
