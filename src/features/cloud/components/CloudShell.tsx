@@ -1,3 +1,4 @@
+import { FloatingDomainSearch } from "./FloatingDomainSearch";
 import type { ReactNode } from "react";
 import { CloudFooter } from "@/features/cloud/components/CloudFooter";
 import { CloudHeader } from "@/features/cloud/components/CloudHeader";
@@ -12,6 +13,7 @@ export function CloudShell({ children }: CloudShellProps) {
       <CloudHeader />
       <main>{children}</main>
       <CloudFooter />
+      <FloatingDomainSearch />
     </div>
   );
 }

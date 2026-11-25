@@ -10,7 +10,7 @@ type Result={domain:string;registry:RegistryResult;offer:DomainSuggestion|null};
 export function ToolPanel(){
  const [input,setInput]=useState("");const [result,setResult]=useState<Result|null>(null);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [history,setHistory]=useState<string[]>([]);
  const active=useRef<AbortController|null>(null);
- useEffect(()=>()=>active.current?.abort(),[]);
+ useEffect(()=>{const q=new URLSearchParams(window.location.search).get("q");if(q)void lookup(q);return()=>{active.current?.abort();active.current=null}},[]);
  async function lookup(value:string){
   const domain=normalizeLookup(value);
   if(!domain){setMessage("Enter a full domain name, such as example.com.");return}

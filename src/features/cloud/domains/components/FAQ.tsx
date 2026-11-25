@@ -9,7 +9,7 @@ type FAQItem = {
 };
 
 const FAQ_COLORS = {
-  bg: "#000A16",
+  bg: "#000000",
 };
 
 const INITIAL_VISIBLE_FAQS = 5;
@@ -138,7 +138,7 @@ export function FAQ() {
 
       <div className="relative z-10 mx-auto max-w-5xl">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-200">
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-blue-200">
             FAQ
           </p>
 
@@ -161,7 +161,7 @@ export function FAQ() {
               <div
                 key={item.question}
                 className={[
-                  "overflow-hidden rounded-2xl border bg-white text-slate-950 shadow-[0_20px_60px_rgba(0,0,0,0.22)] transition",
+                  "overflow-hidden rounded-2xl border bg-[#151515] text-white shadow-[0_20px_60px_rgba(0,0,0,0.22)] transition",
                   isOpen
                     ? "border-cloud-blue/30"
                     : "border-white/10 hover:border-cloud-blue/25",
@@ -173,14 +173,14 @@ export function FAQ() {
                   className="flex w-full items-center justify-between gap-5 px-5 py-5 text-left sm:px-6"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-base font-semibold leading-7 text-slate-950">
+                  <span className="text-base font-medium leading-7 text-white">
                     {item.question}
                   </span>
 
                   <span
                     className={[
-                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition",
-                      isOpen ? "rotate-180 text-cloud-blue" : "",
+                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#222222] text-zinc-300 transition",
+                      isOpen ? "rotate-180 text-blue-300" : "",
                     ].join(" ")}
                   >
                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -196,7 +196,7 @@ export function FAQ() {
                   ].join(" ")}
                 >
                   <div className="overflow-hidden">
-                    <p className="border-t border-slate-100 px-5 pb-6 pt-4 text-sm leading-7 text-slate-500 sm:px-6 sm:text-base">
+                    <p className="border-t border-white/10 px-5 pb-6 pt-4 text-sm leading-7 text-zinc-300 sm:px-6 sm:text-base">
                       {item.answer}
                     </p>
                   </div>
@@ -214,7 +214,7 @@ export function FAQ() {
                 setShowAll((current) => !current);
                 setActiveIndex(0);
               }}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 bg-white px-6 py-3 text-sm font-semibold text-cloud-blue shadow-[0_16px_45px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 bg-[#151515] px-6 py-3 text-sm font-medium text-blue-300 shadow-[0_16px_45px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:bg-[#152238]"
             >
               {showAll ? "Show less questions" : "Show more questions"}
             </button>

@@ -43,7 +43,7 @@ const cards: ReasonCard[] = [
 
 export function WhyOctalveCloud() {
   return (
-    <section className="relative overflow-hidden bg-[#000A16] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+    <section className="relative overflow-hidden bg-black px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <div className="absolute left-[-160px] top-[-160px] h-[380px] w-[380px] rounded-full bg-cloud-blue/20 blur-3xl" />
         <div className="absolute bottom-[-180px] right-[-160px] h-[420px] w-[420px] rounded-full bg-cloud-blue/10 blur-3xl" />
@@ -51,13 +51,13 @@ export function WhyOctalveCloud() {
 
       <div className="relative mx-auto max-w-7xl">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-blue-300">
             Why Octalve Cloud
           </p>
 
           <h2 className="mt-4 text-3xl font-medium tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
             Your domain is the first step to a{" "}
-            <span className="text-cloud-blue">stronger online presence</span>.
+            <span className="text-blue-300">stronger online presence</span>.
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
@@ -93,7 +93,7 @@ export function WhyOctalveCloud() {
                     <div className="mt-6">
                       <Link
                         href={card.href}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-cloud-blue transition hover:text-blue-300"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 transition hover:text-blue-300"
                       >
                         <span>{card.linkLabel}</span>
                         <span aria-hidden="true">↗</span>
