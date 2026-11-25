@@ -5,7 +5,7 @@ import { Hero } from "./components/Hero";
 // import { Packages } from "./components/Packages";
 import { ServiceDomainSearch } from "@/features/cloud/components/ServiceDomainSearch";
 // import { WhyOctalveCloud } from "./components/WhyOctalveCloud";
-import { Migration } from "./components/Migration";
+// import { Migration } from "./components/Migration";
 import { FAQ } from "./components/FAQ";
 import { CTA } from "@/features/cloud/home/components/CTA";
 
@@ -18,7 +18,7 @@ export function CloudMigrationPage() {
       <Services />
       <Packages />
       <WhyOctalveCloud /> */}
-      <Migration />
+      {/* <Migration /> */}
       <ServiceDomainSearch />
       <FAQ />
       <CTA />
