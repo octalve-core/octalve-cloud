@@ -1,97 +1,26 @@
-"use client";
+import { Zap, Gauge, Server, TrendingUp, Headset } from "lucide-react";
 
-import Image from "next/image";
-import { Check } from "lucide-react";
-import hostingPerformanceVisual from "@/assets/sections/hosting-performance-visual.png";
-
-const performancePoints = [
-  {
-    title: "99.99% uptime guaranteed",
-    description:
-      "so your website stays available, dependable, and ready for visitors around the clock.",
-  },
-  {
-    title: "Built for speed",
-    description:
-      "with performance-focused hosting infrastructure designed to help pages load faster and feel smoother.",
-  },
-  {
-    title: "Reliable resource delivery",
-    description:
-      "to support traffic, content, and business growth without making your setup feel heavy or complicated.",
-  },
-  {
-    title: "Growth-ready hosting support",
-    description:
-      "with guided assistance and dependable hosting built for brands, business websites, and online platforms.",
-  },
+const features = [
+  { icon: Gauge, title: "Built for speed", description: "Performance-focused hosting helps your pages load smoothly and gives visitors a better experience." },
+  { icon: Server, title: "Dependable hosting", description: "Choose a hosting foundation with resources suited to your website and its everyday traffic." },
+  { icon: TrendingUp, title: "Room to grow", description: "Explore hosting plans that can grow with your content, customers and business needs." },
+  { icon: Headset, title: "Support when you need it", description: "Get guidance choosing and managing the right hosting solution for your business." },
 ];
 
 export function Performance() {
   return (
-    <section className="overflow-hidden bg-[#0064E0] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <div className="relative order-2 lg:order-1">
-          <div
-            className="relative mx-auto max-w-[760px] select-none"
-            onContextMenu={(event) => event.preventDefault()}
-            onDragStart={(event) => event.preventDefault()}
-          >
-            <div
-              className="pointer-events-none absolute inset-0 rounded-[2rem] bg-white/10 blur-3xl"
-              aria-hidden="true"
-            />
-
-            <Image
-              src={hostingPerformanceVisual}
-              alt="Octalve Cloud hosting performance dashboard visual"
-              priority={false}
-              draggable={false}
-              className="pointer-events-none relative z-10 h-auto w-full select-none object-contain drop-shadow-[0_28px_70px_rgba(0,0,0,0.18)]"
-            />
-
-            <div
-              className="absolute inset-0 z-20"
-              aria-hidden="true"
-              onContextMenu={(event) => event.preventDefault()}
-            />
-          </div>
+    <section aria-labelledby="hosting-performance-title" className="bg-white px-4 py-16 text-slate-950 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[.16em] text-slate-700"><Zap size={16} className="text-cloud-blue" aria-hidden="true" /> Performance</p>
+          <h2 id="hosting-performance-title" className="mt-5 text-[clamp(2rem,3.6vw,3rem)] font-normal leading-tight tracking-[-0.045em]">Fast websites. Better experiences.</h2>
+          <p className="mt-5 text-base leading-7 text-slate-600">Give your customers a smoother online experience while you focus on growing your business.</p>
         </div>
-
-        <div className="order-1 max-w-2xl lg:order-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">
-            Performance
-          </p>
-
-          <h2 className="mt-5 text-4xl font-medium tracking-[-0.055em] text-white sm:text-5xl lg:text-[4rem] lg:leading-[0.98]">
-            High-performance hosting built for modern business websites.
-          </h2>
-
-          <p className="mt-5 max-w-xl text-base leading-8 text-white/80 sm:text-lg">
-            Octalve Cloud gives your website the speed, uptime, and dependable
-            hosting foundation it needs to perform better and grow with
-            confidence.
-          </p>
-
-          <ul className="mt-8 space-y-5">
-            {performancePoints.map((point) => (
-              <li
-                key={point.title}
-                className="flex items-start gap-3 text-base leading-7 text-white/90 sm:text-lg"
-              >
-                <span className="mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/15 text-white">
-                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-
-                <span>
-                  <strong className="font-semibold text-white">
-                    {point.title}
-                  </strong>{" "}
-                  {point.description}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-10 grid grid-cols-1 overflow-hidden rounded-[24px] border border-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map(({icon: Icon,title,description},i)=><article key={title} className={`flex min-w-0 flex-col p-6 sm:p-7 lg:min-h-[270px] ${i>0?"border-t border-slate-200":""} ${i%2===1?"sm:border-l sm:border-t-0":""} ${i===2?"sm:border-t":""} ${i>0?"lg:border-l lg:border-t-0":""}`}>
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-cloud-blue text-white"><Icon size={20} strokeWidth={1.6} aria-hidden="true"/></span>
+            <div className="mt-8 lg:mt-auto"><h3 className="text-lg font-medium tracking-tight">{title}</h3><p className="mt-3 text-base leading-6 text-slate-600">{description}</p></div>
+          </article>)}
         </div>
       </div>
     </section>
