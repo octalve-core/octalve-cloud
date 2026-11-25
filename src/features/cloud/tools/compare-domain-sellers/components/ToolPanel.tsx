@@ -1,50 +1,7 @@
-import { Check, Minus, X } from "lucide-react";
-
-const rows = [
-  { feature: "Domain registration", octalve: "yes", namecheap: "yes", hostinger: "yes", godaddy: "yes" },
-  { feature: "Nigerian SME guidance", octalve: "yes", namecheap: "no", hostinger: "no", godaddy: "no" },
-  { feature: "Local setup support", octalve: "yes", namecheap: "partial", hostinger: "partial", godaddy: "partial" },
-  { feature: "Hosting + email guidance", octalve: "yes", namecheap: "yes", hostinger: "yes", godaddy: "yes" },
-  { feature: "Migration assistance", octalve: "yes", namecheap: "partial", hostinger: "partial", godaddy: "partial" },
-  { feature: "Business-first explanation", octalve: "yes", namecheap: "partial", hostinger: "partial", godaddy: "partial" },
-  { feature: "Future Octalve console integration", octalve: "yes", namecheap: "no", hostinger: "no", godaddy: "no" },
-];
-
-function Mark({ value }: { value: string }) {
-  if (value === "yes") return <Check className="mx-auto h-5 w-5 text-emerald-600" />;
-  if (value === "no") return <X className="mx-auto h-5 w-5 text-red-500" />;
-  return <Minus className="mx-auto h-5 w-5 text-slate-400" />;
-}
-
-export function ToolPanel() {
-  return (
-    <section className="bg-white px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.06)]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="px-6 py-5 text-sm font-medium text-slate-500">Feature</th>
-                <th className="px-6 py-5 text-center"><span className="rounded-full bg-cloud-blue px-4 py-2 text-sm font-semibold text-white">Octalve Cloud</span></th>
-                <th className="px-6 py-5 text-center text-sm font-medium text-slate-500">Namecheap</th>
-                <th className="px-6 py-5 text-center text-sm font-medium text-slate-500">Hostinger</th>
-                <th className="px-6 py-5 text-center text-sm font-medium text-slate-500">GoDaddy</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.feature} className="border-b border-slate-100 last:border-b-0">
-                  <td className="px-6 py-5 text-sm font-medium text-slate-950">{row.feature}</td>
-                  <td className="border-l border-slate-100 px-6 py-5 text-center"><Mark value={row.octalve} /></td>
-                  <td className="border-l border-slate-100 px-6 py-5 text-center"><Mark value={row.namecheap} /></td>
-                  <td className="border-l border-slate-100 px-6 py-5 text-center"><Mark value={row.hostinger} /></td>
-                  <td className="border-l border-slate-100 px-6 py-5 text-center"><Mark value={row.godaddy} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
-}
+"use client";
+import {useState} from "react";
+import {Check,Minus,HelpCircle} from "lucide-react";
+import {rows,sellers,labels,type Status} from "./comparison-data";
+import {ComparisonSearch} from "./ComparisonSearch";
+function Mark({value}:{value:Status}){const Icon=value==="yes"?Check:value==="unknown"?HelpCircle:Minus;return <span className={`inline-flex items-center gap-1.5 text-xs ${value==="yes"?"text-emerald-300":value==="varies"?"text-amber-200":"text-zinc-400"}`}><Icon size={16} className="shrink-0" aria-hidden="true"/>{labels[value]}</span>}
+export function ToolPanel(){const [seller,setSeller]=useState(1);return <section className="bg-black px-4 pb-16 pt-4 text-white sm:px-6 lg:px-8"><div className="mx-auto max-w-7xl"><ComparisonSearch/><h2 className="mb-5 text-2xl font-normal tracking-tight">Compare domain sellers</h2><div className="hidden overflow-hidden rounded-2xl border border-white/10 bg-[#121212] lg:block"><table className="w-full table-fixed border-collapse text-left"><caption className="sr-only">Domain seller service comparison</caption><thead className="bg-[#1B1B1B]"><tr><th scope="col" className="w-[28%] px-5 py-5 text-sm font-medium text-zinc-300">Feature</th>{sellers.map((name,i)=><th scope="col" key={name} className={`px-3 py-5 text-center text-sm font-medium ${i===0?"bg-blue-500/10 text-blue-300":"text-zinc-200"}`}>{name}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.feature} className="border-t border-white/10"><th scope="row" className="px-5 py-5 text-sm font-medium">{row.feature}</th>{row.values.map((v,i)=><td key={i} className={`px-3 py-5 text-center ${i===0?"bg-blue-500/5":""}`}><Mark value={v}/></td>)}</tr>)}</tbody></table></div><div className="lg:hidden"><fieldset className="mb-4"><legend className="mb-3 text-sm text-zinc-300">Compare Octalve Cloud with</legend><div className="flex flex-wrap gap-2">{sellers.slice(1).map((name,i)=><label key={name} className={`cursor-pointer rounded-lg border px-3 py-3 text-sm focus-within:ring-2 focus-within:ring-blue-400 ${seller===i+1?"border-blue-400 bg-blue-500/15 text-blue-200":"border-white/15 bg-[#181818] text-zinc-300"}`}><input type="radio" name="comparison-seller" value={i+1} checked={seller===i+1} onChange={()=>setSeller(i+1)} className="sr-only"/>{name}</label>)}</div></fieldset><div className="space-y-3">{rows.map(row=><article key={row.feature} className="rounded-xl border border-white/10 bg-[#141414] p-4"><h3 className="mb-3 text-sm font-medium">{row.feature}</h3><dl className="grid grid-cols-2 gap-3"><div className="min-w-0 rounded-lg bg-blue-500/10 p-3"><dt className="mb-2 text-xs text-blue-300">Octalve Cloud</dt><dd><Mark value={row.values[0]}/></dd></div><div className="min-w-0 rounded-lg bg-white/5 p-3"><dt className="mb-2 text-xs text-zinc-300">{sellers[seller]}</dt><dd><Mark value={row.values[seller]}/></dd></div></dl></article>)}</div></div><p className="mt-5 text-xs leading-6 text-zinc-400">Service comparison, not a live competitor pricing feed. Not verified does not mean unavailable. Features and assistance may depend on the selected plan.</p></div></section>}
