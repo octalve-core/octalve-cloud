@@ -1,20 +1,4 @@
+import { Ticket, MessageSquare, ArrowRight, Headset } from "lucide-react";
 import Link from "next/link";
-
-export function Hero() {
-  return (
-    <section className="bg-[#F8FAFC] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="mx-auto max-w-7xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cloud-blue">Contact Octalve Cloud</p>
-        <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-medium tracking-[-0.055em] text-slate-950 sm:text-5xl lg:text-7xl">
-          Talk to us about domains, hosting, email, servers or migration.
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-500 sm:text-lg">
-          Use this contact page as the public sales and support entry point for Octalve Cloud visitors.
-        </p>
-        <div className="mt-8 flex justify-center">
-          <Link href="/support" className="rounded-full bg-cloud-blue px-7 py-3 text-sm font-semibold text-white transition hover:bg-blue-600">Go to Support</Link>
-        </div>
-      </div>
-    </section>
-  );
-}
+import {cloudLinks} from "@/features/cloud/data/cloud-links";
+export function Hero(){return <section className="-mt-4 bg-black px-4 pb-20 pt-28 text-white sm:px-6 lg:pb-28 lg:pt-36"><div className="mx-auto max-w-5xl"><div className="text-center"><h1 className="text-[clamp(2.5rem,5vw,4rem)] font-normal tracking-[-.045em]">Contact us</h1><p className="mt-4 text-base text-zinc-400">Questions, ideas or something that needs fixing? We're here to help.</p></div><div className="mt-12 grid gap-4 md:grid-cols-2">{[{icon:Ticket,title:"Submit a ticket",description:"Get help with your account, domains, hosting or email.",href:"/support/"},{icon:MessageSquare,title:"Leave feedback",description:"Tell us how we can make your Octalve Cloud experience better.",href:"mailto:"+cloudLinks.supportEmail+"?subject=Octalve%20Cloud%20feedback"}].map(({icon:Icon,title,description,href})=><Link key={title} href={href} className="flex items-start gap-4 rounded-xl border border-white/10 bg-[#151515] p-5 hover:border-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:p-6"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-blue-500/15 text-blue-300"><Icon size={24} strokeWidth={1.5} aria-hidden="true"/></span><div><h2 className="flex items-center gap-2 text-lg font-medium">{title}<ArrowRight size={17} aria-hidden="true"/></h2><p className="mt-2 text-sm leading-6 text-zinc-400">{description}</p></div></Link>)}</div><div className="mt-8 flex flex-wrap items-center justify-center gap-4 rounded-xl bg-[#111B1B] p-6"><p className="text-sm text-zinc-200">Need to talk to our team?</p><a href={cloudLinks.whatsapp} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#147B36] px-5 text-sm font-medium text-white"><Headset size={18} aria-hidden="true"/>Chat on WhatsApp</a></div><p className="mt-7 text-center text-sm text-zinc-400"><a className="underline" href={"mailto:"+cloudLinks.supportEmail}>{cloudLinks.supportEmail}</a> · <a className="underline" href="tel:+2348073459090">{cloudLinks.supportPhone}</a></p></div></section>}

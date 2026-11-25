@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans font-normal">{children}</body>
+      <body className="font-sans font-normal"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({"@context":"https://schema.org","@type":"Organization","@id":"https://cloud.octalve.com/#organization",name:"Octalve Cloud",url:"https://cloud.octalve.com",email:"info@cloud.octalve.com",telephone:"+2348073459090",address:{"@type":"PostalAddress",streetAddress:"Anafaraa Plaza, Behind MIB, 1st Avenue, Gwarimpa",addressLocality:"Abuja",addressCountry:"NG"}}).replace(/</g,"\\u003c")}}/>{children}</body>
     </html>
   );
 }
