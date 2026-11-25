@@ -8,6 +8,7 @@ import { CloudLogo } from "@/features/cloud/components/CloudLogo";
 import { cloudLinks } from "@/features/cloud/data/cloud-links";
 import { NavigationList } from "./NavigationList";
 import { HeaderSearch } from "./HeaderSearch";
+import { AnnouncementStripe } from "./AnnouncementStripe";
 
 const focusStyle = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cloud-blue focus-visible:ring-offset-2";
 const signInStyle = "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-lg px-2 text-sm font-normal text-cloud-navy hover:text-cloud-blue " + focusStyle;
@@ -85,6 +86,7 @@ export function CloudHeader() {
         }
       }}
     >
+      <AnnouncementStripe />
       <div className="mx-auto flex h-[70px] max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 xl:gap-6 xl:px-12">
         <div className="shrink-0 [&_img]:!h-7 sm:[&_img]:!h-8" onClick={closeAll}><CloudLogo /></div>
         <nav aria-label="Primary services" className="hidden shrink-0 lg:block">
@@ -111,7 +113,7 @@ export function CloudHeader() {
         </div>
       </div>
       <nav id="cloud-mobile-navigation" aria-label="Mobile navigation" hidden={!mobileOpen}
-        className="max-h-[calc(100dvh-70px)] overflow-y-auto overscroll-contain rounded-b-2xl border-t border-slate-200 bg-white px-4 py-4 lg:hidden">
+        className="max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain rounded-b-2xl border-t border-slate-200 bg-white px-4 py-4 lg:hidden">
         {mobileOpen && <>
           <div className="mb-3"><HeaderSearch mode="mobile" open={searchOpen} onOpenChange={toggleSearch} onNavigate={closeAll} /></div>
           <NavigationList mode="mobile" {...navProps} />

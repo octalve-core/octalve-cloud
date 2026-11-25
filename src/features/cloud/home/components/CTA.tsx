@@ -1,14 +1,15 @@
 import { GetStarted } from "@/features/cloud/components/GetStarted";
+import { cloudLinks } from "@/features/cloud/data/cloud-links";
 
 export function CTA() {
   return (
     <GetStarted
-      eyebrow="Start with Octalve Cloud"
-      title="Let’s start building your online presence today."
-      description="From domain registration to hosting, SSL, business email, and migration support, Octalve Cloud gives your business the foundation to launch online and grow without technical confusion."
+      eyebrow="Your next move"
+      title="Build online. Grow your business."
+      description="Domains, hosting and business email. One place to get started."
       primaryLabel="Get started"
-      primaryHref="https://console.octalve.cloud"
-      secondaryLabel="Contact sales"
+      primaryHref={cloudLinks.console}
+      secondaryLabel="Talk to sales"
       secondaryHref="/contact"
     />
   );
