@@ -20,7 +20,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
-      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs tests/support-page.test.mjs tests/registry-rdap.test.mjs tests/domain-workspace.test.mjs tests/domain-name-ideas.test.mjs tests/domain-bundle.test.mjs tests/compare-domain-sellers.test.mjs tests/service-hero.test.mjs
+      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs tests/support-page.test.mjs tests/registry-rdap.test.mjs tests/domain-workspace.test.mjs tests/domain-name-ideas.test.mjs tests/domain-bundle.test.mjs tests/compare-domain-sellers.test.mjs tests/service-hero.test.mjs tests/service-domain-search.test.mjs
       - run: pnpm build
       - name: Verify static export
         run: |
@@ -28,3 +28,8 @@ jobs:
           test -f out/support/index.html
           test -f out/knowledge-base/index.html
           test -f out/tools/domain-name-search/index.html
+
+          test -f out/hosting/index.html
+          test -f out/migration/index.html
+          test -f out/ssl-security/index.html
+          test -f out/email/index.html
