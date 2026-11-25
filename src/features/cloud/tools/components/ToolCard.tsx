@@ -1,36 +1,12 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-type ToolCardProps = {
-  title: string;
-  description: string;
-  href: string;
-  icon: LucideIcon;
-};
-
-export function ToolCard({ title, description, href, icon: Icon }: ToolCardProps) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_45px_rgba(15,23,42,0.045)] transition hover:-translate-y-1 hover:border-cloud-blue/30 hover:shadow-[0_24px_70px_rgba(0,100,224,0.10)]"
-    >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cloud-blue/10 text-cloud-blue transition group-hover:bg-cloud-blue group-hover:text-white">
-        <Icon className="h-5 w-5" aria-hidden="true" />
-      </div>
-
-      <h2 className="mt-6 text-xl font-semibold tracking-[-0.025em] text-slate-950">
-        {title}
-      </h2>
-
-      <p className="mt-3 text-sm leading-7 text-slate-500 sm:text-[15px]">
-        {description}
-      </p>
-
-      <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cloud-blue">
-        Open tool
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
-      </div>
-    </Link>
-  );
+import { ArrowUpRight, type LucideIcon } from "lucide-react";
+const accents={violet:"text-violet-300 bg-violet-400/10",orange:"text-orange-300 bg-orange-400/10",teal:"text-teal-300 bg-teal-400/10",green:"text-green-300 bg-green-400/10",blue:"text-blue-300 bg-blue-400/10",red:"text-red-300 bg-red-400/10"} as const;
+type Props={title:string;description:string;href:string;icon:LucideIcon;accent?:keyof typeof accents};
+export function ToolCard({title,description,href,icon:Icon,accent="blue"}:Props){
+ return <Link href={href} className="group flex min-w-0 flex-col rounded-2xl border border-[#333333] bg-[#141414] p-5 text-white transition-colors hover:border-zinc-500 hover:bg-[#1A1A1A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-300 sm:p-6">
+ <div className="flex items-start justify-between gap-3"><span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${accents[accent]}`}><Icon size={23} strokeWidth={1.6} aria-hidden="true"/></span><ArrowUpRight size={19} className="text-zinc-400 group-hover:text-white" aria-hidden="true"/></div>
+ <h3 className="mt-5 text-lg font-medium leading-snug tracking-tight">{title}</h3>
+ <p className="mt-2 text-sm leading-6 text-zinc-300">{description}</p>
+ <span className="mt-auto pt-5 text-sm text-zinc-300 group-hover:text-white">Open tool <span className="sr-only">: {title}</span></span>
+ </Link>
 }
