@@ -1,3 +1,5 @@
+import { cloudLinks } from "./cloud-links";
+
 export type HeaderGroup = {
   id: string;
   label: string;
@@ -26,6 +28,6 @@ export const headerGroups: readonly HeaderGroup[] = [
     { label: "Free Cloud Tools", href: "/tools" },
     { label: "Knowledge Base", href: "/knowledge-base" },
     { label: "Help & Support", href: "/support" },
-    { label: "Hosting Panel", href: "https://opanel.octalve.cloud" },
+    { label: "Hosting Panel", href: cloudLinks.opanel },
   ] },
 ];
