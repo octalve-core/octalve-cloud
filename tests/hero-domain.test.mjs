@@ -12,5 +12,6 @@ test("hero purchase action fails closed when checkout or availability is unverif
  assert.match(source,/item.available===true/);
  assert.match(source,/item.available===true&&item.checkoutEnabled===true&&!!href/);
  assert.match(source,/buildDomainRegistrationHref\(item.domain\)/);
- assert.match(source,/Unverified/);
+ assert.match(source,/<DomainResultCard/);
+ assert.match(readFileSync(new URL("../src/features/cloud/commerce/DomainCommerce.tsx",import.meta.url),"utf8"),/Unverified/);
 });
