@@ -4,3 +4,5 @@ test("rejected shopping snapshots clear stale UI and legacy domain links identif
 test("cart and checkout share one frame without commerce authority",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/export function CommerceCheckoutFrame/);assert.match(ui,/<CommerceCheckoutFrame stage=\{stage\}/);assert.match(ui,/data-commerce-stage/);assert.doesNotMatch(ui,/fetch\(|localStorage|sessionStorage/);});
 
 test("read-only checkout rows use the canonical cart item without mutation controls",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/readOnly=false/);assert.match(ui,/!readOnly&&!compact/);assert.match(ui,/!readOnly&&<button/);});
+
+test("public cart error stays in canonical checkout workspace with retry",()=>{const provider=read("src/features/cloud/commerce/ShoppingProvider.tsx");assert.match(provider,/CommerceCheckoutFrame stage=\{0\}/);assert.match(provider,/Retry connection/);assert.match(provider,/Promise\.all/);});
