@@ -13,6 +13,8 @@ const groups=[
  {title:"Website essentials",description:"Prepare policies and explore security checks for your website.",tools:[
  {title:"Privacy Policy Generator",description:"Create a starter privacy policy draft for review before publishing.",href:"/tools/privacy-policy-generator/",icon:FileCheck2,accent:"green"},
  {title:"Terms of Service Generator",description:"Prepare a starter terms of service draft for your website or business.",href:"/tools/terms-of-service-generator/",icon:FileText,accent:"orange"},
+ {title:"DNS Lookup",description:"Inspect public DNS records.",href:"/tools/dns-lookup/",icon:Globe2,accent:"blue"},
+ {title:"Email Health Check",description:"Inspect MX, SPF, DMARC and DKIM records.",href:"/tools/email-health-check/",icon:ShieldCheck,accent:"teal"},
  {title:"Malware & Hack Check",description:"Prepare a website security scan request and learn about suspicious website activity.",href:"/tools/malware-scan/",icon:ShieldCheck,accent:"red"},
  ]},
 ] as const;

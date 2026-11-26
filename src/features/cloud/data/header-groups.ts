@@ -17,6 +17,7 @@ export const headerGroups: readonly HeaderGroup[] = [
     { label: "Domain Registration & Transfer", href: "/domains" },
     { label: "Domain Name Search", href: "/tools/domain-name-search" },
     { label: "WHOIS Lookup", href: "/tools/whois-lookup" },
+    { label: "Domain Pricing", href: "/domains/pricing/" },
   ] },
   { id: "servers", label: "Servers", links: [
     { label: "VPS & Cloud Servers", href: "/servers" },
@@ -27,6 +28,8 @@ export const headerGroups: readonly HeaderGroup[] = [
   { id: "resources", label: "Resources", links: [
     { label: "Free Cloud Tools", href: "/tools" },
     { label: "Knowledge Base", href: "/knowledge-base" },
+    { label: "Cloud Guides", href: "/guides/" },
+    { label: "Trust & Security", href: "/trust/" },
     { label: "Help & Support", href: "/support" },
     { label: "Contact Sales", href: "/contact" },
     { label: "Hosting Panel", href: cloudLinks.opanel },
