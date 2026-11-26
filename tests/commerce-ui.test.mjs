@@ -6,3 +6,5 @@ test("cart and checkout share one frame without commerce authority",()=>{const u
 test("read-only checkout rows use the canonical cart item without mutation controls",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/readOnly=false/);assert.match(ui,/!readOnly&&!compact/);assert.match(ui,/!readOnly&&<button/);});
 
 test("public cart error stays in canonical checkout workspace with retry",()=>{const provider=read("src/features/cloud/commerce/ShoppingProvider.tsx");assert.match(provider,/CommerceCheckoutFrame stage=\{0\}/);assert.match(provider,/Retry connection/);assert.match(provider,/Promise\.all/);});
+
+test("account cart consumes a scope-bound mutation snapshot and surfaces checkout limits",()=>{const s=read("src/features/cloud/commerce/ShoppingProvider.tsx");assert.match(s,/body.scope!==scope.scope/);assert.match(s,/applySnapshot\(\{scope,body\}\)/);assert.match(s,/checkoutAllowed:amounts&&!checkoutIssue/);assert.match(s,/domain_unavailable/);});
