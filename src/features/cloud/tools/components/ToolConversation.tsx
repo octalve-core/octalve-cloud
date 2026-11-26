@@ -8,7 +8,7 @@ const initial={business:"",website:"",email:"",country:"Nigeria",notes:""};
 export function ToolConversation({kind}:{kind:Kind}){
  const scan=kind==="scan";const [d,setD]=useState<Details>(initial);const [messages,setMessages]=useState<Message[]>([]);const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");const lock=useRef(false);const controller=useRef<AbortController|null>(null);
  useEffect(()=>()=>controller.current?.abort(),[]);
- const title=scan?"Website security check":kind==="privacy"?"Privacy policy generator":"Terms of service generator";
+ const title=scan?"Website security check":kind==="privacy"?"Privacy policy generator":kind==="cookie"?"Cookie policy generator":"Terms of service generator";
  function update(key:keyof Details,value:string){setD(old=>({...old,[key]:value}));setError("")}
  async function submit(){if(lock.current)return;setError("");setNotice("");const url=publicUrl(d.website.trim());if(!url){setError("Enter a valid public website address.");return}if(!scan&&(!d.business.trim()||!d.country.trim()||!/^\S+@\S+\.\S+$/.test(d.email))){setError("Enter your business name, jurisdiction and valid contact email.");return}
  const data={...d,website:url};const user=scan?"Check "+url:"Generate "+title.toLowerCase()+" for "+d.business+" ("+d.country+").";setMessages(old=>[...old,{role:"user",text:user}]);lock.current=true;setBusy(true);
