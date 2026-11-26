@@ -20,6 +20,6 @@ export function BrandProtectionBundle({items}:{items:DomainSuggestion[]}){
  <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4"><div><p className="text-xs text-zinc-400">{selected.length} selected · published registration prices</p><p className="mt-1 text-xl font-medium tabular-nums">{new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(total)}</p></div>{href&&shopping?.available?<button type="button" disabled={shopping.view.busy}
   onClick={()=>shopping.addBundle(selected.map(item=>item.domain))}
   className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-cloud-blue px-4 text-sm font-medium text-white disabled:opacity-50"><ShoppingCart size={16}/> Add {selected.length} to cart <ArrowRight size={16}/></button>:href&&<a href={href} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-cloud-blue px-4 text-sm font-medium text-white"><ShoppingCart size={16}/> Add {selected.length} to cart <ArrowRight size={16}/></a>}</div>
- <p className="mt-3 text-xs leading-5 text-zinc-400">Review your selection in the Console. Prices and availability are rechecked; adding to a draft cart does not reserve a name or enable live payment.</p>
+ <p className="mt-3 text-xs leading-5 text-zinc-400">Prices and availability are rechecked in the Console; adding to a draft cart does not reserve a name or enable live payment.</p>
  </section>
 }

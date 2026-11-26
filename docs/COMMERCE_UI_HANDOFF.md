@@ -18,3 +18,6 @@ Visual QA: mobile and desktop, empty cart, add/remove, close/reopen, focus and E
 
 ### Compact domain search refinement
 The picker now has a single “Find your domain…” search field, without extension chips or introductory helper text. The search adapter still receives an empty extension string for default popular extensions, and exact full domains remain exact. The existing non-reservation notice is displayed only with results. Preserve the same backend contract and mobile sheet.
+
+### Gated rollout clarification
+If the authoritative guest API is disabled or cannot be read, clear the old storefront cart snapshot and retain canonical legacy handoffs. Domain fallback links explicitly say “Continue in Console”; real Add to Cart buttons appear only when the shopping API is available. BroadcastChannel is same-origin only; the future authenticated readback must use an API-backed revocable shopping credential, with stale snapshots invalidated on logout, switch, expiry and failed reads. Do not enable CLOUD_UNIFIED_SHOPPING_ENABLED before end-to-end qualification.
