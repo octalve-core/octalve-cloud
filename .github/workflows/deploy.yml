@@ -1,9 +1,8 @@
 name: Deploy Octalve Cloud Website
 
 on:
-  push:
-    branches:
-      - main
+  # DirectAdmin is intentionally disconnected; only an operator may resume it.
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
