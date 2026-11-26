@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import {isConsoleHref} from "@/lib/console-commerce-links";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
@@ -331,7 +332,7 @@ function FooterItem({ item }: { item: FooterLinkItem }) {
     return (
       <a
         href={item.href}
-        target={item.href.startsWith("http") ? "_blank" : undefined}
+        target={item.href.startsWith("http") && !isConsoleHref(item.href) ? "_blank" : undefined}
         rel={item.href.startsWith("http") ? "noreferrer" : undefined}
         className={className}
         style={{ color: FOOTER_COLORS.muted }}

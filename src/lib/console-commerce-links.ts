@@ -1,5 +1,5 @@
 /** Public-to-Console navigation: identifiers only, never prices or authorization. */
-const CONSOLE="https://console.cloud.octalve.com";
+export const CONSOLE="https://console.cloud.octalve.com";
 const slug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const domainPattern=/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{1,62}$/;
 export type PublishedHostingIntent={
@@ -24,3 +24,6 @@ export function buildDomainBundleHref(domains:string[]):string|null{
  if(domains.length<1||domains.length>4||new Set(domains).size!==domains.length||!domains.every(d=>domainPattern.test(d)&&d===d.toLowerCase()))return null;
  return CONSOLE+"/client/domains/register?"+new URLSearchParams({bundle:domains.join(",")}).toString();
 }
+
+/** Only canonical HTTPS Console destinations, never user-selected redirect hosts. */
+export function isConsoleHref(href:string):boolean{try{const u=new URL(href);return u.origin===CONSOLE&&!u.username&&!u.password&&!u.hash}catch{return false}}

@@ -33,10 +33,10 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
   const [cycles,setCycles]=useState<Record<number,string>>({});
   useEffect(()=>{
     const abort=new AbortController();
-    fetch(API,{signal:abort.signal,credentials:"omit",cache:"no-store"})
+    fetch(API,{signal:AbortSignal.any([abort.signal,AbortSignal.timeout(15000)]),credentials:"omit",cache:"no-store"})
       .then(async r=>{if(!r.ok)throw Error("catalog unavailable");return await r.json() as ResponseShape})
-      .then(data=>{if(!abort.signal.aborted)setPlans(Array.isArray(data.plans)?data.plans:[])})
-      .catch(()=>{if(!abort.signal.aborted)setError("Plans are temporarily unavailable.")})
+      .then(data=>{if(!abort.signal.aborted)setPlans(Array.isArray(data.plans)?data.plans.filter(p=>p&&typeof p.name==="string"&&Array.isArray(p.billing_cycles)&&Array.isArray(p.features)):[])})
+      .catch(()=>{if(!abort.signal.aborted)setError("Plans are temporarily unavailable. Refresh or contact our team.")})
       .finally(()=>{if(!abort.signal.aborted)setLoading(false)});
     return()=>abort.abort();
   },[]);

@@ -20,7 +20,7 @@ export function GetStarted({
   title,
   description,
   primaryLabel = "Get started",
-  primaryHref = "https://console.octalve.cloud",
+  primaryHref = "https://console.cloud.octalve.com",
   secondaryLabel = "Contact sales",
   secondaryHref = "/contact",
 }: GetStartedProps) {
@@ -39,7 +39,7 @@ export function GetStarted({
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={primaryHref}
-                target={primaryHref.startsWith("http") ? "_blank" : undefined}
+                rel="noreferrer"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cloud-blue px-7 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,100,224,0.22)] transition hover:-translate-y-0.5 hover:bg-blue-600"
               >
                 {primaryLabel}

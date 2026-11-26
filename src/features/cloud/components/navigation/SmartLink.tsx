@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {isConsoleHref} from "@/lib/console-commerce-links";
 import type { ReactNode } from "react";
 
 function shouldOpenInNewTab(href: string) {
@@ -21,7 +22,7 @@ export function SmartLink({
   ariaLabel?: string;
 }) {
   if (external || !href.startsWith("/")) {
-    const newTab = shouldOpenInNewTab(href);
+    const newTab = shouldOpenInNewTab(href) && !isConsoleHref(href);
 
     return (
       <a
