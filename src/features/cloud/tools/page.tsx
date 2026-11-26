@@ -18,6 +18,9 @@ const groups=[
  {title:"DNS Lookup",description:"Inspect public DNS records.",href:"/tools/dns-lookup/",icon:Globe2,accent:"blue"},
  {title:"Email Health Check",description:"Inspect MX, SPF, DMARC and DKIM records.",href:"/tools/email-health-check/",icon:ShieldCheck,accent:"teal"},
  {title:"Cookie Policy Generator",description:"Prepare a cookie policy draft.",href:"/tools/cookie-policy-generator/",icon:FileText,accent:"green"},
+ {title:"Website Speed Test",description:"Request a PageSpeed performance report.",href:"/tools/website-speed-test/",icon:Search,accent:"violet"},
+ {title:"SSL Checker",description:"Inspect HTTPS certificate validity.",href:"/tools/ssl-checker/",icon:ShieldCheck,accent:"green"},
+ {title:"Redirect Checker",description:"Inspect HTTP HEAD redirects.",href:"/tools/redirect-checker/",icon:Globe2,accent:"blue"},
  {title:"Malware & Hack Check",description:"Prepare a website security scan request and learn about suspicious website activity.",href:"/tools/malware-scan/",icon:ShieldCheck,accent:"red"},
  ]},
 ] as const;

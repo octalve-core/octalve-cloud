@@ -1,0 +1,1 @@
+import type {Metadata} from "next";import {CommercePreview} from "@/features/cloud/commerce/CommercePreview";export const metadata:Metadata={title:"Commerce design preview",robots:{index:false,follow:false}};export default function Page(){return <CommercePreview/>}
