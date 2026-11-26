@@ -1,5 +1,7 @@
+import { CONSOLE } from "@/lib/console-commerce-links";
+
 export const cloudLinks = {
-  console: "https://console.cloud.octalve.com",
+  console: CONSOLE,
   opanel: "https://opanel.octalve.cloud",
   domainSearch: "/tools/domain-name-search/",
   supportEmail: "info@cloud.octalve.com",
