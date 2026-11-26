@@ -32,6 +32,7 @@ export const headerGroups: readonly HeaderGroup[] = [
     { label: "Find a Cloud Solution", href: "/assistant/" },
     { label: "About Octalve Cloud", href: "/about/" },
     { label: "Trust & Security", href: "/trust/" },
+    { label: "Service Status", href: "/status/" },
     { label: "Help & Support", href: "/support" },
     { label: "Contact Sales", href: "/contact" },
     { label: "Hosting Panel", href: cloudLinks.opanel },

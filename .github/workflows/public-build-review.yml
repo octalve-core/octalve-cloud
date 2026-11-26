@@ -20,7 +20,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --no-frozen-lockfile
-      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs tests/support-page.test.mjs tests/registry-rdap.test.mjs tests/domain-workspace.test.mjs tests/domain-name-ideas.test.mjs tests/domain-bundle.test.mjs tests/compare-domain-sellers.test.mjs tests/service-hero.test.mjs tests/service-domain-search.test.mjs tests/hosting-feature-sections.test.mjs tests/email-services.test.mjs tests/server-overview.test.mjs tests/tools-directory.test.mjs tests/document-tools.test.mjs tests/public-hardening.test.mjs tests/commerce-ui.test.mjs
+      - run: node --experimental-strip-types --test tests/commerce-intent.test.mjs tests/typography.test.mjs tests/hero-domain.test.mjs tests/home-composition.test.mjs tests/support-page.test.mjs tests/registry-rdap.test.mjs tests/domain-workspace.test.mjs tests/domain-name-ideas.test.mjs tests/domain-bundle.test.mjs tests/compare-domain-sellers.test.mjs tests/service-hero.test.mjs tests/service-domain-search.test.mjs tests/hosting-feature-sections.test.mjs tests/email-services.test.mjs tests/server-overview.test.mjs tests/tools-directory.test.mjs tests/document-tools.test.mjs tests/public-hardening.test.mjs tests/commerce-ui.test.mjs tests/storefront-tools.test.mjs
       - run: pnpm build
       - name: Verify static export
         run: |

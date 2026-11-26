@@ -6,7 +6,8 @@ import {extensions,localIdeas,validateIdeas} from "@/lib/domain-name-ideas";
 import {getDomainSuggestions,type DomainSuggestion} from "@/lib/domain-pricing-adapter";
 import {buildDomainRegistrationHref} from "@/lib/console-commerce-links";
 type Row={name:string;offer?:DomainSuggestion;checked?:boolean};
-const api=process.env.NEXT_PUBLIC_OCTALVE_GENERATOR_ENDPOINT;
+import {endpoints} from "@/lib/storefront-tools";
+const api=endpoints.ideas;
 export function ToolPanel(){
  const [query,setQuery]=useState("");const [tld,setTld]=useState(".com");const [rows,setRows]=useState<Row[]>([]);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [source,setSource]=useState("");const [filter,setFilter]=useState("all");const [limit,setLimit]=useState(30);
  const active=useRef<AbortController|null>(null);const locked=useRef(false);
@@ -20,7 +21,7 @@ export function ToolPanel(){
   let names=local;let label="Local naming suggestions";
   try{
    if(api){try{
-    const resp=await fetch(api,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"omit",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(12000)]),body:JSON.stringify({business:query.trim(),extension:tld,count:100})});
+    const resp=await fetch(api,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"omit",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(12000)]),body:JSON.stringify({business:query.trim(),extension:tld,count:30})});
     if(resp.ok){const data=await resp.json();const ideas=validateIdeas(data.ideas,tld);if(ideas.length){names=[...new Set([...ideas,...local])].slice(0,100);label=ideas.length>=100?"AI suggestions":"AI and local suggestions";}}
    }catch{/* Explicit local fallback */}}
    if(controller.signal.aborted)return;
