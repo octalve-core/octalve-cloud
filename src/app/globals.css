@@ -43,3 +43,14 @@ body {
 .octalve-cloud-focus:focus-visible {
   box-shadow: 0 0 0 4px rgba(0, 100, 224, 0.18);
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-commerce-drawer][open] {
+    animation: commerce-drawer-in 180ms ease-out both;
+  }
+}
+
+@keyframes commerce-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

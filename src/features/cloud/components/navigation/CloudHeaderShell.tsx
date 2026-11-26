@@ -14,6 +14,8 @@ const focusStyle = "focus-visible:outline-none focus-visible:ring-2 focus-visibl
 const signInStyle = "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-lg px-2 text-sm font-normal text-cloud-navy hover:text-cloud-blue " + focusStyle;
 const startStyle = "inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-lg bg-cloud-blue px-4 text-sm font-medium text-white hover:bg-cloud-blueDark " + focusStyle;
 
+import {ShoppingTrigger} from "@/features/cloud/commerce/ShoppingProvider";
+
 function AccountActions({ onNavigate }: { onNavigate: () => void }) {
   return (
     <>
@@ -103,6 +105,7 @@ export function CloudHeader() {
             className={`inline-flex h-11 w-11 items-center justify-center rounded-lg text-cloud-navy hover:bg-cloud-mist ${focusStyle}`}>
             <Headset size={20} strokeWidth={1.6} aria-hidden="true" />
           </Link>
+          <ShoppingTrigger/>
           <div className="hidden items-center gap-2 lg:flex"><AccountActions onNavigate={closeAll} /></div>
           <button ref={mobileTrigger} type="button" aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
             aria-expanded={mobileOpen} aria-controls="cloud-mobile-navigation"

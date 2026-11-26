@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Globe2 } from "lucide-react";
+import {useShopping} from "@/features/cloud/commerce/ShoppingProvider";
 import {PublishedPackageCard} from "./PublishedPackageCard";
 import {buildHostingCheckoutHref} from "@/lib/console-commerce-links";
 
@@ -27,6 +28,7 @@ function money(value: string | number, currency: string) {
 }
 
 export function PublishedPlanCards({ category = "all" }: { category?: PlanCategory }) {
+  const shopping=useShopping();
   const [plans,setPlans]=useState<Plan[]>([]);
   const [loading,setLoading]=useState(true),[error,setError]=useState("");
   const [selectedCategory,setSelectedCategory]=useState<PlanCategory>(category);
@@ -90,7 +92,10 @@ export function PublishedPlanCards({ category = "all" }: { category?: PlanCatego
                   {plan.billing_cycles.map(c=><option key={c.key} value={c.key}>{periodLabel[c.key]||c.label}</option>)}
                 </select>
               </label>
-              <Link href={url} className="mt-3 flex min-h-11 items-center justify-center rounded-full bg-[#0064E0] px-4 text-sm font-medium text-white">{canCheckout ? "Choose this plan" : "Ask about this plan"}</Link>
+              {canCheckout&&shopping?.available?<button type="button" disabled={shopping.view.busy}
+                onClick={()=>shopping.add({kind:"service",plan:String(plan.id),cycle:selected.key,revision:plan.published_revision})}
+                className="mt-3 flex min-h-11 w-full items-center justify-center rounded-full bg-[#0064E0] px-4 text-sm font-medium text-white disabled:opacity-50">Add to cart</button>:
+                <Link href={url} className="mt-3 flex min-h-11 items-center justify-center rounded-full bg-[#0064E0] px-4 text-sm font-medium text-white">{canCheckout ? "Choose this plan" : "Ask about this plan"}</Link>}
             </>}/>;
         })}
       </div>}
