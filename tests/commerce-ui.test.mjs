@@ -3,7 +3,7 @@ test("rejected shopping snapshots clear stale UI and legacy domain links identif
 
 test("cart and checkout share one frame without commerce authority",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/export function CommerceCheckoutFrame/);assert.match(ui,/<CommerceCheckoutFrame stage=\{stage\}/);assert.match(ui,/data-commerce-stage/);assert.doesNotMatch(ui,/fetch\(|localStorage|sessionStorage/);});
 
-test("read-only checkout rows use the canonical cart item without mutation controls",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/readOnly=false/);assert.match(ui,/!readOnly&&!compact/);assert.match(ui,/!readOnly&&<button/);});
+test("read-only checkout rows use the canonical cart item without mutation controls",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/readOnly=false/);assert.match(ui,/!readOnly&&!compact/);assert.match(ui,/!readOnly&&<RemoveCartItem/);});
 
 test("public cart error stays in canonical checkout workspace with retry",()=>{const provider=read("src/features/cloud/commerce/ShoppingProvider.tsx");assert.match(provider,/CommerceCheckoutFrame stage=\{0\}/);assert.match(provider,/Retry connection/);assert.match(provider,/Promise\.all/);});
 
@@ -14,3 +14,5 @@ test("silent commerce notification does not open a modal or steal focus",()=>{co
 test("unavailable domain suggestions are explicitly unverified and duplicates open existing cart",()=>{const search=read("src/features/cloud/components/DomainSearchWorkspace.tsx");assert.match(search,/Name ideas only/);assert.match(search,/void run\(name,"\.com"\)/);assert.match(read("src/features/cloud/components/CompactDomainResult.tsx"),/In your cart/);});
 
 test("cart trigger is always mounted and unverified sessions cannot transact",()=>{const s=read("src/features/cloud/commerce/ShoppingProvider.tsx");assert.match(s,/return <CartTrigger count=\{shopping\?\.count\?\?null\}/);assert.match(s,/!sessionChecked\|\|mutating.current/);assert.match(s,/refreshRequested.current/);assert.match(s,/lines.every\(line=>line.ready\)/);assert.doesNotMatch(s,/\{available&&<CartDrawer/);});
+
+test("customer commerce copy and confirmed removal",()=>{const ui=read("src/features/cloud/commerce/CommerceUI.tsx");assert.match(ui,/Secure checkout/);assert.match(ui,/Remove this item\?/);assert.match(ui,/VerifiedPaymentReceipt/);assert.match(ui,/Download|Payment reference/);assert.doesNotMatch(ui,/Final eligibility and prices confirmed by the Console/);});

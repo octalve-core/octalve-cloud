@@ -1,7 +1,7 @@
 "use client";
 import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,secondary} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,CommerceRecommendations,CommerceProductCard,secondary,primary} from "./CommerceUI";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -219,7 +219,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:amounts?display("0.00",currency!)+" est.":"—",total:amounts?subtotal+" est.":"—",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -234,7 +234,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
     review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
-    continueShopping:()=>router.push("/"),
+    continueShopping:()=>router.push("/"),addHosting:()=>{const section=document.getElementById("commerce-recommendations");if(section)section.scrollIntoView({behavior:"smooth"});else router.push("/hosting/")},
   };
   return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
@@ -251,5 +251,15 @@ export function ShoppingTrigger(){
 export function ShoppingReview(){
   const shopping=useShopping();
   if(!shopping?.available)return <CommerceCheckoutFrame stage={0} title="Review your shopping cart" back={()=>window.location.assign("/")} backLabel="Continue shopping"><CommercePanel><p role="status" className="text-sm text-slate-600">{shopping?.loading?"Connecting to your shopping cart…":"We could not connect to the shopping service. Your selections have not been replaced."}</p>{!shopping?.loading&&<button type="button" className={secondary+" mt-4"} onClick={()=>shopping?.retry()}>Retry connection</button>}</CommercePanel></CommerceCheckoutFrame>;
-  return <CartReview cart={shopping.view} actions={shopping.actions}/>;
+  return <CartReview cart={shopping.view} actions={shopping.actions} recommendations={shopping.view.lines.length>0&&<CartRecommendations shopping={shopping}/>}><CommercePanel><a href="/tools/domain-name-search/" className="inline-flex min-h-11 items-center text-sm font-medium text-[#0064E0]">Add more domains</a></CommercePanel></CartReview>;
+
+}
+
+type SuggestedPlan={id:number;name:string;description:string;product_type:string;published_revision:number;currency:string;features:string[];billing_cycles:{key:string;label:string;total_price:string;setup_fee:string;is_default:boolean}[]};
+function CartRecommendations({shopping}:{shopping:Shopping}){
+ const [plans,setPlans]=useState<SuggestedPlan[]>([]);
+ const [cycles,setCycles]=useState<Record<number,string>>({});
+ useEffect(()=>{const c=new AbortController();fetch("https://api.cloud.octalve.com/api/storefront/plans/",{credentials:"omit",cache:"no-store",signal:AbortSignal.any([c.signal,AbortSignal.timeout(15000)])}).then(async r=>{if(!r.ok)throw Error("Unavailable");return r.json()}).then(data=>{if(!c.signal.aborted&&Array.isArray(data.plans))setPlans(data.plans.filter((p:SuggestedPlan)=>p&&Number.isSafeInteger(p.id)&&Number.isSafeInteger(p.published_revision)&&p.published_revision>0&&p.currency==="NGN"&&["shared_hosting","wordpress_hosting","vps"].includes(p.product_type)&&Array.isArray(p.billing_cycles)&&Array.isArray(p.features)).slice(0,3))}).catch(()=>{});return()=>c.abort()},[]);
+ const eligible=plans.filter(p=>!shopping.view.lines.some(line=>line.id.startsWith("service:"+p.id+":")));
+ return <CommerceRecommendations>{eligible.length?eligible.map(p=>{const valid=p.billing_cycles.filter(c=>Number(c.total_price)>0&&Number(c.setup_fee)>=0);const c=valid.find(c=>c.key===cycles[p.id])??valid.find(c=>c.is_default)??valid[0];if(!c)return null;return <CommerceProductCard key={p.id} line={{id:String(p.id),kind:p.product_type==="vps"?"vps":"hosting",name:p.name,description:p.description,period:c.label,priceLabel:display((Number(c.total_price)+Number(c.setup_fee)).toFixed(2),p.currency)}} features={p.features.slice(0,3)} configuration={<label className="mt-3 block text-xs text-slate-600">Billing period<select value={c.key} onChange={e=>setCycles(old=>({...old,[p.id]:e.target.value}))} className="mt-1 min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm">{valid.map(c=><option key={c.key} value={c.key}>{c.label}</option>)}</select></label>} action={<button type="button" disabled={shopping.view.busy} onClick={()=>shopping.add({kind:"service",plan:String(p.id),cycle:c.key,revision:p.published_revision})} className={primary+" w-full"}>Add to cart</button>}/>;}):<><CommerceProductCard line={{id:"browse-hosting",kind:"hosting",name:"Web hosting",description:"Give your domain a home with a hosting plan.",period:"Compare available plans",priceLabel:"Explore plans"}} features={[]} action={<a href="/hosting/" className={primary+" w-full"}>View hosting plans</a>}/><CommerceProductCard line={{id:"browse-email",kind:"email",name:"Business email",description:"Build trust with an email address on your domain.",period:"Explore business email",priceLabel:"Explore options"}} features={[]} action={<a href="/email/" className={secondary+" w-full"}>Explore email</a>}/></>}</CommerceRecommendations>;
 }
