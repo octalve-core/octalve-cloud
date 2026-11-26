@@ -7,6 +7,8 @@ const groups=[
  {title:"Domain tools",description:"Find the right name and research before you register.",tools:[
  {title:"Domain Name Search",description:"Check domain availability and explore registration prices across supported extensions.",href:"/tools/domain-name-search/",icon:Search,accent:"violet"},
  {title:"AI Domain Name Generator",description:"Discover ideas for your business and check available domain names.",href:"/tools/ai-domain-name-generator/",icon:Sparkles,accent:"orange"},
+ {title:"Bulk Domain Search",description:"Check multiple exact domain names.",href:"/tools/bulk-domain-search/",icon:Search,accent:"violet"},
+ {title:"Domain Expiry Checker",description:"Research registry expiration dates.",href:"/tools/domain-expiry-checker/",icon:Globe2,accent:"teal"},
  {title:"WHOIS Lookup",description:"Explore public registration records, registrar details and nameservers.",href:"/tools/whois-lookup/",icon:Globe2,accent:"teal"},
  {title:"Compare Domain Sellers",description:"Compare domain seller services before choosing where to register.",href:"/tools/compare-domain-sellers/",icon:Scale,accent:"blue"},
  ]},
@@ -15,6 +17,7 @@ const groups=[
  {title:"Terms of Service Generator",description:"Prepare a starter terms of service draft for your website or business.",href:"/tools/terms-of-service-generator/",icon:FileText,accent:"orange"},
  {title:"DNS Lookup",description:"Inspect public DNS records.",href:"/tools/dns-lookup/",icon:Globe2,accent:"blue"},
  {title:"Email Health Check",description:"Inspect MX, SPF, DMARC and DKIM records.",href:"/tools/email-health-check/",icon:ShieldCheck,accent:"teal"},
+ {title:"Cookie Policy Generator",description:"Prepare a cookie policy draft.",href:"/tools/cookie-policy-generator/",icon:FileText,accent:"green"},
  {title:"Malware & Hack Check",description:"Prepare a website security scan request and learn about suspicious website activity.",href:"/tools/malware-scan/",icon:ShieldCheck,accent:"red"},
  ]},
 ] as const;

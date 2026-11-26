@@ -29,6 +29,8 @@ export const headerGroups: readonly HeaderGroup[] = [
     { label: "Free Cloud Tools", href: "/tools" },
     { label: "Knowledge Base", href: "/knowledge-base" },
     { label: "Cloud Guides", href: "/guides/" },
+    { label: "Find a Cloud Solution", href: "/assistant/" },
+    { label: "About Octalve Cloud", href: "/about/" },
     { label: "Trust & Security", href: "/trust/" },
     { label: "Help & Support", href: "/support" },
     { label: "Contact Sales", href: "/contact" },
