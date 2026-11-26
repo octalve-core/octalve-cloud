@@ -1,13 +1,14 @@
 "use client";
+import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,secondary} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,secondary} from "./CommerceUI";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
 import {SHOPPING_BRIDGE,GUEST_SHOPPING,chooseShoppingScope,scopeIsCurrent,requestForScope,type ShoppingScope} from "./shopping-session";
 
 type Selection={kind:"domain";domain:string}|{kind:"service";plan:string;cycle:string;revision:number;domain?:string};
-type Line={id:string;selection:Selection;ready:boolean;kind?:CartLine["kind"];name?:string;currency?:string;amount?:string;renewal?:string;period?:string};
+type Line={id:string;selection:Selection;ready:boolean;issue?:string;kind?:CartLine["kind"];name?:string;currency?:string;amount?:string;renewal?:string;period?:string};
 type Shopping={available:boolean;loading:boolean;retry:()=>void;add:(item:Selection)=>void;addBundle:(names:string[])=>void;open:()=>void;count:number|null;view:CartView;actions:CartActions};
 const Context=createContext<Shopping|null>(null);
 const endpoint=GUEST_SHOPPING;
@@ -20,6 +21,8 @@ function display(amount:string,currency:string){
 export function useShopping(){return useContext(Context);}
 
 export function ShoppingProvider({children}:{children:ReactNode}){
+  const router=useRouter();
+  const [feedback,setFeedback]=useState<{message:string;error?:boolean}|null>(null);
   const [available,setAvailable]=useState(false);
   const [loading,setLoading]=useState(true);
   const [lines,setLines]=useState<Line[]>([]);
@@ -29,15 +32,19 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [pendingClaim,setPendingClaim]=useState(false);
+  const [checkoutIssue,setCheckoutIssue]=useState("");
   const currentScope=useRef<ShoppingScope|null>(null);
   const mutating=useRef(false);
   const readEpoch=useRef(0);
+  const reading=useRef<Promise<Awaited<ReturnType<typeof readSnapshot>>>|null>(null);
   const opener=useRef<HTMLElement|null>(null);
   const broadcast=useRef<BroadcastChannel|null>(null);
 
   const clearSnapshot=useCallback(()=>{
     currentScope.current=null;
+    setFeedback(null);
     setPendingClaim(false);
+    setCheckoutIssue("");
     setAvailable(false);
     setLines([]);
     setOwnedDomains([]);
@@ -60,25 +67,28 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     if(!body||!Array.isArray(body.lines))throw Error("Invalid cart response.");
     return {scope,body};
   }
-  const applySnapshot=useCallback((snapshot:{scope:ShoppingScope;body:{lines:Line[];domains?:string[];subtotal:string|null;currency:string|null}})=>{
+  const applySnapshot=useCallback((snapshot:{scope:ShoppingScope;body:{lines:Line[];domains?:string[];subtotal:string|null;currency:string|null;checkout_issue?:string|null}})=>{
     currentScope.current=snapshot.scope;
     setPendingClaim(snapshot.scope.kind==="pending-claim");
     setLines(snapshot.body.lines);
     setOwnedDomains(Array.isArray(snapshot.body.domains)?snapshot.body.domains:[]);
     setQuote({subtotal:snapshot.body.subtotal,currency:snapshot.body.currency});
+    setCheckoutIssue(typeof snapshot.body.checkout_issue==="string"?snapshot.body.checkout_issue:"");
     setAvailable(true);
   },[]);
   const load=useCallback(async()=>{
     if(mutating.current)return;
     const epoch=++readEpoch.current;
     try{
-      const snapshot=await readSnapshot();
+      const request=reading.current??readSnapshot();
+      reading.current=request;
+      const snapshot=await request;
       if(!mutating.current&&epoch===readEpoch.current){
         if(currentScope.current&&!scopeIsCurrent(currentScope.current,snapshot.scope)){clearSnapshot();}
         applySnapshot(snapshot);
       }
     }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
-    finally{if(epoch===readEpoch.current)setLoading(false);}
+    finally{if(epoch===readEpoch.current){reading.current=null;setLoading(false);}}
   },[clearSnapshot,applySnapshot]);
 
   useEffect(()=>{
@@ -91,11 +101,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     window.addEventListener("focus",refresh);
     window.addEventListener("pageshow",refresh);
     document.addEventListener("visibilitychange",refresh);
-    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;clearSnapshot();}}
+    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;clearSnapshot();}}
     document.addEventListener("visibilitychange",hide);
-    const timer=window.setInterval(refresh,20000);
+    const timer=window.setInterval(refresh,60000);
     return ()=>{
       readEpoch.current++;
+      reading.current=null;
       window.removeEventListener("focus",refresh);
       window.removeEventListener("pageshow",refresh);
       document.removeEventListener("visibilitychange",refresh);
@@ -106,6 +117,8 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     };
   },[load,clearSnapshot]);
 
+  useEffect(()=>{router.prefetch("/cart/");},[router]);
+  useEffect(()=>{if(!feedback||feedback.error)return;const timer=window.setTimeout(()=>setFeedback(null),5000);return()=>window.clearTimeout(timer)},[feedback]);
   function show(){
     if(document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     setOpen(true);
@@ -117,33 +130,51 @@ export function ShoppingProvider({children}:{children:ReactNode}){
 
   async function mutate(method:"POST"|"DELETE"|"PATCH",payload:Selection|{id:string}|{bundle:string[]}|{id:string;domain:string;register:boolean}){
     if(!available||mutating.current||!currentScope.current)return false;
+    if(method==="POST"&&"kind" in payload&&payload.kind==="domain"&&lines.some(line=>line.selection.kind==="domain"&&line.selection.domain===payload.domain)){setFeedback({message:"This domain is already in your cart"});return true;}
     const scope=currentScope.current;
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
     const epoch=++readEpoch.current;
     setBusy(true);
     setError("");
+    setFeedback(null);
+    reading.current=null;
     try{
-      // Re-read session before writing so a tab cannot mutate a different account.
-      const before=await readSnapshot();
-      if(epoch!==readEpoch.current||!scopeIsCurrent(scope,before.scope)){clearSnapshot();return false;}
+      // Account mutations carry the refresh-bound scope checked by the BFF. Guest writes still recheck identity.
+      if(scope.kind!=="account"){
+        const before=await readSnapshot();
+        if(epoch!==readEpoch.current||!scopeIsCurrent(scope,before.scope)){clearSnapshot();return false;}
+      }
       const target=requestForScope(scope,method,payload);
       const result=await fetch(target.url,{method,credentials:"include",cache:"no-store",headers:target.headers,
         body:JSON.stringify(target.payload),signal:AbortSignal.timeout(22000)});
       if([401,403,404,409].includes(result.status)){clearSnapshot();return false;}
-      if(!result.ok)throw Error("Shopping update unavailable");
+      if(!result.ok){
+        const failure=await result.json().catch(()=>null);
+        const name=typeof failure?.domain==="string"&&/^[a-z0-9.-]{4,253}$/.test(failure.domain)?failure.domain:"This domain";
+        if(failure?.code==="domain_unavailable")throw Error(name+" is already registered or otherwise unavailable. Choose another name.");
+        if(failure?.code==="domain_lookup_unconfirmed")throw Error("Availability for "+name+" could not be confirmed. Please retry.");
+        if(failure?.code==="domain_price_unavailable")throw Error("Published pricing for "+name+" is unavailable.");
+        throw Error("The cart could not be updated. Check the selection and try again.");
+      }
       const body=await result.json();
       if(!Array.isArray(body.lines))throw Error("Invalid shopping response");
       if(epoch!==readEpoch.current)return false;
       // Fresh scope and authoritative snapshot after mutation; discard stale responses.
-      const after=await readSnapshot();
-      if(epoch!==readEpoch.current||!scopeIsCurrent(scope,after.scope)){clearSnapshot();return false;}
-      applySnapshot(after);
+      if(scope.kind==="account"){
+        // The BFF validates the same refresh-bound scope on every mutation and returns it with the authoritative snapshot.
+        if(body.scope!==scope.scope||epoch!==readEpoch.current){clearSnapshot();return false;}
+        applySnapshot({scope,body});
+      }else{
+        const after=await readSnapshot();
+        if(epoch!==readEpoch.current||!scopeIsCurrent(scope,after.scope)){clearSnapshot();return false;}
+        applySnapshot(after);
+      }
       broadcast.current?.postMessage("changed");
-      if(method==="POST")setOpen(true);
+      if(method==="POST")setFeedback({message:"Added to your cart"});
       return true;
-    }catch{
-      if(epoch===readEpoch.current){setError("The cart could not be updated. Check the selection and try again.");if(method!=="PATCH")setOpen(true);}
+    }catch(reason){
+      if(epoch===readEpoch.current){setError(reason instanceof Error?reason.message:"The cart could not be updated. Try again.");if(method!=="PATCH"&&!open)setFeedback({message:reason instanceof Error?reason.message:"The cart could not be updated. Try again.",error:true});}
       return false;
     }finally{
       mutating.current=false;
@@ -168,12 +199,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     lines:lines.map(line=>({
       id:line.id,kind:line.kind??(line.selection.kind==="domain"?"domain":"hosting"),
       name:line.name??line.selection.domain??"Service selection",description:"",
-      period:line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
+      period:!line.ready?(line.issue??"Review this selection"):line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
       renewalLabel:line.renewal&&line.currency?display(line.renewal,line.currency)+" renewal":undefined,
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts,busy,error,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue,busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -187,11 +218,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       },
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
-    review:()=>window.location.assign("/cart/"),checkout:()=>window.location.assign(consoleCart),
-    continueShopping:()=>window.location.assign("/"),
+    review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
+    continueShopping:()=>router.push("/"),
   };
   return <Context.Provider value={{available,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
+    {feedback&&!open&&<CommerceNotice message={feedback.message} error={feedback.error} onDismiss={()=>setFeedback(null)} onView={()=>{setFeedback(null);show()}}/>}
     {available&&<CartDrawer open={open} close={close} cart={view} actions={actions}/>}
   </Context.Provider>;
 }
