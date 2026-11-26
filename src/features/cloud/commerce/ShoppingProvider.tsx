@@ -70,6 +70,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
 
   async function mutate(method:"POST"|"DELETE",payload:Selection|{id:string}|{bundle:string[]}){
     if(!available||mutating.current)return;
+    if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
     readEpoch.current++;
     setBusy(true);
@@ -81,12 +82,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       const body=await result.json();
       if(!Array.isArray(body.lines))throw Error("Invalid shopping response");
       setLines(body.lines);
-        setQuote({subtotal:body.subtotal,currency:body.currency});
+      setQuote({subtotal:body.subtotal,currency:body.currency});
       broadcast.current?.postMessage("changed");
-      if(method==="POST")show();
+      if(method==="POST")setOpen(true);
     }catch{
       setError("The cart could not be updated. Check the selection and try again.");
-      show();
+      setOpen(true);
     }finally{
       mutating.current=false;
       setBusy(false);
