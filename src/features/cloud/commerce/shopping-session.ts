@@ -7,7 +7,7 @@ export function chooseShoppingScope(guestCount:number,bridgeStatus:number,scope:
  if(bridgeStatus!==200||typeof scope!=="string"||!(/^[a-f0-9]{64}$/.test(scope)))throw Error("Shopping session unavailable.");
  return guestCount>0?{kind:"pending-claim",scope}:{kind:"account",scope};
 }
-export function requestForScope(scope:ShoppingScope,method:"GET"|"POST"|"PATCH"|"DELETE",payload?:unknown){
+export function requestForScope(scope:ShoppingScope,method:"GET"|"POST"|"PATCH"|"DELETE",payload?:unknown):{url:string;headers:Record<string,string>;payload:unknown}{
  if(scope.kind!=="account")return {url:GUEST_SHOPPING,headers:{"Content-Type":"application/json"},payload};
  let data=payload;
  if(method==="POST"&&payload&&typeof payload==="object"){
