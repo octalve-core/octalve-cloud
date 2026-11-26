@@ -1,7 +1,8 @@
 "use client";
 import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,CommerceRecommendations,CommerceProductCard,secondary,primary} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,CommerceRecommendations,CommerceProductCard,CartDomainSearchPanel,draftCartAmounts,secondary,primary} from "./CommerceUI";
+import {DomainSearchWorkspace} from "../components/DomainSearchWorkspace";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -209,7 +210,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   )])];
   const currency=quote.currency;
   const amounts=lines.length>0&&!!currency&&typeof quote.subtotal==="string"&&/^\d+(?:\.\d{1,2})?$/.test(quote.subtotal);
-  const subtotal=amounts?display(quote.subtotal!,currency!):"Review required";
+  const subtotal=amounts?display(quote.subtotal!,currency!):null;
   const view:CartView={
     lines:lines.map(line=>({
       id:line.id,kind:line.kind&&["domain","hosting","vps","email","ssl"].includes(line.kind)?line.kind:(line.selection.kind==="domain"?"domain":"hosting"),
@@ -219,7 +220,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"—",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    ...draftCartAmounts(lines.length,subtotal),checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -251,7 +252,7 @@ export function ShoppingTrigger(){
 export function ShoppingReview(){
   const shopping=useShopping();
   if(!shopping?.available)return <CommerceCheckoutFrame stage={0} title="Review your shopping cart" back={()=>window.location.assign("/")} backLabel="Continue shopping"><CommercePanel><p role="status" className="text-sm text-slate-600">{shopping?.loading?"Connecting to your shopping cart…":"We could not connect to the shopping service. Your selections have not been replaced."}</p>{!shopping?.loading&&<button type="button" className={secondary+" mt-4"} onClick={()=>shopping?.retry()}>Retry connection</button>}</CommercePanel></CommerceCheckoutFrame>;
-  return <CartReview cart={shopping.view} actions={shopping.actions} recommendations={shopping.view.lines.length>0&&<CartRecommendations shopping={shopping}/>}><CommercePanel><a href="/tools/domain-name-search/" className="inline-flex min-h-11 items-center text-sm font-medium text-[#0064E0]">Add more domains</a></CommercePanel></CartReview>;
+  return <CartReview cart={shopping.view} actions={shopping.actions} recommendations={shopping.view.lines.length>0&&<CartRecommendations shopping={shopping}/>}><CartDomainSearchPanel empty={!shopping.view.busy&&shopping.view.lines.length===0}><DomainSearchWorkspace embedded/></CartDomainSearchPanel></CartReview>;
 
 }
 
