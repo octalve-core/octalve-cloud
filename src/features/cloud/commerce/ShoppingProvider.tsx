@@ -1,6 +1,8 @@
 "use client";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
 import {CartDrawer,CartReview,CartTrigger} from "./CommerceUI";
+import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
+import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
 
 type Selection={kind:"domain";domain:string}|{kind:"service";plan:string;cycle:string;revision:number;domain?:string};
@@ -19,6 +21,7 @@ export function useShopping(){return useContext(Context);}
 export function ShoppingProvider({children}:{children:ReactNode}){
   const [available,setAvailable]=useState(false);
   const [lines,setLines]=useState<Line[]>([]);
+  const [ownedDomains,setOwnedDomains]=useState<string[]>([]);
   const [quote,setQuote]=useState<{subtotal:string|null;currency:string|null}>({subtotal:null,currency:null});
   const [open,setOpen]=useState(false);
   const [busy,setBusy]=useState(false);
@@ -31,6 +34,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const clearSnapshot=useCallback(()=>{
     setAvailable(false);
     setLines([]);
+    setOwnedDomains([]);
     setQuote({subtotal:null,currency:null});
     setOpen(false);
     setError("");
@@ -48,6 +52,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       const body=await result.json();
       if(!mutating.current&&epoch===readEpoch.current&&Array.isArray(body.lines)){
         setLines(body.lines);
+        setOwnedDomains(Array.isArray(body.domains)?body.domains:[]);
         setQuote({subtotal:body.subtotal,currency:body.currency});
         setAvailable(true);
       }else if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();
@@ -83,8 +88,8 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     if(opener.current?.isConnected)requestAnimationFrame(()=>opener.current?.focus());
   }
 
-  async function mutate(method:"POST"|"DELETE",payload:Selection|{id:string}|{bundle:string[]}){
-    if(!available||mutating.current)return;
+  async function mutate(method:"POST"|"DELETE"|"PATCH",payload:Selection|{id:string}|{bundle:string[]}|{id:string;domain:string;register:boolean}){
+    if(!available||mutating.current)return false;
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
     readEpoch.current++;
@@ -93,23 +98,35 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     try{
       const result=await fetch(endpoint,{method,credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
-      if([401,403,404].includes(result.status)){clearSnapshot();return;}
+      if([401,403,404].includes(result.status)){clearSnapshot();return false;}
       if(!result.ok)throw Error("Shopping update unavailable");
       const body=await result.json();
       if(!Array.isArray(body.lines))throw Error("Invalid shopping response");
       setLines(body.lines);
+      setOwnedDomains(Array.isArray(body.domains)?body.domains:[]);
       setQuote({subtotal:body.subtotal,currency:body.currency});
       broadcast.current?.postMessage("changed");
       if(method==="POST")setOpen(true);
+      return true;
     }catch{
       setError("The cart could not be updated. Check the selection and try again.");
-      setOpen(true);
+      if(method!=="PATCH")setOpen(true);
+      return false;
     }finally{
       mutating.current=false;
       setBusy(false);
     }
   }
 
+  async function configure(id:string,domain:string,register:boolean){
+    if(!await mutate("PATCH",{id,domain,register})){
+      throw new Error("Could not connect this domain. Your cart has not been confirmed. Please retry.");
+    }
+  }
+
+  const domainOptions=[...new Set([...ownedDomains,...lines.flatMap(line=>
+    line.ready&&line.selection.kind==="domain"?[line.selection.domain]:[]
+  )])];
   const currency=quote.currency;
   const amounts=lines.length>0&&!!currency&&typeof quote.subtotal==="string"&&/^\d+(?:\.\d{1,2})?$/.test(quote.subtotal);
   const subtotal=amounts?display(quote.subtotal!,currency!):"Review required";
@@ -120,11 +137,22 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       period:line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
       renewalLabel:line.renewal&&line.currency?display(line.renewal,line.currency)+" renewal":undefined,
       domain:line.selection.domain,
+      domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
     subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts,busy,error,
   };
   const actions:CartActions={
-    remove:id=>{void mutate("DELETE",{id});},configure:()=>{},
+    remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
+    domainPicker:{
+      async search(query,extension,signal){
+        const name=query.trim().toLowerCase();
+        const separator=name.indexOf(".");
+        const tlds=separator>=0?[name.slice(separator)]:extension?[extension]:[...pickerExtensions];
+        const offers=await getDomainSuggestions({query:name,tlds,signal});
+        return offers.map(offer=>({...offer,selectable:offer.available===true&&!!offer.registrationAmount&&!!offer.currency}));
+      },
+      addAndConfigure:(id,domain)=>configure(id,domain,true),
+    },
     review:()=>window.location.assign("/cart/"),checkout:()=>window.location.assign(consoleCart),
     continueShopping:()=>window.location.assign("/"),
   };
