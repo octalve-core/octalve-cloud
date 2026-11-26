@@ -33,8 +33,10 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const [error,setError]=useState("");
   const [pendingClaim,setPendingClaim]=useState(false);
   const [checkoutIssue,setCheckoutIssue]=useState("");
+  const [sessionChecked,setSessionChecked]=useState(false);
   const currentScope=useRef<ShoppingScope|null>(null);
   const mutating=useRef(false);
+  const refreshRequested=useRef(false);
   const readEpoch=useRef(0);
   const reading=useRef<Promise<Awaited<ReturnType<typeof readSnapshot>>>|null>(null);
   const opener=useRef<HTMLElement|null>(null);
@@ -42,6 +44,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
 
   const clearSnapshot=useCallback(()=>{
     currentScope.current=null;
+    setSessionChecked(false);
     setFeedback(null);
     setPendingClaim(false);
     setCheckoutIssue("");
@@ -75,9 +78,11 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     setQuote({subtotal:snapshot.body.subtotal,currency:snapshot.body.currency});
     setCheckoutIssue(typeof snapshot.body.checkout_issue==="string"?snapshot.body.checkout_issue:"");
     setAvailable(true);
+    setSessionChecked(true);
+    setError("");
   },[]);
   const load=useCallback(async()=>{
-    if(mutating.current)return;
+    if(mutating.current){refreshRequested.current=true;return;}
     const epoch=++readEpoch.current;
     try{
       const request=reading.current??readSnapshot();
@@ -87,7 +92,11 @@ export function ShoppingProvider({children}:{children:ReactNode}){
         if(currentScope.current&&!scopeIsCurrent(currentScope.current,snapshot.scope)){clearSnapshot();}
         applySnapshot(snapshot);
       }
-    }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
+    }catch{if(!mutating.current&&epoch===readEpoch.current){
+      // Never expose an unverified account snapshot. Anonymous selections may remain visible, but writes pause.
+      if(currentScope.current?.kind==="guest"){setSessionChecked(false);setError("Shopping connection interrupted. Retry to confirm your cart.");}
+      else clearSnapshot();
+    }}
     finally{if(epoch===readEpoch.current){reading.current=null;setLoading(false);}}
   },[clearSnapshot,applySnapshot]);
 
@@ -101,7 +110,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     window.addEventListener("focus",refresh);
     window.addEventListener("pageshow",refresh);
     document.addEventListener("visibilitychange",refresh);
-    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;clearSnapshot();}}
+    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;if(currentScope.current?.kind!=="guest")clearSnapshot();else setSessionChecked(false);}}
     document.addEventListener("visibilitychange",hide);
     const timer=window.setInterval(refresh,60000);
     return ()=>{
@@ -117,11 +126,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     };
   },[load,clearSnapshot]);
 
-  useEffect(()=>{router.prefetch("/cart/");},[router]);
+  // Next static-export navigation already prefetches linked pages. Avoid speculative imperative prefetch here.
   useEffect(()=>{if(!feedback||feedback.error)return;const timer=window.setTimeout(()=>setFeedback(null),5000);return()=>window.clearTimeout(timer)},[feedback]);
   function show(){
     if(document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     setOpen(true);
+    if(!sessionChecked)void load();
   }
   function close(){
     setOpen(false);
@@ -129,7 +139,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   }
 
   async function mutate(method:"POST"|"DELETE"|"PATCH",payload:Selection|{id:string}|{bundle:string[]}|{id:string;domain:string;register:boolean}){
-    if(!available||mutating.current||!currentScope.current)return false;
+    if(!available||!sessionChecked||mutating.current||!currentScope.current)return false;
     if(method==="POST"&&"kind" in payload&&payload.kind==="domain"&&lines.some(line=>line.selection.kind==="domain"&&line.selection.domain===payload.domain)){setFeedback({message:"This domain is already in your cart"});return true;}
     const scope=currentScope.current;
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
@@ -179,7 +189,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     }finally{
       mutating.current=false;
       setBusy(false);
-      if(epoch!==readEpoch.current)void load();
+      if(epoch!==readEpoch.current||refreshRequested.current){refreshRequested.current=false;void load();}
     }
   }
 
@@ -204,7 +214,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue,busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -221,16 +231,16 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
     continueShopping:()=>router.push("/"),
   };
-  return <Context.Provider value={{available,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
+  return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
     {feedback&&!open&&<CommerceNotice message={feedback.message} error={feedback.error} onDismiss={()=>setFeedback(null)} onView={()=>{setFeedback(null);show()}}/>}
-    {available&&<CartDrawer open={open} close={close} cart={view} actions={actions}/>}
+    <CartDrawer open={open} close={close} cart={{...view,busy:busy||(!sessionChecked&&loading),error:view.error||(!sessionChecked&&!loading?"Shopping connection unavailable. Close and reopen the cart to retry.":"")}} actions={actions}/>
   </Context.Provider>;
 }
 
 export function ShoppingTrigger(){
   const shopping=useShopping();
-  return shopping?.available?<CartTrigger count={shopping.count} onOpen={shopping.open}/>:null;
+  return <CartTrigger count={shopping?.count??null} onOpen={()=>shopping?shopping.open():window.location.assign("/cart/")}/>;
 }
 
 export function ShoppingReview(){

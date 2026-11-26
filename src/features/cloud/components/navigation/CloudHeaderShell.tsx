@@ -89,7 +89,7 @@ export function CloudHeader() {
       }}
     >
       <AnnouncementStripe />
-      <div className="mx-auto flex h-[70px] max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 xl:gap-6 xl:px-12">
+      <div className="mx-auto flex h-[70px] max-w-[1540px] items-center justify-between gap-1 px-3 sm:gap-3 sm:px-6 lg:px-8 xl:gap-6 xl:px-12">
         <div className="shrink-0 [&_img]:!h-7 sm:[&_img]:!h-8" onClick={closeAll}><CloudLogo /></div>
         <nav aria-label="Primary services" className="hidden shrink-0 lg:block">
           <NavigationList mode="desktop" section="primary" {...navProps} />
@@ -100,9 +100,9 @@ export function CloudHeader() {
         <nav aria-label="Additional services" className="hidden shrink-0 lg:block">
           <NavigationList mode="desktop" section="secondary" {...navProps} />
         </nav>
-        <div className="flex shrink-0 items-center gap-2 xl:gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2 xl:gap-4">
           <Link href="/support" aria-label="Customer support" title="Customer support" onClick={closeAll}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-lg text-cloud-navy hover:bg-cloud-mist ${focusStyle}`}>
+            className={`hidden min-[360px]:inline-flex h-11 w-11 items-center justify-center rounded-lg text-cloud-navy hover:bg-cloud-mist ${focusStyle}`}>
             <Headset size={20} strokeWidth={1.6} aria-hidden="true" />
           </Link>
           <ShoppingTrigger/>
