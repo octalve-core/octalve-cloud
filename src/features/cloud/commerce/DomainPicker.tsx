@@ -3,7 +3,7 @@
 import {useEffect,useId,useRef,useState} from "react";
 import {ArrowUp,Check,ChevronDown,Globe2,Plus,Search,X} from "lucide-react";
 import type {DomainPickerActions,DomainPickerOffer} from "./types";
-import {canSelectOffer,pickerExtensions,uniquePickerOffers} from "./domain-picker-model";
+import {canSelectOffer,uniquePickerOffers} from "./domain-picker-model";
 
 type Props={lineId:string;serviceName:string;value?:string;domains:readonly string[];busy?:boolean;configure:(id:string,domain:string)=>void|Promise<void>;actions?:DomainPickerActions};
 const focus="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0064E0]";
@@ -14,12 +14,12 @@ export function DomainPicker({lineId,serviceName,value,domains,busy,configure,ac
  const active=useRef<AbortController|null>(null),applying=useRef(false);
  const title=useId(),description=useId(),inputId=useId();
  const [open,setOpen]=useState(false),[tab,setTab]=useState<"cart"|"search">("cart");
- const [query,setQuery]=useState(""),[extension,setExtension]=useState(""),[results,setResults]=useState<readonly DomainPickerOffer[]>([]);
+ const [query,setQuery]=useState(""),[results,setResults]=useState<readonly DomainPickerOffer[]>([]);
  const [loading,setLoading]=useState(false),[saving,setSaving]=useState(false),[searched,setSearched]=useState(false),[error,setError]=useState("");
  const options=[...new Set(domains)];
  function invalidate(){active.current?.abort();active.current=null;setLoading(false);setSearched(false);setResults([]);setError("")}
  function dismiss(){if(applying.current)return;invalidate();setOpen(false)}
- function show(){if(busy)return;invalidate();setTab(options.length||!actions?"cart":"search");setQuery("");setExtension("");setOpen(true)}
+ function show(){if(busy)return;invalidate();setTab(options.length||!actions?"cart":"search");setQuery("");setOpen(true)}
  useEffect(()=>{
   const d=dialog.current;if(!d)return;
   if(open&&!d.open){d.showModal();closeButton.current?.focus()}
@@ -33,7 +33,7 @@ export function DomainPicker({lineId,serviceName,value,domains,busy,configure,ac
   if(!query.trim()){setError("Enter a domain or business name.");return}
   const c=new AbortController();active.current=c;setLoading(true);
   try{
-   const items=await actions.search(query,extension,c.signal);
+   const items=await actions.search(query,"",c.signal);
    if(active.current!==c||c.signal.aborted)return;
    setResults(uniquePickerOffers(items));setSearched(true);
   }catch(e){if(active.current===c&&!c.signal.aborted)setError(e instanceof Error?e.message:"Domain search is temporarily unavailable.")}
@@ -70,15 +70,13 @@ export function DomainPicker({lineId,serviceName,value,domains,busy,configure,ac
      {tab==="cart"?<div className="space-y-2">
       {options.length===0?<div className="rounded-xl border border-dashed border-slate-200 p-5 text-center"><Globe2 className="mx-auto text-slate-400" size={28}/><p className="mt-3 text-sm text-slate-600">No domains in your cart yet.</p>{actions&&<button type="button" onClick={()=>setTab("search")} className={"mt-3 min-h-11 text-sm text-[#0064E0] "+focus}>Search for a new domain</button>}</div>:options.map(domain=><button key={domain} type="button" disabled={saving||busy} onClick={()=>void apply(domain)} className={"flex min-h-14 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left hover:border-blue-300 disabled:opacity-50 "+focus}><Globe2 size={18} className="shrink-0 text-[#0064E0]"/><span className="min-w-0 flex-1 break-all text-sm font-medium">{domain}</span>{domain===value?<Check size={18} className="shrink-0 text-[#0064E0]"/>:<span className="shrink-0 text-xs text-[#0064E0]">Use domain</span>}</button>)}
      </div>:<>
-      <form onSubmit={e=>{e.preventDefault();void search()}} className="rounded-2xl bg-[#141414] p-3 text-white">
+      <form onSubmit={e=>{e.preventDefault();void search()}} className="rounded-2xl bg-[#141414] p-2 text-white">
        <label htmlFor={inputId} className="sr-only">Domain or business name</label>
-       <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-[#202020] p-2 focus-within:border-violet-400"><Search size={18} className="ml-1 shrink-0 text-violet-300" aria-hidden="true"/><input id={inputId} value={query} onChange={e=>{invalidate();setQuery(e.target.value)}} maxLength={253} disabled={saving} autoCapitalize="none" autoComplete="off" spellCheck={false} placeholder="yourbusiness.com" className="h-11 min-w-0 flex-1 border-0 bg-transparent px-1 text-base text-white outline-none placeholder:text-zinc-400 focus:ring-0"/><button type="submit" disabled={saving||loading||!query.trim()} aria-label="Search domain availability" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[#A05ACC] text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><ArrowUp size={19}/></button></div>
-       <div role="group" aria-label="Domain extensions" className="mt-3 flex flex-wrap gap-1.5">{["",...pickerExtensions].map(t=><button key={t||"popular"} type="button" disabled={saving} aria-pressed={extension===t} onClick={()=>{invalidate();setExtension(t)}} className={"min-h-10 rounded-lg border px-2.5 text-xs "+(extension===t?"border-violet-400 bg-violet-400/20 text-violet-200":"border-white/10 bg-black text-zinc-300")+" focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300"}>{t||"Popular"}</button>)}</div>
-       <p className="mt-2 px-1 text-xs leading-5 text-zinc-400">Enter a complete domain for an exact search, or a name to compare extensions.</p>
+       <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-[#202020] p-2 focus-within:border-violet-400"><Search size={18} className="ml-1 shrink-0 text-violet-300" aria-hidden="true"/><input id={inputId} value={query} onChange={e=>{invalidate();setQuery(e.target.value)}} maxLength={253} disabled={saving} autoCapitalize="none" autoComplete="off" spellCheck={false} placeholder="Find your domain…" className="h-11 min-w-0 flex-1 border-0 bg-transparent px-1 text-base text-white outline-none placeholder:text-zinc-400 focus:ring-0"/><button type="submit" disabled={saving||loading||!query.trim()} aria-label="Search domain availability" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[#A05ACC] text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><ArrowUp size={19}/></button></div>
       </form>
       {loading&&<p role="status" className="mt-4 text-sm text-slate-500">Checking availability and published prices…</p>}
       {searched&&<div className="mt-4 space-y-2"><p role="status" className="text-xs text-slate-500">{results.length?"Select an available domain.":"No verified results returned."}</p>{results.map(offer=>{const inCart=options.includes(offer.domain),allowed=inCart||canSelectOffer(offer);return <article key={offer.domain} className="rounded-xl border border-slate-200 p-3"><div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0 flex-1"><p className="break-all text-sm font-medium">{offer.domain}</p><p className="mt-1 text-sm text-slate-600">{offer.priceLabel}</p>{offer.renewalLabel&&<p className="mt-1 text-xs text-slate-500">{offer.renewalLabel}</p>}<p className={"mt-1 text-xs "+(offer.available===true?"text-emerald-700":offer.available===false?"text-rose-700":"text-amber-700")}>{inCart?"Already in cart":offer.available===true?(offer.selectable?"Available":"Not eligible to add"):offer.available===false?"Unavailable":"Availability unverified"}</p></div><button type="button" disabled={!allowed||saving||busy} onClick={()=>void apply(offer.domain,inCart?undefined:offer)} className={action}>{inCart?"Use domain":allowed?"Add & connect":"Cannot add"}{allowed&&<Plus size={14} aria-hidden="true"/>}</button></div>{allowed&&!inCart&&offer.checkoutEnabled!==true&&<p className="mt-2 text-xs text-slate-500">Draft selection only. Live checkout not qualified.</p>}</article>})}</div>}
-      <p className="mt-4 text-xs leading-5 text-slate-500">Availability and pricing may change. Adding a domain does not reserve it.</p>
+      {searched&&results.length>0&&<p className="mt-4 text-xs leading-5 text-slate-500">Availability and pricing may change. Adding a domain does not reserve it.</p>}
      </>}
      {error&&<p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>}
      {saving&&<p role="status" className="mt-3 text-sm text-slate-600">Connecting domain…</p>}
