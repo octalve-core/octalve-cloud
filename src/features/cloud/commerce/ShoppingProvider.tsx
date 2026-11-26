@@ -8,7 +8,7 @@ import type {CartActions,CartLine,CartView} from "./types";
 import {SHOPPING_BRIDGE,GUEST_SHOPPING,chooseShoppingScope,scopeIsCurrent,requestForScope,type ShoppingScope} from "./shopping-session";
 
 type Selection={kind:"domain";domain:string}|{kind:"service";plan:string;cycle:string;revision:number;domain?:string};
-type Line={id:string;selection:Selection;ready:boolean;kind?:CartLine["kind"];name?:string;currency?:string;amount?:string;renewal?:string;period?:string};
+type Line={id:string;selection:Selection;ready:boolean;issue?:string;kind?:CartLine["kind"];name?:string;currency?:string;amount?:string;renewal?:string;period?:string};
 type Shopping={available:boolean;loading:boolean;retry:()=>void;add:(item:Selection)=>void;addBundle:(names:string[])=>void;open:()=>void;count:number|null;view:CartView;actions:CartActions};
 const Context=createContext<Shopping|null>(null);
 const endpoint=GUEST_SHOPPING;
@@ -130,6 +130,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
 
   async function mutate(method:"POST"|"DELETE"|"PATCH",payload:Selection|{id:string}|{bundle:string[]}|{id:string;domain:string;register:boolean}){
     if(!available||mutating.current||!currentScope.current)return false;
+    if(method==="POST"&&"kind" in payload&&payload.kind==="domain"&&lines.some(line=>line.selection.kind==="domain"&&line.selection.domain===payload.domain)){setFeedback({message:"This domain is already in your cart"});return true;}
     const scope=currentScope.current;
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
@@ -198,7 +199,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     lines:lines.map(line=>({
       id:line.id,kind:line.kind??(line.selection.kind==="domain"?"domain":"hosting"),
       name:line.name??line.selection.domain??"Service selection",description:"",
-      period:line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
+      period:!line.ready?(line.issue??"Review this selection"):line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
       renewalLabel:line.renewal&&line.currency?display(line.renewal,line.currency)+" renewal":undefined,
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
