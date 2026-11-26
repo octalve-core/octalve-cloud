@@ -15,6 +15,7 @@ const endpoint=GUEST_SHOPPING;
 const consoleCart="https://console.cloud.octalve.com/client/order/checkout?view=cart";
 
 function display(amount:string,currency:string){
+  if(!/^[A-Z]{3}$/.test(currency)||!/^\d+(?:\.\d{1,2})?$/.test(amount)||!Number.isFinite(Number(amount)))return "Price unavailable";
   return new Intl.NumberFormat("en-NG",{style:"currency",currency}).format(Number(amount));
 }
 
@@ -57,6 +58,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   },[]);
 
   async function readSnapshot(){
+    const started=performance.now();
     const [result,bridge]=await Promise.all([
       fetch(endpoint,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(18000)}),
       fetch(SHOPPING_BRIDGE,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000)}),
@@ -68,6 +70,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     const scope=chooseShoppingScope(guest.lines.length,bridge.status,account?.scope);
     const body=scope.kind==="account"?account:guest;
     if(!body||!Array.isArray(body.lines))throw Error("Invalid cart response.");
+    performance.measure("octalve:cart-read",{start:started,end:performance.now()});
     return {scope,body};
   }
   const applySnapshot=useCallback((snapshot:{scope:ShoppingScope;body:{lines:Line[];domains?:string[];subtotal:string|null;currency:string|null;checkout_issue?:string|null}})=>{
@@ -142,6 +145,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     if(!available||!sessionChecked||mutating.current||!currentScope.current)return false;
     if(method==="POST"&&"kind" in payload&&payload.kind==="domain"&&lines.some(line=>line.selection.kind==="domain"&&line.selection.domain===payload.domain)){setFeedback({message:"This domain is already in your cart"});return true;}
     const scope=currentScope.current;
+    const started=performance.now();
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
     const epoch=++readEpoch.current;
@@ -187,6 +191,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       if(epoch===readEpoch.current){setError(reason instanceof Error?reason.message:"The cart could not be updated. Try again.");if(method!=="PATCH"&&!open)setFeedback({message:reason instanceof Error?reason.message:"The cart could not be updated. Try again.",error:true});}
       return false;
     }finally{
+      performance.measure("octalve:cart-mutation",{start:started,end:performance.now()});
       mutating.current=false;
       setBusy(false);
       if(epoch!==readEpoch.current||refreshRequested.current){refreshRequested.current=false;void load();}
@@ -207,7 +212,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const subtotal=amounts?display(quote.subtotal!,currency!):"Review required";
   const view:CartView={
     lines:lines.map(line=>({
-      id:line.id,kind:line.kind??(line.selection.kind==="domain"?"domain":"hosting"),
+      id:line.id,kind:line.kind&&["domain","hosting","vps","email","ssl"].includes(line.kind)?line.kind:(line.selection.kind==="domain"?"domain":"hosting"),
       name:line.name??line.selection.domain??"Service selection",description:"",
       period:!line.ready?(line.issue??"Review this selection"):line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
       renewalLabel:line.renewal&&line.currency?display(line.renewal,line.currency)+" renewal":undefined,
