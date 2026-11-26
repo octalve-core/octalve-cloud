@@ -8,7 +8,7 @@ import {CompactDomainResult} from "./CompactDomainResult";
 import {BrandProtectionBundle} from "./BrandProtectionBundle";
 import {cloudLinks} from "@/features/cloud/data/cloud-links";
 const tlds=[".com",".com.ng",".ng",".net",".org",".ai",".shop",".cloud"];
-export function DomainSearchWorkspace({catalogue=false}:{catalogue?:boolean}){
+export function DomainSearchWorkspace({catalogue=false,embedded=false}:{catalogue?:boolean;embedded?:boolean}){
  const [query,setQuery]=useState("");const [extension,setExtension]=useState("");const [searched,setSearched]=useState("");const [results,setResults]=useState<DomainSuggestion[]>([]);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [filter,setFilter]=useState("all");
  const [bundle,setBundle]=useState<DomainSuggestion[]>([]);
  const active=useRef<AbortController|null>(null);
@@ -35,6 +35,7 @@ export function DomainSearchWorkspace({catalogue=false}:{catalogue?:boolean}){
   finally{window.clearTimeout(timeout);if(active.current===controller){setBusy(false);active.current=null}}
  }
  useEffect(()=>{
+  if(embedded)return ()=>{active.current?.abort();active.current=null};
   const params=new URLSearchParams(window.location.search);
   const q=params.get("q")??"";const t=params.get("tld")??"";
   const valid=/^\.[a-z][a-z0-9-]{1,62}(\.[a-z][a-z0-9-]{1,62})*$/.test(t)?t:"";
@@ -42,10 +43,10 @@ export function DomainSearchWorkspace({catalogue=false}:{catalogue?:boolean}){
   return ()=>{active.current?.abort();active.current=null};
  },[]);
  const visible=results.filter(item=>filter==="all"||(filter==="available"?item.available===true:filter==="registered"?item.available===false:item.available===null));
- return <section id="domain-search" className="-mt-4 scroll-mt-28 bg-black px-4 pb-16 pt-20 text-white sm:px-6 lg:pt-24">
+ return <section id="domain-search" className={embedded?"min-w-0 rounded-2xl bg-black px-4 py-6 text-white sm:px-6":"-mt-4 scroll-mt-28 bg-black px-4 pb-16 pt-20 text-white sm:px-6 lg:pt-24"}>
  <div className="mx-auto max-w-6xl">
- <div className="mx-auto max-w-3xl text-center"><h1 className="text-[clamp(2.4rem,5vw,4.5rem)] font-normal leading-tight tracking-[-0.045em]">{catalogue?"Find the right name before someone else takes it.":"Find the right domain name before someone else takes it."}</h1><p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">{catalogue?"Search your next domain, preview available options, and start building your online presence with Octalve Cloud.":"Search domain ideas, compare useful extensions, and move smoothly from name discovery to registration, hosting, SSL, and business email setup."}</p></div>
- <form onSubmit={e=>{e.preventDefault();void run(query,extension)}} className="mx-auto mt-10 max-w-3xl rounded-2xl border border-white/15 bg-[#181818] p-3 focus-within:border-orange-400">
+ <div className="mx-auto max-w-3xl text-center"><h2 className={embedded?"text-2xl font-medium tracking-tight":"text-[clamp(2.4rem,5vw,4.5rem)] font-normal leading-tight tracking-[-0.045em]"}>{catalogue?"Find the right name before someone else takes it.":"Find the right domain name before someone else takes it."}</h2><p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">{catalogue?"Search your next domain, preview available options, and start building your online presence with Octalve Cloud.":"Search domain ideas, compare useful extensions, and move smoothly from name discovery to registration, hosting, SSL, and business email setup."}</p></div>
+ <form onSubmit={e=>{e.preventDefault();void run(query,extension)}} className="mx-auto mt-6 max-w-3xl rounded-2xl border border-white/15 bg-[#181818] p-3 focus-within:border-orange-400">
  <label htmlFor="domain-workspace-query" className="sr-only">Domain or brand name</label><input id="domain-workspace-query" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Start typing here…" autoCapitalize="none" spellCheck={false} maxLength={253} className="h-14 w-full border-0 bg-transparent px-3 text-lg text-white outline-none placeholder:text-zinc-400 focus:ring-0"/>
  <div className="flex flex-wrap items-center justify-between gap-2"><nav aria-label="Domain tools" className="flex flex-wrap gap-1 rounded-lg bg-black p-1 text-sm"><span aria-current="page" className="rounded-md bg-[#A05ACC] px-3 py-2 font-medium text-white"><Search size={15} className="mr-1 inline"/> Search</span><Link href="/domains" className="rounded-md px-3 py-2 text-green-300 hover:bg-white/10">Extensions</Link><Link href="/tools/ai-domain-name-generator" className="rounded-md px-3 py-2 text-orange-300 hover:bg-white/10">Generator</Link><Link href="/tools/whois-lookup" className="rounded-md px-3 py-2 text-teal-300 hover:bg-white/10">WHOIS</Link></nav><button type="submit" disabled={busy} aria-label="Search domains" className="grid h-11 w-11 place-items-center rounded-lg bg-[#A05ACC] text-white disabled:opacity-60">{busy?<Loader2 size={20} className="motion-safe:animate-spin"/>:<ArrowUp size={20}/>}</button></div>
  </form>
