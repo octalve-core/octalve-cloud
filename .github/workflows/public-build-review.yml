@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   public-static-export:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -45,3 +45,13 @@ jobs:
           test -f out/tools/index.html
 
           test -f out/commerce-preview/index.html
+
+      - name: Browser commerce qualification (isolated fixture transport)
+        run: |
+          npm install --prefix "$RUNNER_TEMP/commerce-browser" --no-save playwright@1.56.1
+          "$RUNNER_TEMP/commerce-browser/node_modules/.bin/playwright" install --with-deps chromium
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory out > "$RUNNER_TEMP/commerce-http.log" 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/ > /dev/null && break; sleep 1; done
+          COMMERCE_PLAYWRIGHT_PATH="$RUNNER_TEMP/commerce-browser/node_modules/playwright" node tests/commerce-browser.cjs

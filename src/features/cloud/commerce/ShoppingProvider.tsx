@@ -15,6 +15,7 @@ const endpoint=GUEST_SHOPPING;
 const consoleCart="https://console.cloud.octalve.com/client/order/checkout?view=cart";
 
 function display(amount:string,currency:string){
+  if(!/^[A-Z]{3}$/.test(currency)||!/^\d+(?:\.\d{1,2})?$/.test(amount)||!Number.isFinite(Number(amount)))return "Price unavailable";
   return new Intl.NumberFormat("en-NG",{style:"currency",currency}).format(Number(amount));
 }
 
@@ -33,8 +34,10 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const [error,setError]=useState("");
   const [pendingClaim,setPendingClaim]=useState(false);
   const [checkoutIssue,setCheckoutIssue]=useState("");
+  const [sessionChecked,setSessionChecked]=useState(false);
   const currentScope=useRef<ShoppingScope|null>(null);
   const mutating=useRef(false);
+  const refreshRequested=useRef(false);
   const readEpoch=useRef(0);
   const reading=useRef<Promise<Awaited<ReturnType<typeof readSnapshot>>>|null>(null);
   const opener=useRef<HTMLElement|null>(null);
@@ -42,6 +45,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
 
   const clearSnapshot=useCallback(()=>{
     currentScope.current=null;
+    setSessionChecked(false);
     setFeedback(null);
     setPendingClaim(false);
     setCheckoutIssue("");
@@ -54,6 +58,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   },[]);
 
   async function readSnapshot(){
+    const started=performance.now();
     const [result,bridge]=await Promise.all([
       fetch(endpoint,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(18000)}),
       fetch(SHOPPING_BRIDGE,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000)}),
@@ -65,6 +70,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     const scope=chooseShoppingScope(guest.lines.length,bridge.status,account?.scope);
     const body=scope.kind==="account"?account:guest;
     if(!body||!Array.isArray(body.lines))throw Error("Invalid cart response.");
+    performance.measure("octalve:cart-read",{start:started,end:performance.now()});
     return {scope,body};
   }
   const applySnapshot=useCallback((snapshot:{scope:ShoppingScope;body:{lines:Line[];domains?:string[];subtotal:string|null;currency:string|null;checkout_issue?:string|null}})=>{
@@ -75,9 +81,11 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     setQuote({subtotal:snapshot.body.subtotal,currency:snapshot.body.currency});
     setCheckoutIssue(typeof snapshot.body.checkout_issue==="string"?snapshot.body.checkout_issue:"");
     setAvailable(true);
+    setSessionChecked(true);
+    setError("");
   },[]);
   const load=useCallback(async()=>{
-    if(mutating.current)return;
+    if(mutating.current){refreshRequested.current=true;return;}
     const epoch=++readEpoch.current;
     try{
       const request=reading.current??readSnapshot();
@@ -87,7 +95,11 @@ export function ShoppingProvider({children}:{children:ReactNode}){
         if(currentScope.current&&!scopeIsCurrent(currentScope.current,snapshot.scope)){clearSnapshot();}
         applySnapshot(snapshot);
       }
-    }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
+    }catch{if(!mutating.current&&epoch===readEpoch.current){
+      // Never expose an unverified account snapshot. Anonymous selections may remain visible, but writes pause.
+      if(currentScope.current?.kind==="guest"){setSessionChecked(false);setError("Shopping connection interrupted. Retry to confirm your cart.");}
+      else clearSnapshot();
+    }}
     finally{if(epoch===readEpoch.current){reading.current=null;setLoading(false);}}
   },[clearSnapshot,applySnapshot]);
 
@@ -101,7 +113,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     window.addEventListener("focus",refresh);
     window.addEventListener("pageshow",refresh);
     document.addEventListener("visibilitychange",refresh);
-    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;clearSnapshot();}}
+    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;if(currentScope.current?.kind!=="guest")clearSnapshot();else setSessionChecked(false);}}
     document.addEventListener("visibilitychange",hide);
     const timer=window.setInterval(refresh,60000);
     return ()=>{
@@ -117,11 +129,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     };
   },[load,clearSnapshot]);
 
-  useEffect(()=>{router.prefetch("/cart/");},[router]);
+  // Next static-export navigation already prefetches linked pages. Avoid speculative imperative prefetch here.
   useEffect(()=>{if(!feedback||feedback.error)return;const timer=window.setTimeout(()=>setFeedback(null),5000);return()=>window.clearTimeout(timer)},[feedback]);
   function show(){
     if(document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     setOpen(true);
+    if(!sessionChecked)void load();
   }
   function close(){
     setOpen(false);
@@ -129,9 +142,10 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   }
 
   async function mutate(method:"POST"|"DELETE"|"PATCH",payload:Selection|{id:string}|{bundle:string[]}|{id:string;domain:string;register:boolean}){
-    if(!available||mutating.current||!currentScope.current)return false;
+    if(!available||!sessionChecked||mutating.current||!currentScope.current)return false;
     if(method==="POST"&&"kind" in payload&&payload.kind==="domain"&&lines.some(line=>line.selection.kind==="domain"&&line.selection.domain===payload.domain)){setFeedback({message:"This domain is already in your cart"});return true;}
     const scope=currentScope.current;
+    const started=performance.now();
     if(method==="POST"&&document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     mutating.current=true;
     const epoch=++readEpoch.current;
@@ -177,9 +191,10 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       if(epoch===readEpoch.current){setError(reason instanceof Error?reason.message:"The cart could not be updated. Try again.");if(method!=="PATCH"&&!open)setFeedback({message:reason instanceof Error?reason.message:"The cart could not be updated. Try again.",error:true});}
       return false;
     }finally{
+      performance.measure("octalve:cart-mutation",{start:started,end:performance.now()});
       mutating.current=false;
       setBusy(false);
-      if(epoch!==readEpoch.current)void load();
+      if(epoch!==readEpoch.current||refreshRequested.current){refreshRequested.current=false;void load();}
     }
   }
 
@@ -197,14 +212,14 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const subtotal=amounts?display(quote.subtotal!,currency!):"Review required";
   const view:CartView={
     lines:lines.map(line=>({
-      id:line.id,kind:line.kind??(line.selection.kind==="domain"?"domain":"hosting"),
+      id:line.id,kind:line.kind&&["domain","hosting","vps","email","ssl"].includes(line.kind)?line.kind:(line.selection.kind==="domain"?"domain":"hosting"),
       name:line.name??line.selection.domain??"Service selection",description:"",
       period:!line.ready?(line.issue??"Review this selection"):line.period??"Check availability",priceLabel:line.amount&&line.currency?display(line.amount,line.currency):"Price unavailable",
       renewalLabel:line.renewal&&line.currency?display(line.renewal,line.currency)+" renewal":undefined,
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue,busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -221,16 +236,16 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
     continueShopping:()=>router.push("/"),
   };
-  return <Context.Provider value={{available,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
+  return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
     {feedback&&!open&&<CommerceNotice message={feedback.message} error={feedback.error} onDismiss={()=>setFeedback(null)} onView={()=>{setFeedback(null);show()}}/>}
-    {available&&<CartDrawer open={open} close={close} cart={view} actions={actions}/>}
+    <CartDrawer open={open} close={close} cart={{...view,busy:busy||(!sessionChecked&&loading),error:view.error||(!sessionChecked&&!loading?"Shopping connection unavailable. Close and reopen the cart to retry.":"")}} actions={actions}/>
   </Context.Provider>;
 }
 
 export function ShoppingTrigger(){
   const shopping=useShopping();
-  return shopping?.available?<CartTrigger count={shopping.count} onOpen={shopping.open}/>:null;
+  return <CartTrigger count={shopping?.count??null} onOpen={()=>shopping?shopping.open():window.location.assign("/cart/")}/>;
 }
 
 export function ShoppingReview(){
