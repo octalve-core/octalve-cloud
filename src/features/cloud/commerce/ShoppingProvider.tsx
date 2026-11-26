@@ -28,20 +28,31 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const opener=useRef<HTMLElement|null>(null);
   const broadcast=useRef<BroadcastChannel|null>(null);
 
+  const clearSnapshot=useCallback(()=>{
+    setAvailable(false);
+    setLines([]);
+    setQuote({subtotal:null,currency:null});
+    setOpen(false);
+    setError("");
+  },[]);
+
   const load=useCallback(async()=>{
     if(mutating.current)return;
     const epoch=++readEpoch.current;
     try{
       const result=await fetch(endpoint,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(6000)});
-      if(!result.ok)return;
+      if(!result.ok){
+        if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();
+        return;
+      }
       const body=await result.json();
       if(!mutating.current&&epoch===readEpoch.current&&Array.isArray(body.lines)){
         setLines(body.lines);
         setQuote({subtotal:body.subtotal,currency:body.currency});
         setAvailable(true);
-      }
-    }catch{/* Preserve approved direct links while the shopping API is unavailable. */}
-  },[]);
+      }else if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();
+    }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
+  },[clearSnapshot]);
 
   useEffect(()=>{
     void load();
@@ -51,9 +62,13 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     }
     function refresh(){if(document.visibilityState==="visible")void load();}
     window.addEventListener("focus",refresh);
+    window.addEventListener("pageshow",refresh);
+    document.addEventListener("visibilitychange",refresh);
     return ()=>{
       readEpoch.current++;
       window.removeEventListener("focus",refresh);
+      window.removeEventListener("pageshow",refresh);
+      document.removeEventListener("visibilitychange",refresh);
       broadcast.current?.close();
       broadcast.current=null;
     };
@@ -78,6 +93,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     try{
       const result=await fetch(endpoint,{method,credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
+      if([401,403,404].includes(result.status)){clearSnapshot();return;}
       if(!result.ok)throw Error("Shopping update unavailable");
       const body=await result.json();
       if(!Array.isArray(body.lines))throw Error("Invalid shopping response");
