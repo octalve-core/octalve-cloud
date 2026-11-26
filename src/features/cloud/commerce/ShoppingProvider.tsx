@@ -1,6 +1,7 @@
 "use client";
+import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,secondary} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,secondary} from "./CommerceUI";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -20,6 +21,8 @@ function display(amount:string,currency:string){
 export function useShopping(){return useContext(Context);}
 
 export function ShoppingProvider({children}:{children:ReactNode}){
+  const router=useRouter();
+  const [feedback,setFeedback]=useState<{message:string;error?:boolean}|null>(null);
   const [available,setAvailable]=useState(false);
   const [loading,setLoading]=useState(true);
   const [lines,setLines]=useState<Line[]>([]);
@@ -33,11 +36,13 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   const currentScope=useRef<ShoppingScope|null>(null);
   const mutating=useRef(false);
   const readEpoch=useRef(0);
+  const reading=useRef<Promise<Awaited<ReturnType<typeof readSnapshot>>>|null>(null);
   const opener=useRef<HTMLElement|null>(null);
   const broadcast=useRef<BroadcastChannel|null>(null);
 
   const clearSnapshot=useCallback(()=>{
     currentScope.current=null;
+    setFeedback(null);
     setPendingClaim(false);
     setCheckoutIssue("");
     setAvailable(false);
@@ -75,13 +80,15 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     if(mutating.current)return;
     const epoch=++readEpoch.current;
     try{
-      const snapshot=await readSnapshot();
+      const request=reading.current??readSnapshot();
+      reading.current=request;
+      const snapshot=await request;
       if(!mutating.current&&epoch===readEpoch.current){
         if(currentScope.current&&!scopeIsCurrent(currentScope.current,snapshot.scope)){clearSnapshot();}
         applySnapshot(snapshot);
       }
     }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
-    finally{if(epoch===readEpoch.current)setLoading(false);}
+    finally{if(epoch===readEpoch.current){reading.current=null;setLoading(false);}}
   },[clearSnapshot,applySnapshot]);
 
   useEffect(()=>{
@@ -94,11 +101,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     window.addEventListener("focus",refresh);
     window.addEventListener("pageshow",refresh);
     document.addEventListener("visibilitychange",refresh);
-    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;clearSnapshot();}}
+    function hide(){if(document.visibilityState==="hidden"){readEpoch.current++;reading.current=null;clearSnapshot();}}
     document.addEventListener("visibilitychange",hide);
     const timer=window.setInterval(refresh,60000);
     return ()=>{
       readEpoch.current++;
+      reading.current=null;
       window.removeEventListener("focus",refresh);
       window.removeEventListener("pageshow",refresh);
       document.removeEventListener("visibilitychange",refresh);
@@ -109,6 +117,8 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     };
   },[load,clearSnapshot]);
 
+  useEffect(()=>{router.prefetch("/cart/");},[router]);
+  useEffect(()=>{if(!feedback||feedback.error)return;const timer=window.setTimeout(()=>setFeedback(null),5000);return()=>window.clearTimeout(timer)},[feedback]);
   function show(){
     if(document.activeElement instanceof HTMLElement)opener.current=document.activeElement;
     setOpen(true);
@@ -126,10 +136,14 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     const epoch=++readEpoch.current;
     setBusy(true);
     setError("");
+    setFeedback(null);
+    reading.current=null;
     try{
-      // Re-read session before writing so a tab cannot mutate a different account.
-      const before=await readSnapshot();
-      if(epoch!==readEpoch.current||!scopeIsCurrent(scope,before.scope)){clearSnapshot();return false;}
+      // Account mutations carry the refresh-bound scope checked by the BFF. Guest writes still recheck identity.
+      if(scope.kind!=="account"){
+        const before=await readSnapshot();
+        if(epoch!==readEpoch.current||!scopeIsCurrent(scope,before.scope)){clearSnapshot();return false;}
+      }
       const target=requestForScope(scope,method,payload);
       const result=await fetch(target.url,{method,credentials:"include",cache:"no-store",headers:target.headers,
         body:JSON.stringify(target.payload),signal:AbortSignal.timeout(22000)});
@@ -156,10 +170,10 @@ export function ShoppingProvider({children}:{children:ReactNode}){
         applySnapshot(after);
       }
       broadcast.current?.postMessage("changed");
-      if(method==="POST")setOpen(true);
+      if(method==="POST")setFeedback({message:"Added to your cart"});
       return true;
     }catch(reason){
-      if(epoch===readEpoch.current){setError(reason instanceof Error?reason.message:"The cart could not be updated. Try again.");if(method!=="PATCH")setOpen(true);}
+      if(epoch===readEpoch.current){setError(reason instanceof Error?reason.message:"The cart could not be updated. Try again.");if(method!=="PATCH"&&!open)setFeedback({message:reason instanceof Error?reason.message:"The cart could not be updated. Try again.",error:true});}
       return false;
     }finally{
       mutating.current=false;
@@ -189,7 +203,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&!error,busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue,busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -203,11 +217,12 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       },
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
-    review:()=>window.location.assign("/cart/"),checkout:()=>window.location.assign(consoleCart),
-    continueShopping:()=>window.location.assign("/"),
+    review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
+    continueShopping:()=>router.push("/"),
   };
   return <Context.Provider value={{available,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
+    {feedback&&!open&&<CommerceNotice message={feedback.message} error={feedback.error} onDismiss={()=>setFeedback(null)} onView={()=>{setFeedback(null);show()}}/>}
     {available&&<CartDrawer open={open} close={close} cart={view} actions={actions}/>}
   </Context.Provider>;
 }
