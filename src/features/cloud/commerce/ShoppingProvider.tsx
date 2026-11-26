@@ -1,6 +1,6 @@
 "use client";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,secondary} from "./CommerceUI";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -8,7 +8,7 @@ import {SHOPPING_BRIDGE,GUEST_SHOPPING,chooseShoppingScope,scopeIsCurrent,reques
 
 type Selection={kind:"domain";domain:string}|{kind:"service";plan:string;cycle:string;revision:number;domain?:string};
 type Line={id:string;selection:Selection;ready:boolean;kind?:CartLine["kind"];name?:string;currency?:string;amount?:string;renewal?:string;period?:string};
-type Shopping={available:boolean;add:(item:Selection)=>void;addBundle:(names:string[])=>void;open:()=>void;count:number|null;view:CartView;actions:CartActions};
+type Shopping={available:boolean;loading:boolean;retry:()=>void;add:(item:Selection)=>void;addBundle:(names:string[])=>void;open:()=>void;count:number|null;view:CartView;actions:CartActions};
 const Context=createContext<Shopping|null>(null);
 const endpoint=GUEST_SHOPPING;
 const consoleCart="https://console.cloud.octalve.com/client/order/checkout?view=cart";
@@ -21,6 +21,7 @@ export function useShopping(){return useContext(Context);}
 
 export function ShoppingProvider({children}:{children:ReactNode}){
   const [available,setAvailable]=useState(false);
+  const [loading,setLoading]=useState(true);
   const [lines,setLines]=useState<Line[]>([]);
   const [ownedDomains,setOwnedDomains]=useState<string[]>([]);
   const [quote,setQuote]=useState<{subtotal:string|null;currency:string|null}>({subtotal:null,currency:null});
@@ -46,11 +47,13 @@ export function ShoppingProvider({children}:{children:ReactNode}){
   },[]);
 
   async function readSnapshot(){
-    const result=await fetch(endpoint,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(6000)});
+    const [result,bridge]=await Promise.all([
+      fetch(endpoint,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(18000)}),
+      fetch(SHOPPING_BRIDGE,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000)}),
+    ]);
     if(!result.ok)throw Error("Shopping unavailable.");
     const guest=await result.json();
     if(!Array.isArray(guest.lines))throw Error("Invalid guest cart.");
-    const bridge=await fetch(SHOPPING_BRIDGE,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(10000)});
     const account=bridge.status===200?await bridge.json():null;
     const scope=chooseShoppingScope(guest.lines.length,bridge.status,account?.scope);
     const body=scope.kind==="account"?account:guest;
@@ -75,6 +78,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
         applySnapshot(snapshot);
       }
     }catch{if(!mutating.current&&epoch===readEpoch.current)clearSnapshot();}
+    finally{if(epoch===readEpoch.current)setLoading(false);}
   },[clearSnapshot,applySnapshot]);
 
   useEffect(()=>{
@@ -186,7 +190,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     review:()=>window.location.assign("/cart/"),checkout:()=>window.location.assign(consoleCart),
     continueShopping:()=>window.location.assign("/"),
   };
-  return <Context.Provider value={{available,add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
+  return <Context.Provider value={{available,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
     {available&&<CartDrawer open={open} close={close} cart={view} actions={actions}/>}
   </Context.Provider>;
@@ -199,6 +203,6 @@ export function ShoppingTrigger(){
 
 export function ShoppingReview(){
   const shopping=useShopping();
-  if(!shopping?.available)return <p className="mx-auto max-w-6xl px-6 py-12">The shopping cart is currently unavailable.</p>;
+  if(!shopping?.available)return <CommerceCheckoutFrame stage={0} title="Review your shopping cart" back={()=>window.location.assign("/")} backLabel="Continue shopping"><CommercePanel><p role="status" className="text-sm text-slate-600">{shopping?.loading?"Connecting to your shopping cart…":"We could not connect to the shopping service. Your selections have not been replaced."}</p>{!shopping?.loading&&<button type="button" className={secondary+" mt-4"} onClick={()=>shopping?.retry()}>Retry connection</button>}</CommercePanel></CommerceCheckoutFrame>;
   return <CartReview cart={shopping.view} actions={shopping.actions}/>;
 }
