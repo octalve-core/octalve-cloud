@@ -1,7 +1,7 @@
 "use client";
 import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
-import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,secondary} from "./CommerceUI";
+import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,CommerceRecommendations,CommerceProductCard,secondary,primary} from "./CommerceUI";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -219,7 +219,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    subtotal,tax:"Calculated at review",total:"Confirmed at review",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    subtotal,tax:amounts?display("0.00",currency!)+" est.":"—",total:amounts?subtotal+" est.":"—",checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -234,7 +234,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
     review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
-    continueShopping:()=>router.push("/"),
+    continueShopping:()=>router.push("/"),addHosting:()=>router.push("/hosting/"),
   };
   return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
@@ -251,5 +251,5 @@ export function ShoppingTrigger(){
 export function ShoppingReview(){
   const shopping=useShopping();
   if(!shopping?.available)return <CommerceCheckoutFrame stage={0} title="Review your shopping cart" back={()=>window.location.assign("/")} backLabel="Continue shopping"><CommercePanel><p role="status" className="text-sm text-slate-600">{shopping?.loading?"Connecting to your shopping cart…":"We could not connect to the shopping service. Your selections have not been replaced."}</p>{!shopping?.loading&&<button type="button" className={secondary+" mt-4"} onClick={()=>shopping?.retry()}>Retry connection</button>}</CommercePanel></CommerceCheckoutFrame>;
-  return <CartReview cart={shopping.view} actions={shopping.actions}/>;
+  return <CartReview cart={shopping.view} actions={shopping.actions} recommendations={shopping.view.lines.length>0&&<CommerceRecommendations><CommerceProductCard line={{id:"browse-hosting",kind:"hosting",name:"Web hosting",description:"Give your domain a home with a hosting plan.",period:"Compare available plans",priceLabel:"Explore plans"}} features={[]} action={<a href="/hosting/" className={primary+" w-full"}>View hosting plans</a>}/><CommerceProductCard line={{id:"browse-email",kind:"email",name:"Business email",description:"Build trust with an email address on your domain.",period:"Explore business email",priceLabel:"Explore options"}} features={[]} action={<a href="/email/" className={secondary+" w-full"}>Explore email</a>}/></CommerceRecommendations>}/>;
 }
