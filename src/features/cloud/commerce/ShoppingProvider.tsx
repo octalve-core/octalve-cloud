@@ -55,7 +55,6 @@ export function ShoppingProvider({children}:{children:ReactNode}){
     setLines([]);
     setOwnedDomains([]);
     setQuote({subtotal:null,currency:null});
-    setOpen(false);
     setError("");
   },[]);
 
@@ -221,7 +220,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       domain:line.selection.domain,
       domainOptions:line.ready&&line.selection.kind==="service"?domainOptions:undefined,
     })),
-    ...draftCartAmounts(lines.length,subtotal),checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
+    ...draftCartAmounts(lines.length,subtotal,currency??"NGN",available&&sessionChecked),checkoutAllowed:amounts&&!checkoutIssue&&sessionChecked&&lines.every(line=>line.ready),busy,error:error||checkoutIssue,notice:pendingClaim?"Your guest selections are preserved. Continue to the Console to merge them with your account cart.":undefined,
   };
   const actions:CartActions={
     remove:id=>{void mutate("DELETE",{id});},configure:(id,domain)=>configure(id,domain,false),
@@ -235,7 +234,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       },
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
-    review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
+    retry:()=>{setLoading(true);void load()},review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
     continueShopping:()=>router.push("/"),hostingPicker:{load:loadHostingOffers,add:async(domain,offer,cycle)=>{if(!lines.some(line=>line.ready&&line.selection.kind==="domain"&&line.selection.domain===domain))throw Error("This domain is no longer in your cart.");if(!offer.cycles.some(c=>c.key===cycle))throw Error("Choose a valid billing period.");if(!await mutate("POST",{kind:"service",plan:offer.plan,revision:offer.revision,cycle,domain}))throw Error("Hosting could not be added. Please retry.");}},
   };
   return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
