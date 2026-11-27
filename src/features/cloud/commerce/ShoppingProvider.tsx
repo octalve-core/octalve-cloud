@@ -3,6 +3,7 @@ import {useRouter} from "next/navigation";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
 import {CartDrawer,CartReview,CartTrigger,CommerceCheckoutFrame,CommercePanel,CommerceNotice,CommerceRecommendations,CommerceProductCard,CartDomainSearchPanel,draftCartAmounts,secondary,primary} from "./CommerceUI";
 import {DomainSearchWorkspace} from "../components/DomainSearchWorkspace";
+import {loadHostingOffers} from "./hosting-offers";
 import {getDomainSuggestions} from "@/lib/domain-pricing-adapter";
 import {pickerExtensions} from "./domain-picker-model";
 import type {CartActions,CartLine,CartView} from "./types";
@@ -235,7 +236,7 @@ export function ShoppingProvider({children}:{children:ReactNode}){
       addAndConfigure:(id,domain)=>configure(id,domain,true),
     },
     review:()=>{close();router.push("/cart/")},checkout:()=>window.location.assign(consoleCart),
-    continueShopping:()=>router.push("/"),addHosting:()=>{const section=document.getElementById("commerce-recommendations");if(section)section.scrollIntoView({behavior:"smooth"});else router.push("/hosting/")},
+    continueShopping:()=>router.push("/"),hostingPicker:{load:loadHostingOffers,add:async(domain,offer,cycle)=>{if(!lines.some(line=>line.ready&&line.selection.kind==="domain"&&line.selection.domain===domain))throw Error("This domain is no longer in your cart.");if(!offer.cycles.some(c=>c.key===cycle))throw Error("Choose a valid billing period.");if(!await mutate("POST",{kind:"service",plan:offer.plan,revision:offer.revision,cycle,domain}))throw Error("Hosting could not be added. Please retry.");}},
   };
   return <Context.Provider value={{available:available&&sessionChecked,loading,retry:()=>{setLoading(true);void load()},add:item=>{void mutate("POST",item);},addBundle:bundle=>{void mutate("POST",{bundle});},open:show,count:available?lines.length:null,view,actions}}>
     {children}
