@@ -55,8 +55,8 @@ export async function getLiveDomainPackages(_oldPackages:DomainPackage[]=[]):Pro
     return data.tlds.filter(t=>t.tld.startsWith(".")&&Number(t.registration_price)>0)
       .map((t,i)=>({
         id:t.tld,tld:t.tld,title:t.tld,
-        description:"Published Octalve Cloud indicative domain pricing. Registrar availability must be verified before an order.",
-        category:i<6?"popular" as const:"business" as const,
+        description:"Published registration and renewal prices.",
+        category:t.tld.endsWith(".ng")?"nigeria" as const:[".online",".rocks",".shop",".cloud",".ai"].includes(t.tld)?"new" as const:i<6?"popular" as const:"business" as const,
         currentPrice:Number(t.registration_price),renewalPrice:Number(t.renewal_price),
         billingLabel:"/year",badge:data.registrar_connected?"Live rate":"Availability check required",
         ctaLabel:"Search this extension",ctaHref:`/tools/domain-name-search/?tld=${encodeURIComponent(t.tld)}`,
