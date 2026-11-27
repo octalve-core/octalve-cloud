@@ -78,7 +78,11 @@ const name="fixture-cart-check.com";
    await page.getByRole("button",{name:"Open cart, 2 items"}).waitFor();
    assert.equal(writes,4);
    assert.equal(await sheet.count(),0);
-   for(const asset of ["paystack.svg","flutterwave.svg","monnify.svg","google-pay.png"]){const img=page.locator('img[src="/commerce/'+asset+'"]').first();await img.waitFor({state:"visible"});assert.ok(await img.evaluate(el=>el.complete&&el.naturalWidth>0),"Missing logo "+asset);}
+   assert.equal(await page.getByRole("group",{name:/Payment options|Payment method/}).count(),0);
+   for(const asset of ["paystack.svg","flutterwave.svg","monnify.svg","google-pay.png"]){
+    const response=await context.request.get(base+"/commerce/"+asset);
+    assert.ok(response.ok(),"Missing checkout logo "+asset);
+   }
    assert.ok(reads<=26,"unexpected guest cart request fan-out: "+reads);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),"horizontal overflow at "+width);
    assert.deepEqual(errors,[],"browser exception at "+width);
