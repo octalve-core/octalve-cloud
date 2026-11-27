@@ -112,7 +112,7 @@ export function HeroDomainSearch() {
       {results.length > 0 && <section aria-label="Domain search results" className="mx-auto mt-6 max-w-2xl">
         <div className="mb-4">
           <h2 className="text-xl font-medium text-white">Domain results</h2>
-          <p className="mt-1 text-sm text-zinc-400">Published estimates. Final availability and pricing are confirmed in the Console.</p>
+          <p className="mt-1 text-sm text-zinc-400">Published registration and renewal prices.</p>
         </div>
         <ul className="space-y-3">
           {results.map(item => <li key={item.domain}><DomainResultCard item={item} /></li>)}
